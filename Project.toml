@@ -1,0 +1,7 @@
+name = "TransferFunctions"
+uuid = "ea859a41-d6bf-4726-8e40-524191381158"
+authors = ["Martin Kunz <martinkunz@email.cz> and contributors"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1"
