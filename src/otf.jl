@@ -18,6 +18,7 @@ end
 
 otf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length) = otf(tf, wh, (Δxy, Δxy))
 otf(tf::TransferFunction, wh::Integer, args...) = otf(tf, (wh, wh), args...)
+otf(tf::TransferFunction, img::AbstractArray, args...) = otf(tf, size(img), args...)
 
 @doc """
  modulation transfer function

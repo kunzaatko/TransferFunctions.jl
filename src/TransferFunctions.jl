@@ -12,6 +12,7 @@ using SpecialFunctions
 using OffsetArrays: centered
 using FillArrays
 using FFTW # TODO: should I use AbstractFFTs?
+using Reexport
 
 abstract type TransferFunction end
 output_type(::TransferFunction) = Complex{Float64}
@@ -42,5 +43,6 @@ include("transfer_functions/spherical_aperture_otf.jl")
 export psf, otf, mtf, ptf, apsf, pupil
 export cutoff_frequency, resolution_limit
 export BornWolf, IdealOTFwithCurvature
+@reexport using Unitful
 
 end

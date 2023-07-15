@@ -97,11 +97,16 @@ end
 function psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})
     tf_otf = otf(tf, wh, Δxy)
     tf_psf = centered(fftshift(ifft(tf_otf)))
+    # TODO: Is this correct? How about defocused and other aberrations, can they make the intensity in the center lower?
+    # is this even true for a PSF at the focal plane?
     return tf_psf ./ tf_psf[0, 0]
 end
 
 psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length) = psf(tf, wh, (Δxy, Δxy))
 psf(tf::TransferFunction, wh::Integer, args...) = psf(tf, (wh, wh), args...)
+# FIX: This doesn't strictly speaking make sense, since the PSF is used for convolution and not for termwise
+# multiplication <15-07-23> 
+psf(tf::TransferFunction, img::AbstractArray, args...) = psf(tf, size(img), args...)
 
 @doc """
 Amplitude point spread function
