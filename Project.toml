@@ -3,5 +3,13 @@ uuid = "ea859a41-d6bf-4726-8e40-524191381158"
 authors = ["Martin Kunz <martinkunz@email.cz> and contributors"]
 version = "1.0.0-DEV"
 
+[deps]
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
+OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+SimpleTraits = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
 [compat]
 julia = "1"
