@@ -11,3 +11,10 @@ deps/src/
 deps/usr/
 docs/build/
 docs/site/
+PSFGenerator/
+src/transfer_functions/Fourier_transform_Born_Wolf.png
+src/transfer_functions/Meijer's G-Function 1.png
+src/transfer_functions/Meijer's G-Function 2.png
+src/transfer_functions/Meijer's G-Function 3.png
+src/transfer_functions/Meijer's G-Function 4.png
+TODO.norg
