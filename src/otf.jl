@@ -44,3 +44,4 @@ end
 function otf_support(tf::TransferFunction, wh::Integer, args...)
     otf_support(tf, (wh, wh), args...)
 end
+otf_support(tf::TransferFunction, img::AbstractArray, args...) = otf_support(tf, size(img), args...)
