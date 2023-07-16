@@ -15,9 +15,9 @@ Base.@kwdef struct BornWolf{T<:Real} <: ClosedFormPSFModelTransferFunction
     NA::T
     nᵢ::T = 4 // 3
     function BornWolf(λ::Length{T}, NA::T, nᵢ::T) where {T<:Real}
-        λ >= zero(λ) || throw(ArgumentError("λ (wavelength) must be positive"))
-        NA >= zero(NA) || throw(ArgumentError("NA (numerical aperture) must be positive"))
-        nᵢ >= zero(nᵢ) || throw(ArgumentError("nᵢ(refractive index of immersion medium) must be positive"))
+        λ > zero(λ) || throw(DomainError(λ, "λ (wavelength) > 0"))
+        NA > zero(NA) || throw(DomainError("NA (numerical aperture) > 0"))
+        nᵢ > zero(nᵢ) || throw(DomainError("nᵢ(refractive index of immersion medium) > 0"))
         return new{T}(λ, NA, nᵢ)
     end
 end

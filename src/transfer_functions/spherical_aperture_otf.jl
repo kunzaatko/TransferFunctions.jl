@@ -4,11 +4,10 @@ Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ClosedFormOTFModelTransferF
     nᵢ::T = 4 // 3
     curvature::T
     function IdealOTFwithCurvature(λ::Length{T}, NA::T, nᵢ::T, curvature::T) where {T<:Real}
-        curvature >= zero(curvature) || throw(ArgumentError("curvature must be positive"))
-        curvature < one(curvature) || throw(ArgumentError("curvature must be <= 1"))
-        λ >= zero(λ) || throw(ArgumentError("λ (wavelength) must be positive"))
-        NA >= zero(NA) || throw(ArgumentError("NA (numerical aperture) must be positive"))
-        nᵢ >= zero(nᵢ) || throw(ArgumentError("nᵢ(refractive index of immersion medium) must be positive"))
+        one(curvature) >= curvature > zero(curvature) || throw(DomainError(curvature, "Valid domain for curvature is (0,1]"))
+        λ > zero(λ) || throw(DomainError(λ, "λ (wavelength) > 0"))
+        NA > zero(NA) || throw(DomainError(NA, "NA (numerical aperture) > 0"))
+        nᵢ > zero(nᵢ) || throw(DomainError(nᵢ, "nᵢ(refractive index of immersion medium) > 0"))
         return new{T}(λ, NA, nᵢ, curvature)
     end
 end
