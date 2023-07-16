@@ -13,6 +13,7 @@ using OffsetArrays: centered
 using FillArrays
 using FFTW # TODO: should I use AbstractFFTs?
 using Reexport
+using LazyGrids
 
 abstract type TransferFunction end
 output_type(::TransferFunction) = Complex{Float64}

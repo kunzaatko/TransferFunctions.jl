@@ -34,17 +34,18 @@ ptf(tf::TransferFunction, args...; varargs...) = imag.(otf(tf, args...; varargs.
     # TODO: Is this correct?
     all(hasfield.(TF, [:NA, :λ, :nᵢ])) ? (2 * tf.NA * tf.nᵢ) / tf.λ : nothing
 end
-@traitfn function otf_support(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}; ρ::Union{Tuple{Real,Real},Real}=1.0) where {TF <: TransferFunction; SymmetricPupilFunction{TF}}
+@traitfn function otf_support(
+    tf::TF,
+    wh::Union{Tuple{Integer,Integer},Integer},
+    Δxy::Union{Tuple{Length,Length},Length};
+    ρ::Union{Tuple{Real,Real},Real}=1.0
+) where {TF <: TransferFunction; SymmetricPupilFunction{TF}}
+    wh = wh isa Integer ? (wh, wh) : wh
+    Δxy = Δxy isa Length ? (Δxy, Δxy) : Δxy
     if ρ isa Real
         ρ = ρ > 0 ? (0, ρ) : (1 + ρ, 1)
     end
-    fxs, fys = fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2])
-    return [ρ[1] * cutoff_frequency(tf) <= hypot(fx, fy) <= ρ[2] * cutoff_frequency(tf) for fx in fxs, fy in fys]
-end
-function otf_support(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length; varargs...)
-    otf_support(tf, wh, (Δxy, Δxy); varargs...)
-end
-function otf_support(tf::TransferFunction, wh::Integer, args...; varargs...)
-    otf_support(tf, (wh, wh), args...; varargs...)
+    fxs, fys = ndgrid(fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2]))
+    return ρ[1] * cutoff_frequency(tf) .<= hypot.(fxs, fys) .<= ρ[2] * cutoff_frequency(tf)
 end
 otf_support(tf::TransferFunction, img::AbstractArray, args...; varargs...) = otf_support(tf, size(img), args...; varargs...)
