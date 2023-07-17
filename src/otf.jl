@@ -7,8 +7,8 @@ optical transfer function
 end
 
 function otf(tf::ClosedFormOTFModelTransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})
-    fxs, fys = fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2])
-    return [otf(tf, fx, fy) for fx in fxs, fy in fys]
+    fxs, fys = ndgrid(fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2]))
+    return otf.(tf, fxs, fys)
 end
 
 function otf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})
@@ -16,36 +16,40 @@ function otf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Lengt
     return fft(tf_psf) ./ sum(tf_psf)
 end
 
-otf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length) = otf(tf, wh, (Δxy, Δxy))
-otf(tf::TransferFunction, wh::Integer, args...) = otf(tf, (wh, wh), args...)
-otf(tf::TransferFunction, img::AbstractArray, args...) = otf(tf, size(img), args...)
+otf(tf::TransferFunction, wh::Integer, args...; varargs...) = otf(tf, (wh, wh), args...; varargs...)
+otf(tf::TransferFunction, wh::Tuple, Δxy::Length; varargs...) = otf(tf, wh, (Δxy, Δxy); varargs...)
+otf(tf::TransferFunction, img::AbstractArray, args...; varargs...) = otf(tf, size(img), args...; varargs...)
 
 @doc """
  modulation transfer function
  """
-mtf(tf::TransferFunction, args...; varargs...) = real.(otf(tf, args...; varargs...))
+mtf(args...; varargs...) = real.(otf(args...; varargs...))
 
 @doc """
  phase transfer function
  """
-ptf(tf::TransferFunction, args...; varargs...) = imag.(otf(tf, args...; varargs...))
+ptf(args...; varargs...) = imag.(otf(args...; varargs...))
 
 @traitfn function cutoff_frequency(tf::TF) where {TF <: TransferFunction; SymmetricPupilFunction{TF}}
-    # TODO: Is this correct?
-    all(hasfield.(TF, [:NA, :λ, :nᵢ])) ? (2 * tf.NA * tf.nᵢ) / tf.λ : nothing
+    if all(hasfield.(TF, [:NA, :λ, :nᵢ]))
+        return (2 * tf.NA * tf.nᵢ) / tf.λ
+    else
+        throw(MethodError(cutoff_frequency, tf))
+    end
 end
+
 @traitfn function otf_support(
     tf::TF,
-    wh::Union{Tuple{Integer,Integer},Integer},
-    Δxy::Union{Tuple{Length,Length},Length};
-    ρ::Union{Tuple{Real,Real},Real}=1.0
+    wh::Tuple{Integer,Integer},
+    Δxy::Tuple{Length,Length};
+    ρ::Union{Real,Tuple{Real,Real}}=(0.0, 1.0)
 ) where {TF <: TransferFunction; SymmetricPupilFunction{TF}}
-    wh = wh isa Integer ? (wh, wh) : wh
-    Δxy = Δxy isa Length ? (Δxy, Δxy) : Δxy
     if ρ isa Real
         ρ = ρ > 0 ? (0, ρ) : (1 + ρ, 1)
     end
     fxs, fys = ndgrid(fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2]))
     return ρ[1] * cutoff_frequency(tf) .<= hypot.(fxs, fys) .<= ρ[2] * cutoff_frequency(tf)
 end
-otf_support(tf::TransferFunction, img::AbstractArray, args...; varargs...) = otf_support(tf, size(img), args...; varargs...)
+otf_support(tf, wh::Integer, args...; varargs...) = otf_support(tf, (wh, wh), args...; varargs...)
+otf_support(tf, wh::Tuple, Δxy::Length, args...; varargs...) = otf_support(tf, wh, (Δxy, Δxy), args...; varargs...)
+otf_support(tf, img::AbstractArray, args...; varargs...) = otf_support(tf, size(img), args...; varargs...)
