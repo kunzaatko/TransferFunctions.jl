@@ -42,13 +42,18 @@ end
     tf::TF,
     wh::Tuple{Integer,Integer},
     Δxy::Tuple{Length,Length};
-    ρ::Union{Real,Tuple{Real,Real}}=(0.0, 1.0)
+    ρ::Union{Real,Tuple{Real,Real}}=(0.0, 1.0),
+    inclusive::Union{Bool,Tuple{Bool,Bool}}=(true, true)
 ) where {TF <: TransferFunction; SymmetricPupilFunction{TF}}
     if ρ isa Real
         ρ = ρ > 0 ? (0, ρ) : (1 + ρ, 1)
     end
+    inclusive = inclusive isa Bool ? (inclusive, inclusive) : inclusive
+
     fxs, fys = ndgrid(fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2]))
-    return ρ[1] * cutoff_frequency(tf) .<= hypot.(fxs, fys) .<= ρ[2] * cutoff_frequency(tf)
+    left = inclusive[1] ? ρ[1] * cutoff_frequency(tf) .<= hypot.(fxs, fys) : ρ[1] * cutoff_frequency(tf) .< hypot.(fxs, fys)
+    right = inclusive[2] ? hypot.(fxs, fys) .< ρ[2] * cutoff_frequency(tf) : hypot.(fxs, fys) .< ρ[2] * cutoff_frequency(tf)
+    return left .* right
 end
 otf_support(tf, wh::Integer, args...; varargs...) = otf_support(tf, (wh, wh), args...; varargs...)
 otf_support(tf, wh::Tuple, Δxy::Length, args...; varargs...) = otf_support(tf, wh, (Δxy, Δxy), args...; varargs...)
