@@ -36,8 +36,11 @@ using Test
         ## Theory Consistency
         @test all(otf_support(tf, 512, 64u"nm"; ρ=-0.5) + otf_support(tf, 512, 64u"nm"; ρ=0.5) + otf_support(tf, 512, 64u"nm") .!= 1)
         @test otf_support(tf, 512, 64u"nm"; ρ=-0.5) .+ otf_support(tf, 512, 64u"nm"; ρ=0.5) == otf_support(tf, 512, 64u"nm")
-        @test sum([otf_support(tf, 512, 64u"nm"; ρ=ρ_int) for ρ_int in [0.1, (0.1, 0.5), (0.5, 0.7), -0.3]]) == otf_support(tf, 512, 64u"nm")
-        @test all(otf(tf, 512, 64u"nm")[otf_support(tf, 512, 64u"nm") .!= 1] .== 0)
+        @test dropdims(any(isone,
+                cat([otf_support(tf, 512, 64u"nm"; ρ=ρ_int) for ρ_int in [0.1, (0.1, 0.5), (0.5, 0.7), -0.3]]..., dims=3),
+                dims=3),
+            dims=3) == otf_support(tf, 512, 64u"nm")
+        @test all(otf(tf, 512, 64u"nm")[otf_support(tf, 512, 64u"nm").!=1] .== 0)
 
         # cutoff_frequency
         @test cutoff_frequency(tf) isa Frequency
