@@ -32,7 +32,10 @@ function otf(
     δ::Tuple{<:Real,<:Real}=(0, 0)
 )
     fxs, fys = ndgrid(fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2]))
-    return otf.(tf, fxs .+ (δ[1] / (Δxy[1] * wh[1])), fys .+ (δ[2] / (Δxy[2] * wh[2])))
+    # PERF: Could be speeded up using `ShiftedArrays` with integer `δ` <20-07-23> 
+    return otf.(tf,
+        fxs .- δ[1] / (Δxy[1] * wh[1]),
+        fys .- δ[2] / (Δxy[2] * wh[2]))
 end
 
 function otf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})

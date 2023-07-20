@@ -1,6 +1,7 @@
 using TransferFunctions
 using TransferFunctions: Frequency
 using FillArrays
+using FourierTools
 using Test
 
 @testset "TransferFunctions.jl" begin
@@ -13,11 +14,16 @@ using Test
         @test otf(tf, 1 // 250u"nm", 1 // 200u"nm") isa Number
         @test otf(tf, 1 // 250u"nm") isa Number
         @test otf(tf, 512, 64u"nm") isa Matrix
+        @test otf(tf, 512, 64u"nm"; δ=(2, 1)) isa Matrix
         @test_throws MethodError otf(tf, (512.1, 512.4), 64u"nm")
 
         ## Method Consistency
         @test otf(tf, 512, (64u"nm", 64u"nm")) == otf(tf, (512, 512), 64u"nm")
         @test otf(tf, img, 54u"nm") == otf(tf, img, (54u"nm", 54u"nm"))
+        @test otf(tf, 512, 61u"nm"; δ=(-1, 2)) ≈ real.(shift(ComplexF32.(otf(tf, 512, 61u"nm")), (-1, 2)))
+        @test otf(tf, 511, 61u"nm"; δ=(-1, 2)) ≈ real.(shift(ComplexF32.(otf(tf, 511, 61u"nm")), (-1, 2)))
+        @test otf(tf, 512, 61u"nm"; δ=(-1.5, 2.5)) ≈ real.(shift(ComplexF32.(otf(tf, 512, 61u"nm")), (-1.5, 2.5)))
+        @test otf(tf, 511, 61u"nm"; δ=(-1.5, 2.5)) ≈ real.(shift(ComplexF32.(otf(tf, 511, 61u"nm")), (-1.5, 2.5)))
 
         # otf_support
         using TransferFunctions: otf_support
