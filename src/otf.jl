@@ -6,9 +6,14 @@ optical transfer function
     otf(tf, hypot(f_x, f_y))
 end
 
-function otf(tf::ClosedFormOTFModelTransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})
+function otf(
+    tf::ClosedFormOTFModelTransferFunction,
+    wh::Tuple{Integer,Integer},
+    Δxy::Tuple{Length,Length};
+    δ::Tuple{<:Real,<:Real}=(0, 0)
+)
     fxs, fys = ndgrid(fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2]))
-    return otf.(tf, fxs, fys)
+    return otf.(tf, fxs .+ (δ[1] / (Δxy * wh[1])), fys .+ (δ[2] / (Δxy * wh[2])))
 end
 
 function otf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})
@@ -18,7 +23,7 @@ end
 
 otf(tf::TransferFunction, wh::Integer, args...; varargs...) = otf(tf, (wh, wh), args...; varargs...)
 otf(tf::TransferFunction, wh::Tuple, Δxy::Length; varargs...) = otf(tf, wh, (Δxy, Δxy); varargs...)
-otf(tf::TransferFunction, img::AbstractArray, args...; varargs...) = otf(tf, size(img), args...; varargs...)
+otf(tf::TransferFunction, img::AbstractMatrix, args...; varargs...) = otf(tf, size(img), args...; varargs...)
 
 @doc """
  modulation transfer function
