@@ -1,7 +1,7 @@
 name = "TransferFunctions"
 uuid = "ea859a41-d6bf-4726-8e40-524191381158"
 authors = ["Martin Kunz <martinkunz@email.cz> and contributors"]
-version = "0.3.1"
+version = "0.3.2"
 
 [deps]
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
