@@ -6,6 +6,25 @@ optical transfer function
     otf(tf, hypot(f_x, f_y))
 end
 
+@doc """
+    otf(tf, wh, [Δxy]; δ=(0, 0))
+    otf(tf, img, [Δxy];...)
+
+
+Generate an otf for the given transfer function with the size `wh` (size of `img`) and with a pixel distance of `Δxy`
+
+!!! note
+    The pixel size/distance (`Δxy`) is only required for a [model transfer function](@ref ModelTransferFunction). If it
+    is  not provided for a `MeasuredTransferFunction`, then the pixel distance from the measurement is used.
+
+# Arguments
+* `tf::TransferFunction`: transfer function model/measure to generate the OTF for
+* `wh::Tuple{Integer, Integer}` or `wh::Integer`: (width, height) of the generated OTF. `wh` ↦ `(wh, wh)` if `wh isa Integer`.
+* `Δxy::Tuple{Length, Length}` or `Δxy::Length`: Separation of pixels in the ``x`` and ``y`` dimensions of the generated
+    OTF image. `Δxy` ↦ `(Δxy, Δxy)` if `Δxy isa Length`.
+* `δ::Tuple = (0,0)`: shift of the OTF in the image plane in pixels. This is useful for some algorithms, e.g. in 
+    structured illumination microscopy reconstruction algorithms.
+"""
 function otf(
     tf::ClosedFormOTFModelTransferFunction,
     wh::Tuple{Integer,Integer},
