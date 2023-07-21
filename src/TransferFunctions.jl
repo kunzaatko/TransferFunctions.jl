@@ -42,6 +42,7 @@ include("transfer_functions/born_wolf.jl")
 include("transfer_functions/spherical_aperture_otf.jl")
 
 export psf, otf, mtf, ptf, apsf, pupil
+export psf, otf, mtf, ptf, apsf, ipsf, pupil
 export cutoff_frequency, resolution_limit
 export BornWolf, IdealOTFwithCurvature
 @reexport using Unitful
