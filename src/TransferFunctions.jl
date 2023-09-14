@@ -44,6 +44,8 @@ include("pupil.jl")
 include("transfer_functions/gibson_lanni.jl")
 include("transfer_functions/born_wolf.jl")
 include("transfer_functions/spherical_aperture_otf.jl")
+include("transfer_functions/measured_psf.jl")
+include("transfer_functions/measured_otf.jl")
 
 export psf, otf, mtf, ptf, apsf, ipsf, pupil
 export cutoff_frequency, resolution_limit
