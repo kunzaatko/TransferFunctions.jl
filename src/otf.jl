@@ -2,7 +2,7 @@
 optical transfer function
 """ otf
 
-@inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ClosedFormOTFModelTransferFunction; SymmetricPupilFunction{TF}}
+@inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ClosedFormOTFModel; SymmetricPupilFunction{TF}}
     otf(tf, hypot(f_x, f_y))
 end
 
@@ -26,7 +26,7 @@ Generate an otf for the given transfer function with the size `wh` (size of `img
     structured illumination microscopy reconstruction algorithms.
 """
 function otf(
-    tf::ClosedFormOTFModelTransferFunction,
+    tf::ClosedFormOTFModel,
     wh::Tuple{Integer,Integer},
     Δxy::Tuple{Length,Length};
     δ::Tuple{<:Real,<:Real}=(0, 0)

@@ -19,12 +19,16 @@ abstract type TransferFunction end
 output_type(::TransferFunction) = Complex{Float64}
 
 # NOTE: Allows broadcasting `func.(tf, a:b)`where `func` can be any of `psf`,`otf`,`mtf`, etc.
+# FIX: Should this be only for model transfer functions?  <15-09-23> 
 Broadcast.broadcastable(tf::TransferFunction) = Ref(tf)
 
 abstract type ModelTransferFunction <: TransferFunction end
-abstract type ClosedFormPSFModelTransferFunction <: ModelTransferFunction end
-abstract type ClosedFormOTFModelTransferFunction <: ModelTransferFunction end
+# TODO: Why Closed form? Did I plan to implement non-closed form?! <15-09-23> 
+abstract type ClosedFormPSFModel <: ModelTransferFunction end
+abstract type ClosedFormOTFModel <: ModelTransferFunction end
 abstract type MeasuredTransferFunction <: TransferFunction end
+abstract type MeasuredPSF <: MeasuredTransferFunction end
+abstract type MeasuredOTF <: MeasuredTransferFunction end
 
 """
 If the pupil function of the system is symmetric, the OTF as well as the PSF are radially symmteric which can be used to optimize the calculations
@@ -41,7 +45,6 @@ include("transfer_functions/gibson_lanni.jl")
 include("transfer_functions/born_wolf.jl")
 include("transfer_functions/spherical_aperture_otf.jl")
 
-export psf, otf, mtf, ptf, apsf, pupil
 export psf, otf, mtf, ptf, apsf, ipsf, pupil
 export cutoff_frequency, resolution_limit
 export BornWolf, IdealOTFwithCurvature

@@ -1,4 +1,4 @@
-Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ClosedFormOTFModelTransferFunction
+Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ClosedFormOTFModel
     λ::Length{T}
     NA::T
     nᵢ::T = 4 // 3

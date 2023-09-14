@@ -27,11 +27,11 @@ julia> psf.(tf, 0u"nm", -400u"nm":100u"nm":400u"nm")
  0.017494179502715042
 ```
 """
-@inline @traitfn function psf(tf::TF, x::Length, y::Length) where {TF <: ClosedFormPSFModelTransferFunction; SymmetricPupilFunction{TF}}
+@inline @traitfn function psf(tf::TF, x::Length, y::Length) where {TF <: ClosedFormPSFModel; SymmetricPupilFunction{TF}}
     psf(tf, hypot(x, y))
 end
 
-@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModelTransferFunction; !SymmetricPupilFunction{TF}}
+@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; !SymmetricPupilFunction{TF}}
     xs = isodd(wh[1]) ? (((-wh[1]-1)÷2):((wh[1]-1)÷2)) .* Δxy[1] : ((-wh[1]-2)÷2):(wh[1]÷2).*Δxy[1]
     ys = isodd(wh[2]) ? (((-wh[2]-1)÷2):((wh[2]-1)÷2)) .* Δxy[2] : ((-wh[2]-2)÷2):(wh[2]÷2).*Δxy[2]
     return centered([psf(tf, x, y) for x in xs, y in ys])
@@ -71,7 +71,7 @@ julia> psf(tf, (4,4), (40u"nm", 50u"nm"))
 0.683218  0.762329  0.683218  0.485181
 ```
 """
-@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModelTransferFunction; SymmetricPupilFunction{TF}}
+@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; SymmetricPupilFunction{TF}}
     s = all(isodd.(wh)) ? wh : (wh .+ 1)
     buf = centered(Matrix{output_type(tf)}(undef, s...)) # the first quadrant
     # PERF: This can be made even faster if the we use the same calculation for a same radii in one quadrant, for 
