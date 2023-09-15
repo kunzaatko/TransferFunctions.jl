@@ -12,7 +12,7 @@ julia> tf = BornWolf(488u"nm", 1.4, 1.7)
 BornWolf{Float64}(488.0 nm, 1.4, 1.7)
 
 julia> psf(tf, 0u"nm", 5u"nm")
-0.9984732587380519
+0.998964350912067
 
 julia> psf.(tf, 0u"nm", -400u"nm":100u"nm":400u"nm")
 9-element Vector{Float64}:
@@ -61,14 +61,14 @@ julia> psf(tf, (11,11), 60u"nm")
 0.0168562    0.00786588  4.12011e-5  0.0081881   0.028166     0.03891     0.028166     0.0081881   4.12011e-5  0.00786588  0.0168562
 0.0157967    0.0168562   0.0106361   0.00359943  0.000467512  4.12011e-5  0.000467512  0.00359943  0.0106361   0.0168562   0.0157967
 
-julia> psf(tf, (4,4), (40u"nm", 50u"nm"))
-┌ Warning: If any of the dimensions of `wh` are even, then the PSF will not be symmetric.
-└ @ TransferFunctions ~/Dev/julia/TransferFunctions/src/TransferFunctions.jl:108
-4×4 OffsetArray(::Matrix{Float64}, -1:2, -1:2) with eltype Float64 with indices -1:2×-1:2:
-0.841645  0.935494  0.841645  0.60549
-0.900757  1.0       0.900757  0.650619
-0.841645  0.935494  0.841645  0.60549
-0.683218  0.762329  0.683218  0.485181
+julia> psf(tf, (5,5), (40u"nm", 50u"nm"))
+5×5 OffsetArray(::Matrix{Float64}, -2:2, -2:2) with eltype Float64 with indices -2:2×-2:2:
+ 0.485181  0.683218  0.762329  0.683218  0.485181
+ 0.60549   0.841645  0.935494  0.841645  0.60549
+ 0.650619  0.900757  1.0       0.900757  0.650619
+ 0.60549   0.841645  0.935494  0.841645  0.60549
+ 0.485181  0.683218  0.762329  0.683218  0.485181
+
 ```
 """
 @traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; SymmetricPupilFunction{TF}}
