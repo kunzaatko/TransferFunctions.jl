@@ -3,7 +3,7 @@
  """ psf
 
 @doc """
-psf(tf::TransferFunction, x::Length, y::Length)
+    psf(tf::TransferFunction, x::Length, y::Length)
 
 Sample the PSF of the transfer function model/data at the point `(x,y)`
 

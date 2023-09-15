@@ -2,9 +2,9 @@
 Born & Wolf model of the transfer function for a circular aperture.
 
 # Parameters
-    * `λ::Unitful.Length`: (emission) wavelength 
-    * `nᵢ::Number`: index of refraction of the immersion medium
-    * `NA::Number`: numerical aperture
+  + `λ::Unitful.Length`: (emission) wavelength 
+  + `nᵢ::Number`: index of refraction of the immersion medium
+  + `NA::Number`: numerical aperture
 
 # Extended help
 
