@@ -24,7 +24,7 @@ end
 
 # Casting to promoted types
 function BornWolf(λ::Length{R}, NA::Number, nᵢ::Number) where {R<:Real}
-    _, NA = promote(ustrip(λ), nᵢ, NA, nᵢ)
+    _, NA, nᵢ = promote(ustrip(λ), NA, nᵢ)
     return BornWolf(convert(Quantity{typeof(NA)}, λ), NA, nᵢ)
 end
 @traitimpl SymmetricPupilFunction{BornWolf}

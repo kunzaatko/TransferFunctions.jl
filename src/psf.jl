@@ -10,21 +10,12 @@ Sample the PSF of the transfer function model/data at the point `(x,y)`
 ```jldoctest
 julia> tf = BornWolf(488u"nm", 1.4, 1.7)
 BornWolf{Float64}(488.0 nm, 1.4, 1.7)
+```
 
-julia> psf(tf, 0u"nm", 5u"nm")
-0.998964350912067
-
-julia> psf.(tf, 0u"nm", -400u"nm":100u"nm":400u"nm")
-9-element Vector{Float64}:
- 0.017494179502715042
- 4.120108799723075e-5
- 0.13762701588830448
- 0.6506193558241494
- 1.0
- 0.6506193558241494
- 0.13762701588830448
- 4.120108799723075e-5
- 0.017494179502715042
+```@repl
+tf = BornWolf(488u"nm", 1.4, 1.7) # hide
+psf(tf, 0u"nm", 5u"nm")
+psf.(tf, 0u"nm", -400u"nm":100u"nm":400u"nm")
 ```
 """
 @inline @traitfn function psf(tf::TF, x::Length, y::Length) where {TF <: ClosedFormPSFModel; SymmetricPupilFunction{TF}}
@@ -46,29 +37,12 @@ Generate the psf with size `wh` with `Δxy` being the distance between the sampl
 ```jldoctest
 julia> tf = BornWolf(488u"nm", 1.7, 1.7)
 BornWolf{Float64}(488.0 nm, 1.7, 1.7)
+```
 
+```@repl
+tf = BornWolf(488u"nm", 1.7, 1.7) # hide
 julia> psf(tf, (11,11), 60u"nm")
-11×11 OffsetArray(::Matrix{Float64}, -5:5, -5:5) with eltype Float64 with indices -5:5×-5:5:
-0.0157967    0.0168562   0.0106361   0.00359943  0.000467512  4.12011e-5  0.000467512  0.00359943  0.0106361   0.0168562   0.0157967
-0.0168562    0.00786588  4.12011e-5  0.0081881   0.028166     0.03891     0.028166     0.0081881   4.12011e-5  0.00786588  0.0168562
-0.0106361    4.12011e-5  0.0196773   0.0885948   0.174795     0.214491    0.174795     0.0885948   0.0196773   4.12011e-5  0.0106361
-0.00359943   0.0081881   0.0885948   0.260914    0.449707     0.532683    0.449707     0.260914    0.0885948   0.0081881   0.00359943
-0.000467512  0.028166    0.174795    0.449707    0.736233     0.859761    0.736233     0.449707    0.174795    0.028166    0.000467512
-4.12011e-5   0.03891     0.214491    0.532683    0.859761     1.0         0.859761     0.532683    0.214491    0.03891     4.12011e-5
-0.000467512  0.028166    0.174795    0.449707    0.736233     0.859761    0.736233     0.449707    0.174795    0.028166    0.000467512
-0.00359943   0.0081881   0.0885948   0.260914    0.449707     0.532683    0.449707     0.260914    0.0885948   0.0081881   0.00359943
-0.0106361    4.12011e-5  0.0196773   0.0885948   0.174795     0.214491    0.174795     0.0885948   0.0196773   4.12011e-5  0.0106361
-0.0168562    0.00786588  4.12011e-5  0.0081881   0.028166     0.03891     0.028166     0.0081881   4.12011e-5  0.00786588  0.0168562
-0.0157967    0.0168562   0.0106361   0.00359943  0.000467512  4.12011e-5  0.000467512  0.00359943  0.0106361   0.0168562   0.0157967
-
-julia> psf(tf, (5,5), (40u"nm", 50u"nm"))
-5×5 OffsetArray(::Matrix{Float64}, -2:2, -2:2) with eltype Float64 with indices -2:2×-2:2:
- 0.485181  0.683218  0.762329  0.683218  0.485181
- 0.60549   0.841645  0.935494  0.841645  0.60549
- 0.650619  0.900757  1.0       0.900757  0.650619
- 0.60549   0.841645  0.935494  0.841645  0.60549
- 0.485181  0.683218  0.762329  0.683218  0.485181
-
+julia> psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
 ```
 """
 @traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; SymmetricPupilFunction{TF}}
@@ -104,7 +78,7 @@ end
 
 psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length) = psf(tf, wh, (Δxy, Δxy))
 psf(tf::TransferFunction, wh::Integer, args...) = psf(tf, (wh, wh), args...)
-# FIX: This doesn't strictly speaking make sense, since the PSF is used for convolution and not for termwise
+# FIX: This doesn't strictly speaking make sense, since the PSF is used for convolution and not for term-wise
 # multiplication <15-07-23> 
 psf(tf::TransferFunction, img::AbstractArray, args...) = psf(tf, size(img), args...)
 
