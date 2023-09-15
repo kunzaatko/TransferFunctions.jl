@@ -41,8 +41,8 @@ BornWolf{Float64}(488.0 nm, 1.7, 1.7)
 
 ```@repl
 tf = BornWolf(488u"nm", 1.7, 1.7) # hide
-julia> psf(tf, (11,11), 60u"nm")
-julia> psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
+psf(tf, (11,11), 60u"nm")
+psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
 ```
 """
 @traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; SymmetricPupilFunction{TF}}
