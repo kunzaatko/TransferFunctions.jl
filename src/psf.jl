@@ -2,6 +2,7 @@
   Intensity point spread function i.e. the intensity ratio and phase shift of the sample intensity density
  """ psf
 
+# FIX: @repl blocks not working <15-09-23> 
 @doc """
     psf(tf::TransferFunction, x::Length, y::Length)
 

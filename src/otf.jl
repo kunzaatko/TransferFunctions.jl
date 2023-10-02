@@ -25,6 +25,7 @@ Generate an otf for the given transfer function with the size `wh` (size of `img
 * `δ::Tuple = (0,0)`: shift of the OTF in the image plane in pixels. This is useful for some algorithms, e.g. in 
     structured illumination microscopy reconstruction algorithms.
 """
+# TODO: This should be shifted for a PSF that is real <15-09-23> 
 function otf(
     tf::ClosedFormOTFModel,
     wh::Tuple{Integer,Integer},

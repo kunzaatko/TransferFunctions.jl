@@ -1,3 +1,4 @@
+# TODO: Document <15-09-23> 
 Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ClosedFormOTFModel
     λ::Length{T}
     NA::T
