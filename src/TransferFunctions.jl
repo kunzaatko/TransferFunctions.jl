@@ -27,8 +27,6 @@ abstract type ModelTransferFunction <: TransferFunction end
 abstract type ClosedFormPSFModel <: ModelTransferFunction end
 abstract type ClosedFormOTFModel <: ModelTransferFunction end
 abstract type MeasuredTransferFunction <: TransferFunction end
-abstract type MeasuredPSF <: MeasuredTransferFunction end
-abstract type MeasuredOTF <: MeasuredTransferFunction end
 
 """
 If the pupil function of the system is symmetric, the OTF as well as the PSF are radially symmteric which can be used to optimize the calculations
