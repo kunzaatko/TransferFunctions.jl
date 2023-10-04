@@ -9,9 +9,9 @@ using SimpleTraits
 using Unitful
 using Unitful: Length
 using SpecialFunctions
-using OffsetArrays: centered # FIX: replace OffsetArrays `centered`... It is deprecated  <15-09-23> 
+using OffsetArrays: centered
 using FillArrays
-using FFTW # TODO: should I use AbstractFFTs?
+using FFTW
 using Reexport
 using LazyGrids
 
@@ -19,8 +19,7 @@ abstract type TransferFunction end
 output_type(::TransferFunction) = Complex{Float64}
 
 # NOTE: Allows broadcasting `func.(tf, a:b)`where `func` can be any of `psf`,`otf`,`mtf`, etc.
-# FIX: Should this be only for model transfer functions?  <15-09-23> 
-Broadcast.broadcastable(tf::TransferFunction) = Ref(tf)
+Broadcast.broadcastable(tf::ModelTransferFunction) = Ref(tf)
 
 @doc raw"""
 An abstract type for any transfer function that is based on a physical model of an optical system. Contrary to a 
@@ -29,6 +28,11 @@ frequency domain). The model can be of an OTF (`ClosedFormOTFModel <: ModelTrans
 (`ClosedFormPSFModel <: ModelTransferFunction`) or a PupilFunction.
 """
 abstract type ModelTransferFunction <: TransferFunction end
+
+# NOTE: Allows broadcasting `func.(tf, a:b)`where `func` can be any of `psf`,`otf`,`mtf`, etc.
+# NOTE: Does not make sense for `MeasuredTransferFunction`
+Broadcast.broadcastable(tf::ModelTransferFunction) = Ref(tf)
+
 # TODO: Why Closed form? Did I plan to implement non-closed form?! <15-09-23> 
 # TODO: Add docs for implementation <02-10-23> 
 abstract type ClosedFormPSFModel <: ModelTransferFunction end

@@ -49,17 +49,42 @@ psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
 @traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; SymmetricPupilFunction{TF}}
     s = all(isodd.(wh)) ? wh : (wh .+ 1)
     buf = centered(Matrix{output_type(tf)}(undef, s...)) # the first quadrant
-    # PERF: This can be made even faster if the we use the same calculation for a same radii in one quadrant, for 
-    # example (1,2) and (2,1) <12-07-23> 
-    buf[1:end, -1:-1:begin] .=
-        buf[-1:-1:begin, 1:end] .=
-            buf[-1:-1:begin, -1:-1:begin] .=
-                buf[1:end, 1:end] .=
-                    [psf(tf, x, y) for x in (1:(s[1]-1)÷2) .* Δxy[1], y in (1:(s[2]-1)÷2) .* Δxy[2]]
-    # PERF: Could be made faster by using the same for the minimum of `wh[1]` and `wh[2]` <12-07-23> 
-    buf[1:end, 0] .= buf[-1:-1:begin, 0] .= psf.(tf, (1:(s[1]-1)÷2) .* Δxy[1], Fill(zero(Δxy[1]), (s[1] - 1) ÷ 2))
-    buf[0, 1:end] .= buf[0, -1:-1:begin] .= psf.(tf, Fill(zero(Δxy[2]), (s[2] - 1) ÷ 2), (1:(s[2]-1)÷2) .* Δxy[2])
-    buf[0, 0] = psf(tf, zero(Δxy[1]), zero(Δxy[2]))
+    # # PERF: This can be made even faster if the we use the same calculation for a same radii in one quadrant, for 
+    # # example (1,2) and (2,1) <12-07-23> 
+    # buf[1:end, -1:-1:begin] .=
+    #     buf[-1:-1:begin, 1:end] .=
+    #         buf[-1:-1:begin, -1:-1:begin] .=
+    #             buf[1:end, 1:end] .=
+    #                 [psf(tf, x, y) for x in (1:(s[1]-1)÷2) .* Δxy[1], y in (1:(s[2]-1)÷2) .* Δxy[2]]
+    # # PERF: Could be made faster by using the same for the minimum of `wh[1]` and `wh[2]` <12-07-23> 
+    # buf[1:end, 0] .= buf[-1:-1:begin, 0] .= psf.(tf, (1:(s[1]-1)÷2) .* Δxy[1], Fill(zero(Δxy[1]), (s[1] - 1) ÷ 2))
+    # buf[0, 1:end] .= buf[0, -1:-1:begin] .= psf.(tf, Fill(zero(Δxy[2]), (s[2] - 1) ÷ 2), (1:(s[2]-1)÷2) .* Δxy[2])
+    # buf[0, 0] = psf(tf, zero(Δxy[1]), zero(Δxy[2]))
+
+    # NOTE: This could be made by concatenating 4 symmetric matrices, that represent a quadrant (optimizes copying and
+    # generating #ops) <02-10-23> 
+
+    # NOTE: `IndirectArrays` can be used to make as few computations as necessary <02-10-23, kunzaatko> 
+    # https://github.com/JuliaArrays/IndirectArrays.jl
+
+    # TODO: There is probably a method to do this even more efficiently. In general, there, will be 8 pixels with the
+    # same distance from origin... Compare it to running on the grid and the goal should be 8× faster <02-10-23> 
+
+    # PERF: This method is comparable to the one above. There is a possibility to optimize it using broadcasting, 
+    # probably. <02-10-23> 
+    cache = Dict{Length,output_type(tf)}()
+    map!(buf, Tuple.(CartesianIndices(buf))) do (x, y)
+        r = hypot(x * Δxy[1], y * Δxy[2])
+        if r ∉ keys(cache)
+            cache[r] = psf(tf, x * Δxy[1], y * Δxy[2])
+        end
+        cache[r]
+    end
+
+    # PERF: No symmetry optimization (only for comparison with optimizations) <02-10-23> 
+    # map!(buf, Tuple.(CartesianIndices(buf))) do (x, y)
+    #     psf(tf, x * Δxy[1], y * Δxy[2])
+    # end
 
     if all(isodd.(wh))
         return buf
