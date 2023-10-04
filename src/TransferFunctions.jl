@@ -18,8 +18,6 @@ using LazyGrids
 abstract type TransferFunction end
 output_type(::TransferFunction) = Complex{Float64}
 
-# NOTE: Allows broadcasting `func.(tf, a:b)`where `func` can be any of `psf`,`otf`,`mtf`, etc.
-Broadcast.broadcastable(tf::ModelTransferFunction) = Ref(tf)
 
 @doc raw"""
 An abstract type for any transfer function that is based on a physical model of an optical system. Contrary to a 
