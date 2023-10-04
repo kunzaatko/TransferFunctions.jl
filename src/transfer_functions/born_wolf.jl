@@ -27,7 +27,7 @@ function BornWolf(λ::Length{R}, NA::Number, nᵢ::Number) where {R<:Real}
     _, NA, nᵢ = promote(ustrip(λ), NA, nᵢ)
     return BornWolf(convert(Quantity{typeof(NA)}, λ), NA, nᵢ)
 end
-@traitimpl SymmetricPupilFunction{BornWolf}
+@traitimpl RadiallySymmetric{BornWolf}
 output_type(::BornWolf{T}) where {T} = T
 
 function psf(tf::BornWolf{T}, r::Length)::T where {T}

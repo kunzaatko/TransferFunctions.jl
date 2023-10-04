@@ -46,13 +46,15 @@ abstract type MeasuredTransferFunction <: TransferFunction end
 @doc """
 If the pupil function of the system is symmetric, the OTF as well as the PSF are radially symmteric which can be used to optimize the calculations
 """
-@traitdef SymmetricPupilFunction{TF<:TransferFunction}
+@traitdef RadiallySymmetric{TF<:TransferFunction}
 
 @derived_dimension Frequency Unitful.𝐋^-1
 
 include("otf.jl")
 include("psf.jl")
 include("pupil.jl")
+
+include("SIM_transfer_function_utils.jl")
 
 include("transfer_functions/gibson_lanni.jl")
 include("transfer_functions/born_wolf.jl")

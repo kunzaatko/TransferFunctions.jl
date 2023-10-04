@@ -2,7 +2,7 @@
 optical transfer function
 """ otf
 
-@inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ClosedFormOTFModel; SymmetricPupilFunction{TF}}
+@inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ClosedFormOTFModel; RadiallySymmetric{TF}}
     otf(tf, hypot(f_x, f_y))
 end
 
@@ -58,7 +58,7 @@ mtf(args...; varargs...) = real.(otf(args...; varargs...))
  """
 ptf(args...; varargs...) = imag.(otf(args...; varargs...))
 
-@traitfn function cutoff_frequency(tf::TF) where {TF <: TransferFunction; SymmetricPupilFunction{TF}}
+@traitfn function cutoff_frequency(tf::TF) where {TF <: TransferFunction; RadiallySymmetric{TF}}
     if all(hasfield.(TF, [:NA, :λ, :nᵢ]))
         return (2 * tf.NA * tf.nᵢ) / tf.λ
     else
@@ -72,7 +72,7 @@ end
     Δxy::Tuple{Length,Length};
     ρ::Union{Real,Tuple{Real,Real}}=(0.0, 1.0),
     inclusive::Union{Bool,Tuple{Bool,Bool}}=(true, true)
-) where {TF <: TransferFunction; SymmetricPupilFunction{TF}}
+) where {TF <: TransferFunction; RadiallySymmetric{TF}}
     if ρ isa Real
         ρ = ρ > 0 ? (0, ρ) : (1 + ρ, 1)
     end

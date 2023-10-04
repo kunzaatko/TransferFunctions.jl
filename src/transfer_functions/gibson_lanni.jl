@@ -24,4 +24,4 @@ Base.@kwdef struct GibsonLanni{T<:Real} <: ClosedFormPSFModel
     t_g::T
 end
 
-@traitimpl SymmetricPupilFunction{GibsonLanni}
+@traitimpl RadiallySymmetric{GibsonLanni}

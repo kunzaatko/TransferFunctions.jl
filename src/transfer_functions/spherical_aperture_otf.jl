@@ -19,7 +19,7 @@ function IdealOTFwithCurvature(λ::Length{R}, NA::Real, nᵢ::Real, curvature::R
     return IdealOTFwithCurvature(convert(Quantity{typeof(NA)}, λ), NA, nᵢ, curvature)
 end
 
-@traitimpl SymmetricPupilFunction{IdealOTFwithCurvature}
+@traitimpl RadiallySymmetric{IdealOTFwithCurvature}
 output_type(::IdealOTFwithCurvature{T}) where {T} = T
 
 function otf(tf::IdealOTFwithCurvature, fᵣ::Frequency)
