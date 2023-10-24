@@ -1,10 +1,16 @@
+using TransferFunctions
+using TransferFunctions: Frequency
 using FillArrays
 using FourierTools
 using Aqua, Test
-using TransferFunctions
-using TransferFunctions: Frequency
 
 @testset "TransferFunctions.jl" begin
+    @testset "Code quality (Aqua.jl)" begin
+        Aqua.test_all(TransferFunctions;
+            # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
+            ambiguities=VERSION >= v"1.1" ? false : (; broken=true)
+        )
+    end
     @testset "OTF" begin
         img = Ones(1024, 1024)
 
