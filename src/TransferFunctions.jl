@@ -65,6 +65,7 @@ include("transfer_functions/measured_otf.jl")
 export psf, otf, mtf, ptf, apsf, ipsf, pupil
 export cutoff_frequency, resolution_limit
 export BornWolf, IdealOTFwithCurvature
+export MeasuredPSF
 export shift
 @reexport using Unitful
 
