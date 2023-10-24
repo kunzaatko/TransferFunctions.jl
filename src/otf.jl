@@ -65,6 +65,7 @@ ptf(args...; varargs...) = imag.(otf(args...; varargs...))
     end
 end
 
+# TODO: Move to SIM tools <24-10-23> 
 @traitfn function otf_support(
     tf::TF,
     wh::Tuple{Integer,Integer},

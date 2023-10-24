@@ -15,6 +15,9 @@ using FFTW
 using Reexport
 using LazyGrids
 
+# IDEA: Add defocus and other aberration modifiers. Look into https://github.com/RainerHeintzmann/PointSpreadFunctions.jl
+# which implements these "simulations" <24-10-23> 
+
 abstract type TransferFunction end
 output_type(::TransferFunction) = Complex{Float64}
 
