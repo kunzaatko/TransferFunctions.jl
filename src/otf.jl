@@ -10,7 +10,6 @@ end
     otf(tf, wh, [Δxy]; δ=(0, 0))
     otf(tf, img, [Δxy];...)
 
-
 Generate an otf for the given transfer function with the size `wh` (size of `img`) and with a pixel distance of `Δxy`
 
 !!! note

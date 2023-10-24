@@ -49,6 +49,7 @@ psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
 ```
 """
 @traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; RadiallySymmetric{TF}}
+    # TODO: Refactor. Make symmetric optimized array generation into its self function <02-10-23> 
     s = all(isodd.(wh)) ? wh : (wh .+ 1)
     buf = centered(Matrix{output_type(tf)}(undef, s...)) # the first quadrant
     # # PERF: This can be made even faster if the we use the same calculation for a same radii in one quadrant, for 
