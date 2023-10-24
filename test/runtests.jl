@@ -8,7 +8,7 @@ using Aqua, Test
     @testset "Code quality (Aqua.jl)" begin
         Aqua.test_all(TransferFunctions;
             # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
-            ambiguities=VERSION >= v"1.1" ? false : (; broken=true)
+            ambiguities=VERSION >= v"1.1" ?  (; broken=true) : false
         )
     end
     @testset "OTF" begin
