@@ -8,7 +8,7 @@ using Aqua, Test
     @testset "Code quality (Aqua.jl)" begin
         Aqua.test_all(TransferFunctions;
             # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
-            ambiguities=VERSION >= v"1.1" ?  (; broken=true) : false
+            ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
         )
     end
     @testset "OTF" begin
@@ -26,6 +26,7 @@ using Aqua, Test
             @test otf(tf, 1 // 250u"nm") isa Number
             @test otf(tf, 512, 64u"nm") isa Matrix
             @test otf(tf, 512, 64u"nm"; δ=(2, 1)) isa Matrix
+            @test otf(tf, 512, 64u"nm"; δ=(2, 1)) == (mtf(tf, 512, 64u"nm"; δ=(2, 1)) .+ im .* ptf(tf, 512, 64u"nm"; δ=(2, 1)))
             @test_throws MethodError otf(tf, (512.1, 512.4), 64u"nm") # NOTE: non-integer image size not possible
 
             ## Method Consistency

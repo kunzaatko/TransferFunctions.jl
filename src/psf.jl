@@ -19,13 +19,13 @@ psf(tf, 0u"nm", 5u"nm")
 psf.(tf, 0u"nm", -400u"nm":100u"nm":400u"nm")
 ```
 """
-@inline @traitfn function psf(tf::TF, x::Length, y::Length) where {TF <: ClosedFormPSFModel; RadiallySymmetric{TF}}
+@inline @traitfn function psf(tf::TF, x::Length, y::Length) where {TF <: ModelPSF; RadiallySymmetric{TF}}
     psf(tf, hypot(x, y))
 end
 
 # TODO: Implement normalizing to sum to 1 <02-10-23> 
 # TODO: Implement expectation of Real valued PSF <02-10-23> 
-@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; !RadiallySymmetric{TF}}
+@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ModelPSF; !RadiallySymmetric{TF}}
     xs = isodd(wh[1]) ? (((-wh[1]-1)÷2):((wh[1]-1)÷2)) .* Δxy[1] : ((-wh[1]-2)÷2):(wh[1]÷2).*Δxy[1]
     ys = isodd(wh[2]) ? (((-wh[2]-1)÷2):((wh[2]-1)÷2)) .* Δxy[2] : ((-wh[2]-2)÷2):(wh[2]÷2).*Δxy[2]
     return centered([psf(tf, x, y) for x in xs, y in ys])
@@ -48,7 +48,7 @@ psf(tf, (11,11), 60u"nm")
 psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
 ```
 """
-@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ClosedFormPSFModel; RadiallySymmetric{TF}}
+@traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ModelPSF; RadiallySymmetric{TF}}
     # TODO: Refactor. Make symmetric optimized array generation into its self function <02-10-23> 
     s = all(isodd.(wh)) ? wh : (wh .+ 1)
     buf = centered(Matrix{output_type(tf)}(undef, s...)) # the first quadrant

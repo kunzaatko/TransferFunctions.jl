@@ -2,7 +2,7 @@
 optical transfer function
 """ otf
 
-@inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ClosedFormOTFModel; RadiallySymmetric{TF}}
+@inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ModelOTF; RadiallySymmetric{TF}}
     otf(tf, hypot(f_x, f_y))
 end
 
@@ -26,7 +26,7 @@ Generate an otf for the given transfer function with the size `wh` (size of `img
 """
 # TODO: This should be shifted for a PSF that is real <15-09-23> 
 function otf(
-    tf::ClosedFormOTFModel,
+    tf::ModelOTF,
     wh::Tuple{Integer,Integer},
     Δxy::Tuple{Length,Length};
     δ::Tuple{<:Real,<:Real}=(0, 0)
@@ -57,6 +57,8 @@ mtf(args...; varargs...) = real.(otf(args...; varargs...))
  """
 ptf(args...; varargs...) = imag.(otf(args...; varargs...))
 
+# TODO: Is this correct? This should be implemented as a method for a different algorithms for determining the
+# cut-off frequency <24-10-23> 
 @traitfn function cutoff_frequency(tf::TF) where {TF <: TransferFunction; RadiallySymmetric{TF}}
     if all(hasfield.(TF, [:NA, :λ, :nᵢ]))
         return (2 * tf.NA * tf.nᵢ) / tf.λ
