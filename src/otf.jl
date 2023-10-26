@@ -13,14 +13,15 @@ end
 Generate an otf for the given transfer function with the size `wh` (size of `img`) and with a pixel distance of `Δxy`
 
 !!! note
-    The pixel size/distance (`Δxy`) is only required for a [model transfer function](@ref ModelTransferFunction). If it
-    is  not provided for a `MeasuredTransferFunction`, then the pixel distance from the measurement is used.
+    The pixel size/distance (`Δxy`) is required for a [model transfer function](@ref ModelTransferFunction) and optional
+    for a [`MeasuredTransferFunction`](@ref).
 
 # Arguments
 * `tf::TransferFunction`: transfer function model/measure to generate the OTF for
 * `wh::Tuple{Integer, Integer}` or `wh::Integer`: (width, height) of the generated OTF. `wh` ↦ `(wh, wh)` if `wh isa Integer`.
 * `Δxy::Tuple{Length, Length}` or `Δxy::Length`: Separation of pixels in the ``x`` and ``y`` dimensions of the generated
-    OTF image. `Δxy` ↦ `(Δxy, Δxy)` if `Δxy isa Length`.
+    OTF image. `Δxy` ↦ `(Δxy, Δxy)` if `Δxy isa Length`. (default: pixel distance from the measurement for a 
+    [`MeasuredTransferFunction`](@ref))
 * `δ::Tuple = (0,0)`: shift of the OTF in the image plane in pixels. This is useful for some algorithms, e.g. in 
     structured illumination microscopy reconstruction algorithms.
 """

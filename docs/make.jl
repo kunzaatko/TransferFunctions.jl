@@ -12,14 +12,22 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://kunzaatko.github.io/TransferFunctions.jl",
         edit_link="trunk",
-        assets=String[],
+        assets=String[]
     ),
     pages=[
         "Home" => "index.md",
-    ],
+        "Theory" => "pages/01_theory.md",
+        "General Interface" => "pages/02_interface.md",
+        "Transfer Functions" => [
+            "Transfer Function Models" => "pages/03_model_tfs.md",
+            "Transfer Functions Measurements" => "pages/04_measured_tfs.md"],
+        "References" => [
+            "API Reference" => "pages/05_apireference.md",
+            "Bibliography References" => "pages/06_references.md"
+        ]]
 )
 
 deploydocs(;
     repo="github.com/kunzaatko/TransferFunctions.jl",
-    devbranch="trunk",
+    devbranch="trunk"
 )

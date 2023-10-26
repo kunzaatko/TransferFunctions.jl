@@ -1,9 +1,3 @@
-@doc raw"""
-This module implements diffraction transfer function models that are widely used in microscopy. The base type for any transfer function is `TransferFunction` and further disambiguates to [`MeasuredTransferFunction`](@ref) and [`ModelTransferFunction`](@ref).
-
-!!! warning
-    All of the models assume *incoherent illumination* sources (i.e. where the radiation from the source is inocoherent). This is an approximation for most optical setups, but one that is used almost universally (e.g. in fluorescence microscopy).
-"""
 module TransferFunctions
 using SimpleTraits
 using Unitful

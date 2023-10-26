@@ -1,14 +1,19 @@
 ```@meta
 CurrentModule = TransferFunctions
 ```
+# TransferFunctions.jl
 
-# TransferFunctions
+_Transfer functions for optical systems_
 
-Documentation for [TransferFunctions](https://github.com/kunzaatko/TransferFunctions.jl).
+## Package Features
 
-```@index
-```
+!!! note
+    If you want to know more about the model of image formation in optical systems (cameras, microscopes, etc.) see
+    [theory](@ref "Theory Overview") section.
 
-```@autodocs
-Modules = [TransferFunctions]
-```
+- Generate OTF, PSF, MTF or PTF from a model or measured data
+- Convert between OTF and PSF for models and measurements
+- Models of transfer functions (OTF and PSF)
+- Define a transfer function from its Zernicke coefficients <!-- TODO:  -->
+- Estimate the Zernicke coefficients for a measured transfer function <!-- TODO: -->
+
