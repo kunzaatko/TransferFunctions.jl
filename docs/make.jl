@@ -22,8 +22,8 @@ makedocs(;
             "Transfer Function Models" => "pages/03_model_tfs.md",
             "Transfer Functions Measurements" => "pages/04_measured_tfs.md"],
         "References" => [
-            "API Reference" => "pages/05_apireference.md",
-            "Bibliography References" => "pages/06_references.md"
+            "API" => "pages/05_apireference.md",
+            "Bibliography" => "pages/06_bibliography.md"
         ]]
 )
 
