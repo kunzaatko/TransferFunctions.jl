@@ -21,6 +21,7 @@ jobs:
         version:
           - '1.6' # oldest possible version
           - '1.9'
+          - '~1.10.0-0'
           - 'nightly'
         os:
           - ubuntu-latest
