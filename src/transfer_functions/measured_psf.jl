@@ -23,7 +23,13 @@ struct MeasuredPSF{T<:Real,R<:Real} <: MeasuredTransferFunction
     Δxy::Tuple{Length,Length}
     "center of the PSF measurement"
     center::Tuple{R,R}
-    # FIX: Check center in-bounds <15-09-23> 
+    # TODO: Add tests for bounds testing is correct for the OffsetArray and base array <28-11-23> 
+    function MeasuredPSF(data, Δxy, center)
+        for (dim, (lims, c)) in enumerate(zip(extrema.(axes(data)), center))
+            lims[1] <= c <= lims[2] || throw(DomainError(center, "The center is not within the data bounds for dimension $dim (axes(data, $dim) =  $(axes(data, dim)))"))
+        end
+        new{eltype(data),eltype(center)}(data, Δxy, center)
+    end
 end
 
 MeasuredPSF(data, Δxy::Length, args...) = MeasuredPSF(data, (Δxy, Δxy), args...)
