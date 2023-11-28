@@ -27,8 +27,9 @@ struct MeasuredPSF{T<:Real,R<:Real} <: MeasuredTransferFunction
 end
 
 MeasuredPSF(data, Δxy::Length, args...) = MeasuredPSF(data, (Δxy, Δxy), args...)
+# TODO: Add note to documentation that the centre inference prefers integer pixel values <28-11-23> 
 # INFO: infer the center to be the center of the array if missing (non-integer if even array)
-MeasuredPSF(data, Δxy::Tuple{Length,Length}) = MeasuredPSF(data, Δxy,)
+MeasuredPSF(data, Δxy::Tuple{Length,Length}) = MeasuredPSF(data, Δxy, size(data) .÷ 2)
 
 # TODO: Test <21-09-23> 
 @doc raw"""
