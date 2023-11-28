@@ -1,3 +1,5 @@
+# TODO: Use a similar trick as in SIMIllumination patterns to abstract over dimensions <28-11-23> 
+# FIX: The center type should not be parametric <28-11-23> 
 using Interpolations, OffsetArrays
 @doc raw"""
 `MeasuredPSF` holds an array of measured data with information about the dimensions of the measurement. This allows
@@ -66,13 +68,11 @@ function psf(tf::MeasuredPSF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Len
     return OffsetMatrix([in_extp_s(x, y) for x in out_x, y in out_y], δ .* (-1))
 end
 
-function Base.show(tf::MeasuredPSF)
-    resolution = tf.Δxy[1] == tf.Δxy[2] ? "$(tf.Δxy[1])" : "$(tf.Δxy[1])×$(tf.Δxy[2])"
-    center = tf.center == tf.data
-    t = "MeasuredPSF(Δxy=$resolution, center=$center)"
-    return t
-end
-
 center(A::AbstractMatrix) = map(ax -> (ax[2] - ax[1]) / 2, extrema.(axes(A)))
 
-# TODO: Implement better `show` for `MeasuredPSF`... The data should be shown outside the dimensions parameters <15-09-23> 
+function Base.show(io::IO, ::MIME"text/plain", tf::MeasuredPSF)
+    showcenter = tf.center == tf.data .÷ 2
+    centerstring = showcenter ? ", center = $(tf.center)" : ""
+    print(io, "MeasuredPSF(Δxy = $(allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)$(centerstring)) with eltype $(eltype(tf.data)) with $(join(map(string, size(tf.data)), "×")) points:\n")
+    Base.print_array(io, tf.data)
+end
