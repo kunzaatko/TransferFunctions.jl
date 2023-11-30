@@ -75,9 +75,9 @@ function psf(tf::MeasuredPSF{<:Real,N}, wh::NTuple{N,Integer}, Δxy::NTuple{N,Le
     return OffsetMatrix([in_extp_s(x, y) for x in out_x, y in out_y], δ .* (-1))
 end
 
-function Base.show(io::IO, ::MIME"text/plain", tf::MeasuredPSF{<:Real,N}) where {N}
+function Base.show(io::IO, ::MIME"text/plain", tf::MeasuredPSF{T,N}) where {T,N}
     showcenter = tf.center == tf.data .÷ 2
     centerstring = showcenter ? ", center = $(tf.center)" : ""
-    print(io, "MeasuredPSF{$N}(Δxy = $(allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)$(centerstring)) with eltype $(eltype(tf.data)) with $(join(map(string, size(tf.data)), "×")) points:\n")
+    print(io, "MeasuredPSF{$N}(Δxy = $(allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)$(centerstring)) with eltype $T with $(join(map(string, size(tf.data)), "×")) points:\n")
     Base.print_array(io, tf.data)
 end

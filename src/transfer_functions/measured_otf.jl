@@ -26,9 +26,9 @@ MeasuredOTF(data, Δxy::Length, args...) = MeasuredOTF(data, tuple(fill(Δxy, nd
 # INFO: infer the center to be the center of the array if missing (non-integer if even array)
 MeasuredOTF(data, Δxy::NTuple) = MeasuredOTF(data, Δxy, size(data) .÷ 2)
 
-function Base.show(io::IO, ::MIME"text/plain", tf::MeasuredOTF{<:Real,N}) where {N}
+function Base.show(io::IO, ::MIME"text/plain", tf::MeasuredOTF{T,N}) where {T,N}
     showcenter = tf.center == tf.data .÷ 2
     centerstring = showcenter ? ", center = $(tf.center)" : ""
-    print(io, "MeasuredOTF{$N}(Δxy = $(allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)$(centerstring)) with eltype $(eltype(tf.data)) with $(join(map(string, size(tf.data)), "×")) points:\n")
+    print(io, "MeasuredOTF{$N}(Δxy = $(allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)$(centerstring)) with eltype $T with $(join(map(string, size(tf.data)), "×")) points:\n")
     Base.print_array(io, tf.data)
 end
