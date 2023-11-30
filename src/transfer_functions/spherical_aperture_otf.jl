@@ -33,7 +33,7 @@ The cutoff frequency can be written in terms of the wavelength ``λ``, distance 
 [^1]:
     > Frequency Analysis of Optical Imaging Systems. In Introduction to Fourier optics; Roberts & Co: Englewood, Colo, 2005; pp. 127–172 ISBN 978-0-9747077-2-3.
 """
-Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ModelOTF
+Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ModelOTF{2}
     λ::Length{T}
     NA::T
     nᵢ::T = 4 // 3

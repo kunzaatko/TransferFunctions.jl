@@ -5,14 +5,30 @@ sample the OTF at arbitrary locations not included in the initial measurement (i
 similarly to how one could use a model). This can be useful for using the same OTF measurement for an acquisition with 
 a different pixelsize or in super resolution applications.
 """
-struct MeasuredOTF{T<:Real,R<:Real} <: MeasuredTransferFunction
+struct MeasuredOTF{T<:Real,N} <: MeasuredTransferFunction{N}
     "array of the measured OTF"
-    data::AbstractMatrix{T} # TODO: General dimension array <15-09-23> 
+    data::AbstractArray{T,N}
     "dimensions of the `data` array"
-    Δxy::Tuple{Length,Length}
+    Δxy::NTuple{N,Length}
     "center of the PSF measurement"
-
-    center::Tuple{R,R}
-    # FIX: Check center in-bounds <15-09-23> 
+    center::NTuple{N,Real}
+    function MeasuredOTF(data, Δxy, center)
+        for (dim, (lims, c)) in enumerate(zip(extrema.(axes(data)), center))
+            lims[1] <= c <= lims[2] || throw(DomainError(center, "The center is not within the data bounds for dimension $dim (axes(data, $dim) =  $(axes(data, dim)))"))
+        end
+        new{eltype(data),ndims(data)}(data, Δxy, center)
+    end
 end
 
+MeasuredOTF(data, Δxy::Length, args...) = MeasuredOTF(data, tuple(fill(Δxy, ndims(data))...), args...)
+
+# TODO: Add note to documentation that the centre inference prefers integer pixel values <28-11-23> 
+# INFO: infer the center to be the center of the array if missing (non-integer if even array)
+MeasuredOTF(data, Δxy::NTuple) = MeasuredOTF(data, Δxy, size(data) .÷ 2)
+
+function Base.show(io::IO, ::MIME"text/plain", tf::MeasuredOTF{<:Real,N}) where {N}
+    showcenter = tf.center == tf.data .÷ 2
+    centerstring = showcenter ? ", center = $(tf.center)" : ""
+    print(io, "MeasuredOTF{$N}(Δxy = $(allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)$(centerstring)) with eltype $(eltype(tf.data)) with $(join(map(string, size(tf.data)), "×")) points:\n")
+    Base.print_array(io, tf.data)
+end

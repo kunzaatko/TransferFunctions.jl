@@ -1,7 +1,12 @@
+# TODO: Add docs for implementation <02-10-23> 
+abstract type ModelOTF{N} <: ModelTransferFunction{N} end
+
+# TODO: Add docs <28-11-23> 
 @doc """
 optical transfer function
 """ otf
 
+# TODO: This should accept as many dimensions as the transfer function allows similar to IlluminationPatterns <28-11-23> 
 @inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ModelOTF; RadiallySymmetric{TF}}
     otf(tf, hypot(f_x, f_y))
 end

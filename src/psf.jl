@@ -1,3 +1,6 @@
+# TODO: Add docs for implementation <02-10-23> 
+abstract type ModelPSF{N} <: ModelTransferFunction{N} end
+
 @doc """
   Intensity point spread function i.e. the intensity ratio and phase shift of the sample intensity density
  """ psf

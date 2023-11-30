@@ -11,11 +11,14 @@ using Aqua, Test
             ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
         )
     end
+
     @testset "OTF" begin
         img = Ones(1024, 1024)
 
         @testset "MeasuredOTF" begin
-            # TODO:  <24-10-23> 
+            @test_throws DomainError MeasuredOTF(ones(3, 3, 3), 32u"nm", (4, 1, 1))
+            @test MeasuredOTF(ones(3, 3), 32u"nm") isa MeasuredOTF{<:Real,2}
+            @test MeasuredOTF(ones(3, 3, 3), 32u"nm") isa MeasuredOTF{<:Real,3}
         end
 
         @testset "ModelOTF" begin
@@ -73,6 +76,13 @@ using Aqua, Test
 
     @testset "PSF" begin
         img = Ones(1024, 1024)
+
+        @testset "MeasuredPSF" begin
+            @test_throws DomainError MeasuredPSF(ones(3, 3, 3), 32u"nm", (4, 1, 1))
+            @test MeasuredPSF(ones(3, 3), 32u"nm") isa MeasuredPSF{<:Real,2}
+            @test MeasuredPSF(ones(3, 3, 3), 32u"nm") isa MeasuredPSF{<:Real,3}
+        end
+
         @testset "ModelPSF" begin
             using OffsetArrays
             tf = BornWolf(488u"nm", 1.4, 1.7)
@@ -87,7 +97,6 @@ using Aqua, Test
             ## Method Consistency
             @test psf(tf, 512, (64u"nm", 64u"nm")) == psf(tf, (512, 512), 64u"nm")
             @test psf(tf, img, 54u"nm") == psf(tf, img, (54u"nm", 54u"nm"))
-
         end
     end
 end
