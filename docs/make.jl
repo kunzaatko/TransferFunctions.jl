@@ -24,7 +24,9 @@ makedocs(;
         "References" => [
             "API" => "pages/05_apireference.md",
             "Bibliography" => "pages/06_bibliography.md"
-        ]]
+        ]],
+    # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here
+    doctest = false
 )
 
 deploydocs(;

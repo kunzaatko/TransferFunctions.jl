@@ -18,10 +18,12 @@ using Aqua, Test, Documenter
     end
 
 
-    # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
-    @testset "DocTests" begin
-        DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(using TransferFunctions); recursive=true)
-        doctest(TransferFunctions)
+    if !haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux"
+        @testset "DocTests" begin
+            # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
+            DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(using TransferFunctions); recursive=true)
+            doctest(TransferFunctions)
+        end
     end
 
     @testset "OTF" begin
