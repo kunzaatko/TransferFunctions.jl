@@ -5,12 +5,17 @@ using FourierTools
 using Aqua, Test, Documenter
 
 @testset "TransferFunctions.jl" begin
-    @testset "Code quality (Aqua.jl)" begin
-        Aqua.test_all(TransferFunctions;
-            # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
-            ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
-        )
+    if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "GITHUB_ACTIONS")
+        @testset "Code quality (Aqua.jl)" begin
+            Aqua.test_all(TransferFunctions;
+                # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
+                ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
+            )
+        end
+    else
+        @info "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
     end
+
 
     # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
     @testset "DocTests" begin
