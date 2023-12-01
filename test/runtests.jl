@@ -7,7 +7,8 @@ using Aqua, Test, Documenter
 @testset "TransferFunctions.jl" begin
     if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "GITHUB_ACTIONS")
         @testset "Code quality (Aqua.jl)" begin
-            Aqua.test_all(TransferFunctions;
+            Aqua.test_all(
+                TransferFunctions;
                 # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
                 ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
             )

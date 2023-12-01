@@ -1,3 +1,4 @@
+# FIX: Add support for N-dims <30-11-23> 
 # TODO: Add docs for implementation <02-10-23> 
 abstract type ModelPSF{N} <: ModelTransferFunction{N} end
 
@@ -114,6 +115,7 @@ psf(tf::TransferFunction, wh::Integer, args...) = psf(tf, (wh, wh), args...)
 # multiplication <15-07-23> 
 psf(tf::TransferFunction, img::AbstractArray, args...) = psf(tf, size(img), args...)
 
+# FIX: This is not the correct name!! <30-11-23> 
 @doc """
 Amplitude point spread function
 """ apsf

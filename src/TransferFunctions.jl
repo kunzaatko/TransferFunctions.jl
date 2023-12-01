@@ -21,7 +21,9 @@ using LazyGrids
 # type system
 include("common.jl")
 
-# API
+# Functions
+
+# POLICY: Any function that requires the image dimensions `Δxy` should have is as its last argument!
 include("otf.jl")
 include("psf.jl")
 include("pupil.jl")

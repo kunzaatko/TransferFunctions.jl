@@ -74,6 +74,7 @@ ptf(args...; varargs...) = imag.(otf(args...; varargs...))
 end
 
 # TODO: Move to SIM tools <24-10-23> 
+# FIX: Add support for N-dim <30-11-23> 
 @traitfn function otf_support(
     tf::TF,
     wh::Tuple{Integer,Integer},
@@ -91,6 +92,7 @@ end
     right = inclusive[2] ? hypot.(fxs, fys) .< ρ[2] * cutoff_frequency(tf) : hypot.(fxs, fys) .< ρ[2] * cutoff_frequency(tf)
     return left .* right
 end
+# FIX: Adhere to policy <30-11-23> 
 otf_support(tf, wh::Integer, args...; varargs...) = otf_support(tf, (wh, wh), args...; varargs...)
 otf_support(tf, wh::Tuple, Δxy::Length, args...; varargs...) = otf_support(tf, wh, (Δxy, Δxy), args...; varargs...)
 otf_support(tf, img::AbstractArray, args...; varargs...) = otf_support(tf, size(img), args...; varargs...)
