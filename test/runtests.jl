@@ -2,7 +2,7 @@ using TransferFunctions
 using TransferFunctions: Frequency
 using FillArrays
 using FourierTools
-using Aqua, Test
+using Aqua, Test, Documenter
 
 @testset "TransferFunctions.jl" begin
     @testset "Code quality (Aqua.jl)" begin
@@ -10,6 +10,12 @@ using Aqua, Test
             # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
             ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
         )
+    end
+
+    # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
+    @testset "DocTests" begin
+        DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(using TransferFunctions); recursive=true)
+        doctest(TransferFunctions)
     end
 
     @testset "OTF" begin
