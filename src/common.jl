@@ -2,9 +2,6 @@
 abstract type TransferFunction{N} end
 const TF{N} = TransferFunction{N}
 
-# FIX: Is this useful? Shouldn't it be implemented default dispatch as in IlluminationPatterns <28-11-23> 
-output_type(::TransferFunction{N}) where {N} = Complex{Float64}
-
 # TODO: Update docs <24-10-23> 
 @doc raw"""
 An abstract type for any transfer function that is based on a physical model of an optical system. Contrary to a 

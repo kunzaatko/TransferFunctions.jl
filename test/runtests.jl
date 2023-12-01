@@ -113,4 +113,16 @@ using Aqua, Test, Documenter
             @test psf(tf, img, 54u"nm") == psf(tf, img, (54u"nm", 54u"nm"))
         end
     end
+
+    @testset "interfaces from Base" begin
+        psf1 = BornWolf(488u"nm", 1, 1.7)
+        psf2 = BornWolf(488u"nm", 1.0, 1.7)
+
+        # TODO: test `isequal` on missing values and equivalence operator on missing values <19-11-23> 
+        # hmissing = Harmonic(missing, π / 4, 2 / 61u"nm", 0)
+
+        @test psf1 == psf2
+        @test hash(psf1) == hash(psf2)
+        @test isequal(psf1, psf2)
+    end
 end
