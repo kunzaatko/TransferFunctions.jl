@@ -9,8 +9,7 @@ using Aqua, Test, Documenter
         @testset "Code quality (Aqua.jl)" begin
             Aqua.test_all(
                 TransferFunctions;
-                # https://github.com/JuliaArrays/FillArrays.jl/issues/105#issuecomment-1582516319
-                ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
+                # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
             )
         end
     else
