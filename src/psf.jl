@@ -106,7 +106,7 @@ function psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Lengt
     tf_psf = centered(fftshift(ifft(tf_otf)))
     # TODO: Is this correct? How about defocused and other aberrations, can they make the intensity in the center lower?
     # is this even true for a PSF at the focal plane?
-    return tf_psf ./ tf_psf[0, 0]
+    return tf_psf ./ sum(tf_psf)
 end
 
 psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length) = psf(tf, wh, (Δxy, Δxy))
