@@ -27,6 +27,8 @@ psf.(tf, 0u"nm", -400u"nm":100u"nm":400u"nm")
     psf(tf, hypot(x, y))
 end
 
+# TODO: There are different approaches to normalization. There is the L∞ constraint that ‖psf‖∞ = 1 and the L1
+# constraint that assures the preservation of photometry i.e. ‖psf‖₁ = 1 (sum) <10-12-23> 
 # TODO: Implement normalizing to sum to 1 <02-10-23> 
 # TODO: Implement expectation of Real valued PSF <02-10-23> 
 @traitfn function psf(tf::TF, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length}) where {TF <: ModelPSF; !RadiallySymmetric{TF}}
@@ -101,11 +103,14 @@ psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
     end
 end
 
-function psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})
+# NOTE: Has to be defined for N-dims generally and not specific dimensions because otherwise, there could be ambiguity 
+# if a concrete type implements generic N-dim `psf` method <10-12-23> 
+function psf(tf::TransferFunction{N}, wh::NTuple{N,Integer}, Δxy::NTuple{N,Length}) where {N}
     tf_otf = otf(tf, wh, Δxy)
     tf_psf = centered(fftshift(ifft(tf_otf)))
     # TODO: Is this correct? How about defocused and other aberrations, can they make the intensity in the center lower?
     # is this even true for a PSF at the focal plane?
+    # FIX: This is not correct for a Ndim PSF only for 2D <10-12-23> 
     return tf_psf ./ sum(tf_psf)
 end
 

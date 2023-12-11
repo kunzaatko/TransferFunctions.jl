@@ -44,7 +44,9 @@ function otf(
         fys .- δ[2] / (Δxy[2] * wh[2]))
 end
 
-function otf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})
+# NOTE: Has to be defined for N-dims generally and not specific dimensions because otherwise, there could be ambiguity 
+# if a concrete type implements generic N-dim `otf` method <10-12-23> 
+function otf(tf::TransferFunction{N}, wh::NTuple{N,Integer}, Δxy::NTuple{N,Length}) where {N}
     tf_psf = psf(tf, wh, Δxy)
     return fft(tf_psf) ./ sum(tf_psf)
 end
