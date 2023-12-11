@@ -17,7 +17,7 @@ using Aqua, Test, Documenter
         @info "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
     end
 
-
+    # FIX: When running locally, do not ask for SSH key password <10-12-23> 
     if !haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux"
         @testset "DocTests" begin
             # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage

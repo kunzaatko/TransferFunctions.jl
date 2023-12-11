@@ -20,7 +20,7 @@ struct MeasuredOTF{T<:Real,N} <: MeasuredTransferFunction{N}
     end
 end
 
-MeasuredOTF(data, Δxy::Length, args...) = MeasuredOTF(data, tuple(fill(Δxy, ndims(data))...), args...)
+MeasuredOTF(data, Δxy::Length, args...) = MeasuredOTF(data, Tuple(fill(Δxy, ndims(data))), args...)
 
 # TODO: Add note to documentation that the centre inference prefers integer pixel values <28-11-23> 
 # INFO: infer the center to be the center of the array if missing (non-integer if even array)
