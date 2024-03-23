@@ -16,4 +16,3 @@ _Transfer functions for optical systems_
 - Models of transfer functions (OTF and PSF)
 - Define a transfer function from its Zernicke coefficients <!-- TODO:  -->
 - Estimate the Zernicke coefficients for a measured transfer function <!-- TODO: -->
-

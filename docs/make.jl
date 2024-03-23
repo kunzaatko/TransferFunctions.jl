@@ -1,7 +1,12 @@
 using TransferFunctions
-using Documenter
+using Documenter, DocumenterCitations
 
 DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(using TransferFunctions); recursive=true)
+
+bib = CitationBibliography(
+    joinpath(@__DIR__, "src", "refs.bib");
+    # style=:authoryear
+)
 
 makedocs(;
     modules=[TransferFunctions],
@@ -25,6 +30,7 @@ makedocs(;
             "API" => "pages/05_apireference.md",
             "Bibliography" => "pages/06_bibliography.md"
         ]],
+    plugins=[bib]
     # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here
     doctest = false
 )
