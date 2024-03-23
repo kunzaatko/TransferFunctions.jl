@@ -30,7 +30,7 @@ makedocs(;
             "API" => "pages/05_apireference.md",
             "Bibliography" => "pages/06_bibliography.md"
         ]],
-    plugins=[bib]
+    plugins=[bib],
     # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here
     doctest = false
 )
