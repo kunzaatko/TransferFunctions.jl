@@ -34,5 +34,6 @@ function psf(tf::BornWolf{T}, r::Length)::T where {T}
     k = 2π / tf.λ
     k₀ = k / tf.nᵢ
     # FIX: Is this correct?! <14-07-23> 
+    # FIX: normalize <10-12-23> 
     return r == zero(r) ? 1 : (2besselj1(k₀ * r * tf.NA) / (k₀ * r * tf.NA))^2
 end

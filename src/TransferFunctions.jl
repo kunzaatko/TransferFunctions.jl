@@ -28,8 +28,12 @@ include("otf.jl")
 include("psf.jl")
 include("pupil.jl")
 
+# Helper API
+include("transfer_function_api.jl")
+
 # utils
 include("SIM_transfer_function_utils.jl")
+include("utils.jl")
 
 # models
 include("transfer_functions/gibson_lanni.jl")

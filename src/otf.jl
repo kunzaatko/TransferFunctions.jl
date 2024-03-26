@@ -44,10 +44,15 @@ function otf(
         fys .- δ[2] / (Δxy[2] * wh[2]))
 end
 
+
 # NOTE: Has to be defined for N-dims generally and not specific dimensions because otherwise, there could be ambiguity 
 # if a concrete type implements generic N-dim `otf` method <10-12-23> 
 function otf(tf::TransferFunction{N}, wh::NTuple{N,Integer}, Δxy::NTuple{N,Length}) where {N}
-    tf_psf = psf(tf, wh, Δxy)
+    tf_psf = ifftshift(psf(tf, wh, Δxy).parent)
+    # FIX: This is not correct for a Ndim OTF only for 2D <10-12-23> 
+    # FIX!: array must be typed because of `fft` method... This should be ensured by the `psf` method and not by this 
+    # function <10-12-23> 
+    tf_psf = promote_type(unique(typeof.(tf_psf[:]))...).(tf_psf)
     return fft(tf_psf) ./ sum(tf_psf)
 end
 

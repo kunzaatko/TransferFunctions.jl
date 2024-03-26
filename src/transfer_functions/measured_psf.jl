@@ -1,4 +1,5 @@
 # FIX: Should allow Complex data. Interpolation does not support it... <30-11-23> 
+# FIX: Specialize on OffsetArrays for the constructors <10-12-23> 
 using Interpolations, OffsetArrays
 @doc raw"""
 `MeasuredPSF` holds an array of measured data with information about the dimensions of the measurement. This allows
@@ -33,8 +34,10 @@ end
 
 MeasuredPSF(data, Δxy::Length, args...) = MeasuredPSF(data, Tuple(fill(Δxy, ndims(data))), args...)
 # TODO: Add note to documentation that the centre inference prefers integer pixel values <28-11-23> 
-# INFO: infer the center to be the center of the array if missing (non-integer if even array)
-MeasuredPSF(data, Δxy::NTuple) = MeasuredPSF(data, Δxy, size(data) .÷ 2)
+
+# NOTE: `roundupcenter` is intentionally not used here because this is the center of the measured data... Not the
+# working array <10-12-23> 
+MeasuredPSF(data, Δxy::NTuple) = MeasuredPSF(data, Δxy, (size(data) .+ 1) ./ 2)
 
 # TODO: Test <21-09-23> 
 @doc raw"""
@@ -57,7 +60,7 @@ psf(tf::MeasuredPSF{<:Real,N}, wh::NTuple{N,Integer}) where {N} = psf(tf, wh, tf
 function psf(tf::MeasuredPSF{<:Real,N}, wh::NTuple{N,Integer}, Δxy::NTuple{N,Length};
     intp=BSpline(Cubic(Flat(OnGrid()))),
     extp=zero(eltype(tf.data)),
-    δ=(wh .÷ 2)) where {N}
+    δ=roundupcenter(wh)) where {N}
 
     # FIX: This does not work for any dimension <30-11-23> 
     in_x, in_y = (range(tf.Δxy[i], size(tf.data, i) * tf.Δxy[i]; length=size(tf.data, i)) .- (tf.center[i] + 1) * tf.Δxy[i] for i in 1:2)

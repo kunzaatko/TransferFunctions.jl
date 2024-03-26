@@ -27,6 +27,7 @@ psf.(tf, 0u"nm", -400u"nm":100u"nm":400u"nm")
     psf(tf, hypot(x, y))
 end
 
+# FIX: This is ambiguous and should be defined for general dimensions <10-12-23> 
 # TODO: There are different approaches to normalization. There is the L∞ constraint that ‖psf‖∞ = 1 and the L1
 # constraint that assures the preservation of photometry i.e. ‖psf‖₁ = 1 (sum) <10-12-23> 
 # TODO: Implement normalizing to sum to 1 <02-10-23> 
@@ -114,11 +115,11 @@ function psf(tf::TransferFunction{N}, wh::NTuple{N,Integer}, Δxy::NTuple{N,Leng
     return tf_psf ./ sum(tf_psf)
 end
 
-psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length) = psf(tf, wh, (Δxy, Δxy))
-psf(tf::TransferFunction, wh::Integer, args...) = psf(tf, (wh, wh), args...)
+psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length; vargs...) = psf(tf, wh, (Δxy, Δxy); vargs...)
+psf(tf::TransferFunction, wh::Integer, args...; vargs...) = psf(tf, (wh, wh), args...; vargs...)
 # FIX: This doesn't strictly speaking make sense, since the PSF is used for convolution and not for term-wise
 # multiplication <15-07-23> 
-psf(tf::TransferFunction, img::AbstractArray, args...) = psf(tf, size(img), args...)
+psf(tf::TransferFunction, img::AbstractArray, args...; vargs...) = psf(tf, size(img), args...; vargs...)
 
 # FIX: This is not the correct name!! <30-11-23> 
 @doc """
@@ -129,7 +130,7 @@ Amplitude point spread function
     apsf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})::OffsetMatrix{<:Real}
     apsf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length)::OffsetMatrix{<:Real}
 """
-apsf(tf::TransferFunction, args...; varargs...) = imag.(psf(tf, args...; varargs...))
+apsf(tf::TransferFunction, args...; vargs...) = imag.(psf(tf, args...; vargs...))
 
 @doc """
 Intensity point spread function
@@ -139,7 +140,7 @@ Intensity point spread function
      ipsf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Tuple{Length,Length})::OffsetMatrix{<:Real}
      ipsf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length)::OffsetMatrix{<:Real}
  """
-ipsf(tf::TransferFunction, args...; varargs...) = real.(psf(tf, args...; varargs...))
+ipsf(tf::TransferFunction, args...; vargs...) = real.(psf(tf, args...; vargs...))
 
 function resolution_limit(tf::TF) where {TF<:TransferFunction}
     # TODO: Is this correct?
