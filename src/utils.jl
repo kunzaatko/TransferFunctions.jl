@@ -1,5 +1,5 @@
 using ImageFiltering: padarray, Fill
-using SpecialFunctions, FourierTools # , IterTools
+using SpecialFunctions
 
 # NOTE: Currently it is not used anywhere else anyway, so it is quite cheap to just throw it away. <27-08-24> 
 # TODO: This should be probably left to the `ImageFiltering.jl` package. It already has a function that pads the
