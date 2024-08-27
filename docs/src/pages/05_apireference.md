@@ -1,4 +1,61 @@
-```@autodocs
-Modules = [TransferFunctions]
-Order   = [:function, :type]
+```@meta
+CurrentModule = TransferFunctions
+```
+
+```@docs
+TransferFunction
+```
+
+```@docs
+MeasuredPSF
+MeasuredOTF
+```
+
+```@docs
+SampledTransferFunction
+```
+
+# Functions
+```@docs
+psf
+ipsf
+apsf
+otf
+pupil
+ptf
+mtf
+```
+
+# Utility Functions and Traits
+```@docs
+roundupcenter
+exactcenter
+```
+
+```@docs
+RadiallySymmetric
+```
+
+# Apodization
+
+```@docs
+apodize
+taperedges
+```
+
+Apodization Functions
+```@docs
+Bartlett
+Blackman
+Connes
+Cosine
+Gaussian
+Hamming
+Hanning
+Welch
+```
+
+# To Deprecate
+```@docs
+padtosize
 ```

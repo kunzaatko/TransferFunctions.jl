@@ -1,7 +1,14 @@
 ```@meta
 CurrentModule = TransferFunctions
 ```
-# Models
-- [`IdealOTFwithCurvature`](@ref)
-- [`BornWolf`](@ref)
-- [`GibsonLanni`](@ref)
+# OTF Models
+
+```@docs
+IdealOTFwithCurvature
+```
+
+# PSF Models
+```@docs
+BornWolf
+GibsonLanni
+```
