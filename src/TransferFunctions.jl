@@ -13,7 +13,6 @@ using FillArrays
 using FFTW
 using LazyGrids
 using Interpolations
-using Tullio
 
 using Base: Indices
 
