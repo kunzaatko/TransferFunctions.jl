@@ -28,7 +28,7 @@ function BornWolf(λ::Length{R}, NA::Number, nᵢ::Number) where {R<:Real}
     return BornWolf(convert(Quantity{typeof(NA)}, λ), NA, nᵢ)
 end
 @traitimpl RadiallySymmetric{BornWolf}
-output_type(::BornWolf{T}) where {T} = T
+preferred_type(::Type{BornWolf{T}}) where {T} = T
 
 function psf(tf::BornWolf{T}, r::Length)::T where {T}
     k = 2π / tf.λ

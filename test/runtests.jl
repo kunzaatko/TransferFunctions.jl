@@ -17,12 +17,37 @@ using Aqua, Test, Documenter
     end
 
     # FIX: When running locally, do not ask for SSH key password <10-12-23> 
-    if !haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux"
+    if haskey(ENV, "RUNTESTS_FULL") && (!haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux")
         @testset "DocTests" begin
             # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
             DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(using TransferFunctions); recursive=true)
             doctest(TransferFunctions)
         end
+    else
+        @info "Skipping Documenter.jl doctests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
+    end
+
+    @testset "utils.jl + types.jl" begin
+        using TransferFunctions: PixelSize, Coordinate, Frequency, Length
+        using OffsetArrays
+        @test 1 / 32u"nm" isa Frequency
+        Δkx = 1 / 61u"nm"
+        @test 1 / Δkx isa Length
+        @test (31.5u"nm", 40u"nm", 50u"nm") isa PixelSize{3}
+        @test TransferFunctions.fillsize(31u"nm", 2) == (31u"nm", 31u"nm")
+        @test (3, 3, 3) isa Coordinate{3}
+        @test (3.0, 3.0, 3.0) isa Coordinate{3}
+        @test (2.4, 3, 3) isa Coordinate{3} # NOTE: Must accept diverse types <26-08-24> 
+        @test TransferFunctions.roundupcenter(ones(3, 4, 2)) == (2, 3, 2)
+        @test TransferFunctions.roundupcenter(OffsetArray(ones(3, 3, 3), -2, -2, -2)) == Tuple(zeros(3))
+        @test TransferFunctions.roundupcenter(OffsetArray(ones(4, 3, 3), -2, -2, -2)) == (1, 0, 0)
+        @test TransferFunctions.exactcenter(ones(3, 4, 2)) == (2, 2.5, 1.5)
+        @test TransferFunctions.exactcenter(OffsetArray(ones(3, 3, 3), -2, -2, -2)) == Tuple(zeros(3))
+        @test TransferFunctions.exactcenter(OffsetArray(ones(4, 3, 3), -2, -2, -2)) == (0.5, 0, 0)
+        @test TransferFunctions.contained(ones(3, 4, 2), (2, 3, 1))
+        @test TransferFunctions.contained(ones(3, 4, 2), (8, 3, 1)) == false
+        @test TransferFunctions.contained(OffsetArray(ones(3, 3, 3), -2, -2, -2), (-1, 1, 0))
+        @test TransferFunctions.contained(OffsetArray(ones(3, 3, 3), -2, -2, -2), (-2, 1, 0)) == false
     end
 
     @testset "OTF" begin
@@ -102,14 +127,24 @@ using Aqua, Test, Documenter
 
             ## Method Availability
             @test psf(tf, 250u"nm", 200u"nm") isa Number
-            @test psf(tf, 250u"nm") isa Number
-            @test psf(tf, 512, 64u"nm") isa OffsetArrays.OffsetMatrix
-            # TODO: Add when shift in generating is implemented <24-10-23>  @test psf(tf, 512, 64u"nm"; δ=(2, 1)) isa Matrix
-            @test_throws MethodError psf(tf, (512.1, 512.4), 64u"nm") # NOTE: non-integer image size not possible
+            @test psf(tf, 250u"nm") isa Number # FIX: This should function only for a RadiallySymmetric psf <26-08-24> 
+        end
 
-            ## Method Consistency
-            @test psf(tf, 512, (64u"nm", 64u"nm")) == psf(tf, (512, 512), 64u"nm")
-            @test psf(tf, img, 54u"nm") == psf(tf, img, (54u"nm", 54u"nm"))
+        @testset "SampledPSF" begin
+            using OffsetArrays
+            tf = BornWolf(488u"nm", 1.4, 1.7)
+
+            ## Method Availability
+            @test SampledPSF(tf, 64u"nm") isa SampledPSF
+            @test SampledPSF(tf, (64u"nm", 32u"nm")) isa SampledPSF
+            @test SampledPSF(tf, 64u"nm", (1, 2)) isa SampledPSF
+
+            s_tf = SampledPSF(tf, 64u"nm")
+            @test psf(s_tf, (512, 512)) isa OffsetArrays.OffsetMatrix
+            @test psf(s_tf, img) isa OffsetArrays.OffsetMatrix
+
+            # TODO: Add when shift in generating is implemented <24-10-23>  @test psf(tf, 512, 64u"nm"; δ=(2, 1)) isa Matrix
+            @test_throws MethodError psf(s_tf, (512.1, 512.4)) # NOTE: non-integer image size not possible
         end
     end
 

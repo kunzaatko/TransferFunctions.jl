@@ -1,5 +1,11 @@
 # FIX: Should allow Complex data. Interpolation does not support it... <30-11-23> 
 # FIX: Specialize on OffsetArrays for the constructors <10-12-23> 
+
+# FIX: This should instead by part of the measurement if desired <26-08-24> 
+#> # TODO: Make a trait applies to a circularly symmetric PSF... That is to assume that the data is symmetric and the
+#> # non-compliance is caused only by noise. That can then be used for averaging the measurement if a `r::Length` is
+#> # supplied to the sampling procedure <15-09-23> 
+
 using Interpolations, OffsetArrays
 @doc raw"""
 `MeasuredPSF` holds an array of measured data with information about the dimensions of the measurement. This allows
@@ -10,35 +16,36 @@ a different pixelsize or in super resolution applications.
 
 A measurement can be done for example using an image of subresolution microspheres.
 """
-struct MeasuredPSF{T<:Real,N} <: MeasuredTransferFunction{N}
+struct MeasuredPSF{T<:Real,N}
     # TODO: This should be an OffsetArray instead and a conversion should be made if it is not in order to be able to
     # sample at arbitrary locations from the center. Maybe convert by using the maximum pixel or store the center in the
     # struct computed as the maximum of some interpolation? <15-09-23> 
-    # TODO: Make a trait applies to a circularly symmetric PSF... That is to assume that the data is symmetric and the
-    # non-compliance is caused only by noise. That can then be used for averaging the measurement if a `r::Length` is
-    # supplied to the sampling procedure <15-09-23> 
     "array of the measured PSF"
     data::AbstractArray{T,N}
     "dimensions of the `data` array"
-    Δxy::NTuple{N,Length}
+    Δxy::PixelSize{N}
     "center of the PSF measurement"
-    center::NTuple{N,Real}
-    # TODO: Add tests for bounds testing is correct for the OffsetArray and base array <28-11-23> 
-    function MeasuredPSF(data, Δxy, center)
-        for (dim, (lims, c)) in enumerate(zip(extrema.(axes(data)), center))
-            lims[1] <= c <= lims[2] || throw(DomainError(center, "The center is not within the data bounds for dimension $dim (axes(data, $dim) =  $(axes(data, dim)))"))
-        end
-        new{eltype(data),ndims(data)}(data, Δxy, center)
+    center::Coordinate{N}
+    function MeasuredPSF(data::AbstractArray{T,N}, Δxy::PixelSize{N}, center::Coordinate{N}) where {T<:Real,N}
+        # FIX: Should this in fact be an error? If we measure based on a bead that is outside our field of view <26-08-24> 
+        contained(data, center) || throw(DomainError(center, "The center is not within the data bounds: $center ∉ $(axes(data))"))
+        new{T,N}(data, Δxy, center)
     end
 end
 
-MeasuredPSF(data, Δxy::Length, args...) = MeasuredPSF(data, Tuple(fill(Δxy, ndims(data))), args...)
+# NOTE: step 1 - fill in the pixel-size
+MeasuredPSF(data::AbstractArray{T,N}, Δxy::Length, args...) where {T,N} = MeasuredPSF(data, fillsize(Δxy, N), args...)
+# NOTE: step 2 - fill in the center
+MeasuredPSF(data::AbstractArray{T,N}, Δxy::PixelSize{N}) where {T,N} = MeasuredPSF(data, Δxy, exactcenter(data))
 # TODO: Add note to documentation that the centre inference prefers integer pixel values <28-11-23> 
 
+# TODO: This should accept an `OffsetArray` for the center <26-08-24> 
 # NOTE: `roundupcenter` is intentionally not used here because this is the center of the measured data... Not the
 # working array <10-12-23> 
-MeasuredPSF(data, Δxy::NTuple) = MeasuredPSF(data, Δxy, (size(data) .+ 1) ./ 2)
+# MeasuredPSF(data::OffsetArray{}, Δxy::PixelSize{N}) where {T,N} = MeasuredPSF(data, Δxy, exactcenter(data))
 
+
+# FIX: This should be a method on the SampledTransferFunction type <26-08-24> 
 # TODO: Test <21-09-23> 
 @doc raw"""
     psf(tf::MeasuredPSF, wh::Tuple{Integer,Integer} [,Δxy::Tuple{Length,Length}]; intp, extp)::OffsetMatrix

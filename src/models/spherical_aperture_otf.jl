@@ -3,7 +3,9 @@
 
 Ideal (aberration free) OTF of a diffraction limited imaging system with incoherent light with the cutoff-frequency `ρ₀`
 
-The OTF is derived from the diffraction caused by the exit pupil of the system and disregards the effect of the entrance pupil... thus assumes no reshaping of the wavefronts in the optical system. The exit pupil, being located in the optical system just before the light reaches the image plane, has a greater effect on the optical system OTF.
+The OTF is derived from the diffraction caused by the exit pupil of the system and disregards the effect of the entrance
+pupil... thus assumes no reshaping of the wavefronts in the optical system. The exit pupil, being located in the optical
+system just before the light reaches the image plane, has a greater effect on the optical system OTF.
 
 See also `IdealCircularPupilPSF` (TODO)
 
@@ -53,6 +55,8 @@ function IdealOTFwithCurvature(λ::Length{R}, NA::Real, nᵢ::Real, curvature::R
     return IdealOTFwithCurvature(convert(Quantity{typeof(NA)}, λ), NA, nᵢ, curvature)
 end
 
+# TODO: It should be possible to provide only a selected subset of dimensions of the transfer function that are
+# RadiallySymmetric. It would be helpful for the defocus `z` <26-08-24> 
 @traitimpl RadiallySymmetric{IdealOTFwithCurvature}
 output_type(::IdealOTFwithCurvature{T}) where {T} = T
 

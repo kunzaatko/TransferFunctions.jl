@@ -25,3 +25,4 @@ Base.@kwdef struct GibsonLanni{T<:Real} <: ModelPSF{2}
 end
 
 @traitimpl RadiallySymmetric{GibsonLanni}
+preferred_type(::Type{GibsonLanni{T}}) where {T} = T

@@ -1,14 +1,17 @@
-# TODO: Add docs for implementation <02-10-23> 
-abstract type ModelOTF{N} <: ModelTransferFunction{N} end
+include("models/spherical_aperture_otf.jl")
 
 # TODO: Add docs <28-11-23> 
 @doc """
 optical transfer function
 """ otf
 
-# TODO: This should accept as many dimensions as the transfer function allows similar to IlluminationPatterns <28-11-23> 
-@inline @traitfn function otf(tf::TF, f_x::Frequency, f_y::Frequency) where {TF <: ModelOTF; RadiallySymmetric{TF}}
-    otf(tf, hypot(f_x, f_y))
+# FIX: This should call the type instead of it being a function on the type?? <26-08-24> 
+
+# TODO: This should accept as many dimensions as the transfer function allows similar to IlluminationPatterns... Right
+# now this implementation does not work<28-11-23> 
+# @inline @traitfn function otf(tf::TF, freqs::Vararg{Frequency,N}) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
+@inline @traitfn function otf(tf::TF, kx::Frequency, ky::Frequency) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
+    otf(tf, hypot(kx, ky))
 end
 
 @doc """
@@ -19,11 +22,13 @@ Generate an otf for the given transfer function with the size `wh` (size of `img
 
 !!! note
     The pixel size/distance (`Δxy`) is required for a [model transfer function](@ref ModelTransferFunction) and optional
-    for a [`MeasuredTransferFunction`](@ref).
+    for a [`MeasuredTransferFunction`](@ref). If the pixel size/distance is not supplied to the
+    [`MeasuerdTransferFunction`](@ref), it is assumed to be the same as in the measurement.
 
 # Arguments
-* `tf::TransferFunction`: transfer function model/measure to generate the OTF for
-* `wh::Tuple{Integer, Integer}` or `wh::Integer`: (width, height) of the generated OTF. `wh` ↦ `(wh, wh)` if `wh isa Integer`.
+* `tf::TransferFunction`: transfer function (model/measured) to generate the OTF for
+* `wh::Tuple{Integer, Integer}` or `wh::Integer`: (width, height) of the generated OTF. `wh` ↦ `(wh, wh)` if `wh isa
+    Integer`.
 * `Δxy::Tuple{Length, Length}` or `Δxy::Length`: Separation of pixels in the ``x`` and ``y`` dimensions of the generated
     OTF image. `Δxy` ↦ `(Δxy, Δxy)` if `Δxy isa Length`. (default: pixel distance from the measurement for a 
     [`MeasuredTransferFunction`](@ref))

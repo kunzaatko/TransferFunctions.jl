@@ -1,31 +1,6 @@
-# TODO: Documentation <28-11-23> 
-abstract type TransferFunction{N} end
-const TF{N} = TransferFunction{N}
-
-# TODO: Update docs <24-10-23> 
-@doc raw"""
-An abstract type for any transfer function that is based on a physical model of an optical system. Contrary to a 
-[`MeasuredTransferFunction`](@ref), a `ModelTransferFunction` must be quantifiable at any point (in either spatial or 
-frequency domain). The model can be of an OTF (`ClosedFormOTFModel <: ModelTransferFunction`) or a PSF 
-(`ClosedFormPSFModel <: ModelTransferFunction`) or a PupilFunction.
-"""
-abstract type ModelTransferFunction{N} <: TransferFunction{N} end
-
+# TODO: Should this be a thing for the `MeasuredTransferFunction` as well? <26-08-24> 
 # NOTE: Allows broadcasting `func.(tf::ModelTransferFunction, a:b)`where `func` can be any of `psf`,`otf`,`mtf`, etc.
 Broadcast.broadcastable(tf::ModelTransferFunction) = Ref(tf)
-
-# FIX: This should be instead type branched as abstract OTF and abstract PSF?! <28-11-23> 
-
-@doc raw"""
-An abstract type for the measurement of the transfer function of an optical system. It can be either a PSF measurement 
-[`MeasuredPSF`](@ref) or a [`MeasuredOTF`](@ref).
-"""
-abstract type MeasuredTransferFunction{N} <: TransferFunction{N} end
-
-@doc """
-If the pupil function of the system is symmetric, the OTF as well as the PSF are radially symmteric which can be used to optimize the calculations
-"""
-@traitdef RadiallySymmetric{TF<:TransferFunction}
 
 # NOTE: Taken from Distributions.jl <kunzaatko> 
 for func in (:(==), :isequal, :isapprox)
@@ -57,3 +32,6 @@ function Base.hash(tf::TF, h::UInt) where {TF<:TransferFunction}
     return hashed
 end
 
+struct NotImplementedError <: Exception
+    msg::String
+end
