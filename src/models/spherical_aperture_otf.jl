@@ -58,7 +58,7 @@ end
 # TODO: It should be possible to provide only a selected subset of dimensions of the transfer function that are
 # RadiallySymmetric. It would be helpful for the defocus `z` <26-08-24> 
 @traitimpl RadiallySymmetric{IdealOTFwithCurvature}
-output_type(::IdealOTFwithCurvature{T}) where {T} = T
+preferred_type(::Type{IdealOTFwithCurvature{T}}) where {T} = T
 
 function otf(tf::IdealOTFwithCurvature, fᵣ::Frequency)
     # TODO: Is the immersion refractive index necessary? <14-07-23> 

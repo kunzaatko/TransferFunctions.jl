@@ -1,3 +1,4 @@
+# TODO: Deconvolution techniques here too. So RL-deconv and Weiner deconvolution <26-08-24> 
 # FIX: Adapt to dimensionality <28-11-23> 
 
 # FIX: Generic methods without argument types should be made concrete, because if not, the error when supplying a wrong

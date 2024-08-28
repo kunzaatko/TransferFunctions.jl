@@ -7,13 +7,12 @@ struct SampledPSF{N,PSF<:PointSpreadFunction{N}}
     center::Coordinate{N} # NOTE: It is (0,0) by default <26-08-24> 
 end
 
-# FIX: Check if PSF correct has dimension... needs to be in constructor <26-08-24> 
-
 # NOTE: step 1 - fill in the pixel-size
 SampledPSF(tf::PointSpreadFunction{N}, Δxy::Length, args...) where {N} = SampledPSF(tf, fillsize(Δxy, N), args...)
 # NOTE: step 2 - default center (zeros)
 SampledPSF(tf::PointSpreadFunction{N}, Δxy::PixelSize{N}) where {N} = SampledPSF(tf, Δxy, ntuple(_ -> 0, Val(N)))
 
+# TODO: Use indices here as in the OTF <26-08-24> 
 
 # FIX: This is ambiguous and should be defined for general dimensions <10-12-23> 
 # TODO: There are different approaches to normalization. There is the L∞ constraint that ‖psf‖∞ = 1 and the L1
@@ -110,26 +109,26 @@ end
 # FIX: Incorrect API architecture <26-08-24> 
 # NOTE: Has to be defined for N-dims generally and not specific dimensions because otherwise, there could be ambiguity 
 # if a concrete type implements generic N-dim `psf` method <10-12-23> 
-function psf(
-    OT::Type{<:Number},
-    tf::TransferFunction{N},
-    wh::NTuple{N,Integer},
-    Δxy::NTuple{N,Length}
-) where {N}
-    tf_otf = otf(tf, wh, Δxy)
-    tf_psf = centered(fftshift(ifft(tf_otf)))
-    # TODO: Is this correct? How about defocused and other aberrations, can they make the intensity in the center lower?
-    # is this even true for a PSF at the focal plane?
-    # FIX: This is not correct for a Ndim PSF only for 2D <10-12-23> 
-    return tf_psf ./ sum(tf_psf)
-end
+# function psf(
+#     OT::Type{<:Number},
+#     tf::TransferFunction{N},
+#     wh::NTuple{N,Integer},
+#     Δxy::NTuple{N,Length}
+# ) where {N}
+#     tf_otf = otf(tf, wh, Δxy)
+#     tf_psf = centered(fftshift(ifft(tf_otf)))
+#     # TODO: Is this correct? How about defocused and other aberrations, can they make the intensity in the center lower?
+#     # is this even true for a PSF at the focal plane?
+#     # FIX: This is not correct for a Ndim PSF only for 2D <10-12-23> 
+#     return tf_psf ./ sum(tf_psf)
+# end
 
 # psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length; vargs...) = psf(tf, wh, (Δxy, Δxy); vargs...)
 # psf(tf::TransferFunction, wh::Integer, args...; vargs...) = psf(tf, (wh, wh), args...; vargs...)
-# FIX: This doesn't strictly speaking make sense, since the PSF is used for convolution and not for term-wise
-# multiplication <15-07-23> 
 psf(tf::SampledPSF{N,PSF}, img::AbstractArray{OT,N}, args...; vargs...) where {OT,PSF,N} = psf(OT, tf, size(img), args...; vargs...)
+psf(OT::Type{<:Number}, tf::SampledPSF{N,PSF}, img::AbstractArray{T,N}, args...; vargs...) where {PSF,N,T} = psf(OT, tf, size(img), args...; vargs...)
 
+# FIX: Underneath the functions do not have correct docs <26-08-24> 
 # FIX: This is not the correct name!! <30-11-23> 
 @doc """
 Amplitude point spread function
@@ -140,7 +139,17 @@ Amplitude point spread function
     apsf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length)::OffsetMatrix{<:Real}
 """
 apsf(OT::Type{<:Real}, tf::SampledPSF, args...; vargs...) = imag(psf(Complex{OT}, tf, args...; vargs...))
-apsf(tf::SampledPSF{N,PSF}, args...; vargs...) where {N,PSF} = apsf(preferred_type(PSF), tf, args...; vargs...)
+# NOTE: Choose the correct real type <26-08-24> 
+function apsf(tf::SampledPSF{N,PSF}, args...; vargs...) where {N,PSF}
+    tf_type = preferred_type(PSF)
+    if tf_type <: Complex
+        evaluation_type = tf_type.parameters[1]
+    else
+        @assert tf_type <: Real "Preferred type of evaluation is `<:Real`"
+        evaluation_type = tf_type
+    end
+    return apsf(evaluation_type, tf, args...; vargs...)
+end
 
 @doc """
 Intensity point spread function
@@ -151,11 +160,16 @@ Intensity point spread function
      ipsf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length)::OffsetMatrix{<:Real}
  """
 ipsf(OT::Type{<:Real}, tf::SampledPSF, args...; vargs...) = real(psf(Complex{OT}, tf, args...; vargs...))
-ipsf(tf::SampledPSF{N,PSF}, args...; vargs...) where {N,PSF} = ipsf(preferred_type(PSF), tf, args...; vargs...)
-
-# psf.jl
-# psf(tfr::SampledPSF, args...; varargs...) = psf(tfr.transfer, args..., tfr.Δxy; varargs...)
-# apsf(tfr::SampledPSF, args...; varargs...) = apsf(tfr.transfer, args..., tfr.Δxy; varargs...)
-# ipsf(tfr::SampledPSF, args...; varargs...) = ipsf(tfr.transfer, args..., tfr.Δxy; varargs...)
+# NOTE: Choose the correct real type <26-08-24> 
+function ipsf(tf::SampledPSF{N,PSF}, args...; vargs...) where {N,PSF}
+    tf_type = preferred_type(PSF)
+    if tf_type <: Complex
+        evaluation_type = tf_type.parameters[1]
+    else
+        @assert tf_type <: Real "Preferred type of evaluation is `<:Real`"
+        evaluation_type = tf_type
+    end
+    ipsf(evaluation_type, tf, args...; vargs...)
+end
 
 # TODO: Better Base.show <30-11-23> 

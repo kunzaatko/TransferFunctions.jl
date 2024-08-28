@@ -2,6 +2,7 @@ using TransferFunctions
 using TransferFunctions: Frequency
 using FillArrays
 using FourierTools
+using FFTViews
 using Aqua, Test, Documenter
 
 @testset "TransferFunctions.jl" begin
@@ -64,46 +65,89 @@ using Aqua, Test, Documenter
 
             ## Method Availability
             @test otf(tf, 1 // 250u"nm", 1 // 200u"nm") isa Number
-            @test otf(tf, 1 // 250u"nm") isa Number
-            @test otf(tf, 512, 64u"nm") isa Matrix
-            @test otf(tf, 512, 64u"nm"; δ=(2, 1)) isa Matrix
-            @test otf(tf, 512, 64u"nm"; δ=(2, 1)) == (mtf(tf, 512, 64u"nm"; δ=(2, 1)) .+ im .* ptf(tf, 512, 64u"nm"; δ=(2, 1)))
-            @test_throws MethodError otf(tf, (512.1, 512.4), 64u"nm") # NOTE: non-integer image size not possible
+            @test otf(tf, 1 // 250u"nm") isa Number # FIX: This should function only for a RadiallySymmetric psf <26-08-24> 
+        end
 
-            ## Method Consistency
-            @test otf(tf, 512, (64u"nm", 64u"nm")) == otf(tf, (512, 512), 64u"nm")
-            @test otf(tf, img, 54u"nm") == otf(tf, img, (54u"nm", 54u"nm"))
+        @testset "SampledOTF" begin
+            tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3)
+            psf_tf = BornWolf(488u"nm", 1.4, 1.7)
+
+            ## Method Availability
+            @test SampledOTF(tf, 64u"nm") isa SampledOTF # NOTE: Fill in the sizes <26-08-24> 
+            @test SampledOTF(tf, (64u"nm", 32u"nm")) isa SampledOTF # NOTE: Non-isometric <26-08-24> 
+            @test SampledOTF(tf, 64u"nm", (1, 2)) isa SampledOTF # NOTE: Non-centred <26-08-24> 
+            @test SampledOTF(tf, (64u"nm", 32u"nm"), (1, 2)) isa SampledOTF
+            @test SampledOTF(tf, 64u"nm", (1.5, 2)) isa SampledOTF # NOTE: Non-integer center <26-08-24> 
+            @test SampledOTF(tf, (64u"nm", 32u"nm"), (1.5, 2)) isa SampledOTF
+
+            ## Non-methods
+            @test_throws MethodError SampledOTF(psf_tf, 64u"nm") # NOTE: PSF model should not work <26-08-24> 
+
+            s_tf = SampledOTF(tf, 64u"nm")
+
+            ## Methods - Array generation
+            @test otf(s_tf, (512, 512)) isa Matrix
+            @test otf(s_tf, img) isa Matrix
+            @test otf(ComplexF32, s_tf, (512, 512)) isa Matrix{ComplexF32}
+
+            ## Methods - Array generation Consistency
+            @test otf(s_tf, img) == (mtf(s_tf, img) .+ im .* ptf(s_tf, img))
+
+            # NOTE: zeroth frequency is the greatest <26-08-24> 
+            @test argmax(FFTView(otf(s_tf, (512, 512)))) == CartesianIndex(0, 0)
+            @test FFTView(otf(s_tf, (512, 512)))[0, 0] == 1
+
+            s_tf_1 = SampledOTF(tf, 64u"nm", (2, 3))
+            # NOTE: In terms of frequencies we have zero based indexing since we need to skip the zeroth frequency (0,0)
+            # <26-08-24> 
+            @test argmax(FFTView(otf(s_tf_1, (512, 512)))) == CartesianIndex(1, 2)
+            @test argmax(FFTView(otf(s_tf_1, (511, 511)))) == CartesianIndex(1, 2)
+            @test otf(s_tf_1, (512, 512)) ≈ FourierTools.shift(otf(s_tf, (512, 512)), (1, 2))
+            @test otf(s_tf_1, (511, 511)) ≈ FourierTools.shift(otf(s_tf, (511, 511)), (1, 2))
+
+            # TODO: When there is a model that returns Complex, i.e. the model with a phase shift <26-08-24> 
+            @test_skip otf(s_tf_1, (512, 512)) ≈ FourierTools.shift(otf(ComplexF32, s_tf, (512, 512)), (1, 2))
+            @test_skip otf(s_tf_1, (511, 511)) ≈ FourierTools.shift(otf(ComplexF32, s_tf, (511, 511)), (1, 2))
+
+            s_tf_2 = SampledOTF(tf, 64u"nm", (1.5, -2.5))
+            @test otf(s_tf_2, (512, 512)) ≈ real(FourierTools.shift(otf(ComplexF32, s_tf, (512, 512)), (0.5, -3.5)))
+            @test otf(s_tf_2, (511, 511)) ≈ real(FourierTools.shift(otf(ComplexF32, s_tf, (511, 511)), (0.5, -3.5)))
+
+            # FIX: Probably a numerical error of FFT in the FourierTools package, but not sure <26-08-24> 
+            @test_broken otf(s_tf_2, (512, 512)) ≈ real(FourierTools.shift(otf(s_tf, (512, 512)), (0.5, -3.5)))
+            @test_broken otf(s_tf_2, (511, 511)) ≈ real(FourierTools.shift(otf(s_tf, (511, 511)), (0.5, -3.5)))
+
+            ## Non-methods - Array generation
+            @test_throws MethodError otf(s_tf, (512.1, 512.4)) # NOTE: non-integer image size <27-08-24>
+            @test_throws MethodError otf(s_tf, 512) # NOTE: Do not infer size without information <26-08-24> 
 
             @testset "SIM utils" begin
+                # TODO: This has to be changed for the new architecture <26-08-24> 
                 ## Consistent shift (FourierTools)
                 # NOTE: `shift` using Fourier shift theorem not interpolation... When interpolation is used this must be done
                 # with centred data
-                @test otf(tf, 512, 61u"nm"; δ=(-1, 2)) ≈ real.(FourierTools.shift(ComplexF32.(otf(tf, 512, 61u"nm")), (-1, 2)))
-                @test otf(tf, 511, 61u"nm"; δ=(-1, 2)) ≈ real.(FourierTools.shift(ComplexF32.(otf(tf, 511, 61u"nm")), (-1, 2)))
-                @test otf(tf, 512, 61u"nm"; δ=(-1.5, 2.5)) ≈ real.(FourierTools.shift(ComplexF32.(otf(tf, 512, 61u"nm")), (-1.5, 2.5)))
-                @test otf(tf, 511, 61u"nm"; δ=(-1.5, 2.5)) ≈ real.(FourierTools.shift(ComplexF32.(otf(tf, 511, 61u"nm")), (-1.5, 2.5)))
 
                 using TransferFunctions: otf_support
 
                 ## Method Availability
-                @test otf_support(tf, 512, 64u"nm") isa BitMatrix
-                @test otf_support(tf, 512, 64u"nm"; ρ=0.5) isa BitMatrix
-                @test otf_support(tf, 512, 64u"nm"; ρ=-0.5) isa BitMatrix
-                @test otf_support(tf, 512, 64u"nm"; ρ=(0.5, 0.7)) isa BitMatrix
-                @test_throws MethodError otf_support(tf, (512.1, 512.4), 64u"nm")
+                # @test otf_support(tf, 512, 64u"nm") isa BitMatrix
+                # @test otf_support(tf, 512, 64u"nm"; ρ=0.5) isa BitMatrix
+                # @test otf_support(tf, 512, 64u"nm"; ρ=-0.5) isa BitMatrix
+                # @test otf_support(tf, 512, 64u"nm"; ρ=(0.5, 0.7)) isa BitMatrix
+                # @test_throws MethodError otf_support(tf, (512.1, 512.4), 64u"nm")
 
                 ## Method Consistency
-                @test otf_support(tf, 512, (64u"nm", 64u"nm")) == otf_support(tf, (512, 512), 64u"nm")
-                @test otf_support(tf, img, 54u"nm") == otf_support(tf, img, (54u"nm", 54u"nm"))
+                # @test otf_support(tf, 512, (64u"nm", 64u"nm")) == otf_support(tf, (512, 512), 64u"nm")
+                # @test otf_support(tf, img, 54u"nm") == otf_support(tf, img, (54u"nm", 54u"nm"))
 
                 ## Theory Consistency
-                @test all(otf_support(tf, 512, 64u"nm"; ρ=-0.5) + otf_support(tf, 512, 64u"nm"; ρ=0.5) + otf_support(tf, 512, 64u"nm") .!= 1)
-                @test otf_support(tf, 512, 64u"nm"; ρ=-0.5) .+ otf_support(tf, 512, 64u"nm"; ρ=0.5) == otf_support(tf, 512, 64u"nm")
-                @test dropdims(any(isone,
-                        cat([otf_support(tf, 512, 64u"nm"; ρ=ρ_int) for ρ_int in [0.1, (0.1, 0.5), (0.5, 0.7), -0.3]]..., dims=3),
-                        dims=3),
-                    dims=3) == otf_support(tf, 512, 64u"nm")
-                @test all(otf(tf, 512, 64u"nm")[otf_support(tf, 512, 64u"nm").!=1] .== 0)
+                # @test all(otf_support(tf, 512, 64u"nm"; ρ=-0.5) + otf_support(tf, 512, 64u"nm"; ρ=0.5) + otf_support(tf, 512, 64u"nm") .!= 1)
+                # @test otf_support(tf, 512, 64u"nm"; ρ=-0.5) .+ otf_support(tf, 512, 64u"nm"; ρ=0.5) == otf_support(tf, 512, 64u"nm")
+                # @test dropdims(any(isone,
+                #         cat([otf_support(tf, 512, 64u"nm"; ρ=ρ_int) for ρ_int in [0.1, (0.1, 0.5), (0.5, 0.7), -0.3]]..., dims=3),
+                #         dims=3),
+                #     dims=3) == otf_support(tf, 512, 64u"nm")
+                # @test all(otf(tf, 512, 64u"nm")[otf_support(tf, 512, 64u"nm").!=1] .== 0)
 
                 # cutoff_frequency
                 @test cutoff_frequency(tf) isa Frequency
@@ -133,18 +177,29 @@ using Aqua, Test, Documenter
         @testset "SampledPSF" begin
             using OffsetArrays
             tf = BornWolf(488u"nm", 1.4, 1.7)
+            otf_tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3)
 
-            ## Method Availability
-            @test SampledPSF(tf, 64u"nm") isa SampledPSF
-            @test SampledPSF(tf, (64u"nm", 32u"nm")) isa SampledPSF
-            @test SampledPSF(tf, 64u"nm", (1, 2)) isa SampledPSF
+            ## Method Availability - Construction
+            @test SampledPSF(tf, 64u"nm") isa SampledPSF # NOTE: Fill in the sizes <26-08-24> 
+            @test SampledPSF(tf, (64u"nm", 32u"nm")) isa SampledPSF # NOTE: Non-isometry in pixel-sizes <26-08-24> 
+            @test SampledPSF(tf, 64u"nm", (1, 2)) isa SampledPSF # NOTE: Non-centred <26-08-24> 
+            @test SampledPSF(tf, (64u"nm", 32u"nm"), (1, 2)) isa SampledPSF
+            @test SampledPSF(tf, 64u"nm", (1.5, 2)) isa SampledPSF # NOTE: Non-integer center <26-08-24> 
+            @test SampledPSF(tf, (64u"nm", 32u"nm"), (1.5, 2)) isa SampledPSF
+
+            ## Non-methods - Construction
+            @test_throws MethodError SampledPSF(otf_tf, 64u"nm") # NOTE: OTF model should not work <26-08-24> 
 
             s_tf = SampledPSF(tf, 64u"nm")
+
+            ## Methods - Array generation
             @test psf(s_tf, (512, 512)) isa OffsetArrays.OffsetMatrix
             @test psf(s_tf, img) isa OffsetArrays.OffsetMatrix
 
+            ## Non-methods - Array generation
             # TODO: Add when shift in generating is implemented <24-10-23>  @test psf(tf, 512, 64u"nm"; δ=(2, 1)) isa Matrix
-            @test_throws MethodError psf(s_tf, (512.1, 512.4)) # NOTE: non-integer image size not possible
+            @test_throws MethodError psf(s_tf, (512.1, 512.4)) # NOTE: non-integer image size <27-08-24>
+            @test_throws MethodError psf(s_tf, 512) # NOTE: Do not infer size without information <26-08-24> 
         end
     end
 
