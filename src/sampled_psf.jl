@@ -24,8 +24,8 @@ SampledPSF(tf::PointSpreadFunction{N}, Δxy::PixelSize{N}) where {N} = SampledPS
     tf::SampledPSF{N,PSF},
     wh::Tuple{Integer,Integer},
 ) where {N,PSF;!RadiallySymmetric{PSF}}
-    xs = isodd(wh[1]) ? (((-wh[1]-1)÷2):((wh[1]-1)÷2)) .* tf.Δxy[1] : ((-wh[1]-2)÷2):(wh[1]÷2).*tf.Δxy[1]
-    ys = isodd(wh[2]) ? (((-wh[2]-1)÷2):((wh[2]-1)÷2)) .* tf.Δxy[2] : ((-wh[2]-2)÷2):(wh[2]÷2).*tf.Δxy[2]
+    xs = isodd(wh[1]) ? (((-wh[1]-1)÷2):((wh[1]-1)÷2) .- tf.center[1]) .* tf.Δxy[1] : (((-wh[1]-2)÷2):(wh[1]÷2) .- tf.center[1]).*tf.Δxy[1]
+    ys = isodd(wh[2]) ? (((-wh[2]-1)÷2):((wh[2]-1)÷2) .- tf.center[2]) .* tf.Δxy[2] : (((-wh[2]-2)÷2):(wh[2]÷2) .- tf.center[2]).*tf.Δxy[2]
     return centered([psf(OT, tf, x, y) for x in xs, y in ys])
 end
 

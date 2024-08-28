@@ -9,7 +9,7 @@ module TransferFunctions
 
 using SimpleTraits
 using SpecialFunctions
-using OffsetArrays: centered
+using OffsetArrays: centered, center, Origin
 using FillArrays
 using FFTW
 using LazyGrids
