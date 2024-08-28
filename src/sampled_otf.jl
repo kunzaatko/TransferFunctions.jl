@@ -168,12 +168,14 @@ end
     a == 0 ? otf(tf, wh) .> 0 : otf(tf, wh) .>= a
 end
 support(tf::SampledOTF{N,OTF}, wh::Tuple{Integer,Integer}; a=0) where {N,OTF} = support(tf, (1:wh[1], 1:wh[2]); a)
+support(tf::SampledOTF{N,OTF}, img::AbstractArray; a=0) where {N,OTF} = support(tf, size(img); a)
 
 # TODO: Docs <28-08-24> 
 function overlap(tf_1::SampledOTF{N,OTF1}, tf_2::SampledOTF{N,OTF2}, wh::Indices{N}; a_1=0, a_2=0) where {N,OTF1,OTF2}
     return support(tf_1, wh; a=a_1) .* support(tf_2, wh; a=a_2)
 end
 overlap(tf_1::SampledOTF{N,OTF1}, tf_2::SampledOTF{N,OTF2}, wh::Tuple{Integer,Integer}; a_1=0, a_2=0) where {N,OTF1,OTF2} = overlap(tf_1, tf_2, (1:wh[1], 1:wh[2]); a_1, a_2)
+overlap(tf_1::SampledOTF{N,OTF1}, tf_2::SampledOTF{N,OTF2}, img::AbstractArray; a_1=0, a_2=0) where {N,OTF1,OTF2} = overlap(tf_1, tf_2, size(img); a_1, a_2)
 
 # TODO: Consider implementing a `cutoff` function here as well that gives the pixel radius of the support. Look below
 # for an example of where it could be useful. We could instead of the attenuation determined support give a radius

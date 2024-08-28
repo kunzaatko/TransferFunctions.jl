@@ -124,6 +124,7 @@ using Aqua, Test, Documenter
             @test_broken otf(s_tf_2, (511, 511)) ≈ real(FourierTools.shift(otf(s_tf, (511, 511)), (0.5, -3.5)))
 
             # NOTE: The support calculation should match the generation of the array <26-08-24>
+            @test support(s_tf, img) isa BitArray
             @test (otf(s_tf, (512, 512)) .> 0) == support(s_tf, (512, 512))
             @test (otf(s_tf, (512, 512)) .>= 0.15) == support(s_tf, (512, 512), a=0.15)
             @test (otf(s_tf_1, (512, 512)) .> 0) == support(s_tf_1, (512, 512))
