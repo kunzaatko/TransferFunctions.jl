@@ -196,6 +196,13 @@ using Aqua, Test, Documenter
             @test psf(s_tf, (512, 512)) isa OffsetArrays.OffsetMatrix
             @test psf(s_tf, img) isa OffsetArrays.OffsetMatrix
 
+            s_tf_1 = SampledPSF(tf, 64u"nm", (1,2))
+            @test argmax(psf(s_tf_1, img)) == CartesianIndex(1, 2)
+            s_tf_2 = SampledPSF(tf, 64u"nm", (-1,-2))
+            @test argmax(psf(s_tf_2, img)) == CartesianIndex(-1, -2)
+            s_tf_3 = SampledPSF(tf, 64u"nm", (1.98, 1.98))
+            @test_broken argmax(psf(s_tf_3, img)) == CartesianIndex(2, 2)
+
             ## Non-methods - Array generation
             # TODO: Add when shift in generating is implemented <24-10-23>  @test psf(tf, 512, 64u"nm"; δ=(2, 1)) isa Matrix
             @test_throws MethodError psf(s_tf, (512.1, 512.4)) # NOTE: non-integer image size <27-08-24>

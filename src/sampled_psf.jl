@@ -53,7 +53,9 @@ psf(tf, (5,5), (40u"nm", 50u"nm")) # different pixelsizes in x and y direction
 ) where {N,PSF<:ModelPSF;RadiallySymmetric{PSF}}
     # TODO: Refactor. Make symmetric optimized array generation into its self function <02-10-23> 
     s = all(isodd.(wh)) ? wh : (wh .+ 1)
-    buf = centered(Matrix{OT}(undef, s...)) # the first quadrant
+    buf = Matrix{OT}(undef, s...) # the first quadrant
+    # FIX: This will not work for a non-integer center!!! <26-08-24> 
+    buf = Origin(ntuple(_ -> 1, Val(N)) .- s_tf.center .- center(buf))(buf)
     # # PERF: This can be made even faster if the we use the same calculation for a same radii in one quadrant, for 
     # # example (1,2) and (2,1) <12-07-23> 
     # buf[1:end, -1:-1:begin] .=
