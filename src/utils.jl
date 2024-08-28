@@ -139,3 +139,12 @@ function exactcenter(arr::AbstractArray{N})::Coordinate where {N}
 end
 
 contained(arr::AbstractArray{T,N}, loc::Coordinate{N}) where {T,N} = all(loc .∈ axes(arr))
+
+# TODO: test <28-08-24> 
+# TODO: Should be for N dimensions <28-08-24> 
+function freqs(inds::Indices{N}, Δxy::PixelSize{N}, center::Coordinate{N}) where {N}
+ fxs, fys = ndgrid(fftfreq(length(inds[1]), 1 / Δxy[1]), fftfreq(length(inds[2]), 1 / Δxy[2]))
+ fxs = fxs .- (center[1] - 1) / (Δxy[1] * length(inds[1]))
+ fys = fys .- (center[2] - 1) / (Δxy[2] * length(inds[2]))
+ return fxs, fys
+end

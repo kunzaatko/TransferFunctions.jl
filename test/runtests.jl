@@ -10,7 +10,7 @@ using Aqua, Test, Documenter
         @testset "Code quality (Aqua.jl)" begin
             Aqua.test_all(
                 TransferFunctions;
-                ambiguities=(; exclude=VERSION >= v"1.11" ? [checkindex, checkbounds] : [] )
+                ambiguities=(; exclude=VERSION >= v"1.11" ? [checkindex, checkbounds] : [])
                 # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
             )
         end
@@ -65,8 +65,13 @@ using Aqua, Test, Documenter
             tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3)
 
             ## Method Availability
-            @test otf(tf, 1 // 250u"nm", 1 // 200u"nm") isa Number
-            @test otf(tf, 1 // 250u"nm") isa Number # FIX: This should function only for a RadiallySymmetric psf <26-08-24> 
+            @test attenuation(tf, 1 // 250u"nm", 1 // 200u"nm") isa Number
+            @test attenuation(tf, 1 // 250u"nm") isa Number # FIX: This should function only for a RadiallySymmetric psf <26-08-24> 
+            @test attenuation(Float32, tf, 1 // 250u"nm") isa Float32
+            @test attenuation(ComplexF32, tf, 1 // 250u"nm") isa ComplexF32
+
+            @test cutoff(tf) isa Frequency
+            @test cutoff(tf, 0.15) isa Frequency
         end
 
         @testset "SampledOTF" begin
@@ -118,41 +123,24 @@ using Aqua, Test, Documenter
             @test_broken otf(s_tf_2, (512, 512)) ≈ real(FourierTools.shift(otf(s_tf, (512, 512)), (0.5, -3.5)))
             @test_broken otf(s_tf_2, (511, 511)) ≈ real(FourierTools.shift(otf(s_tf, (511, 511)), (0.5, -3.5)))
 
+            # NOTE: The support calculation should match the generation of the array <26-08-24>
+            @test (otf(s_tf, (512, 512)) .> 0) == support(s_tf, (512, 512))
+            @test (otf(s_tf, (512, 512)) .>= 0.15) == support(s_tf, (512, 512), a=0.15)
+            @test (otf(s_tf_1, (512, 512)) .> 0) == support(s_tf_1, (512, 512))
+            @test (otf(s_tf_1, (512, 512)) .>= 0.15) == support(s_tf_1, (512, 512), a=0.15)
+            @test (otf(s_tf_2, (512, 512)) .> 0) == support(s_tf_2, (512, 512))
+            @test (otf(s_tf_2, (512, 512)) .>= 0.15) == support(s_tf_2, (512, 512), a=0.15)
+            @test count(support(s_tf, (512, 512), a=0.15)) < count(support(s_tf, (512, 512)))
+            @test all(otf(s_tf, (512, 512))[support(s_tf, (512, 512)).==false] .== 0)
+
+            using TransferFunctions: overlap
+            @test overlap(s_tf, s_tf, (512, 512)) == support(s_tf, (512, 512))
+            @test overlap(s_tf, s_tf, (512, 512); a_1=0.15) == support(s_tf, (512, 512), a=0.15)
+            @test count(overlap(s_tf_1, s_tf, (512, 512))) < count(support(s_tf, (512, 512)))
+
             ## Non-methods - Array generation
             @test_throws MethodError otf(s_tf, (512.1, 512.4)) # NOTE: non-integer image size <27-08-24>
             @test_throws MethodError otf(s_tf, 512) # NOTE: Do not infer size without information <26-08-24> 
-
-            @testset "SIM utils" begin
-                # TODO: This has to be changed for the new architecture <26-08-24> 
-                ## Consistent shift (FourierTools)
-                # NOTE: `shift` using Fourier shift theorem not interpolation... When interpolation is used this must be done
-                # with centred data
-
-                using TransferFunctions: otf_support
-
-                ## Method Availability
-                # @test otf_support(tf, 512, 64u"nm") isa BitMatrix
-                # @test otf_support(tf, 512, 64u"nm"; ρ=0.5) isa BitMatrix
-                # @test otf_support(tf, 512, 64u"nm"; ρ=-0.5) isa BitMatrix
-                # @test otf_support(tf, 512, 64u"nm"; ρ=(0.5, 0.7)) isa BitMatrix
-                # @test_throws MethodError otf_support(tf, (512.1, 512.4), 64u"nm")
-
-                ## Method Consistency
-                # @test otf_support(tf, 512, (64u"nm", 64u"nm")) == otf_support(tf, (512, 512), 64u"nm")
-                # @test otf_support(tf, img, 54u"nm") == otf_support(tf, img, (54u"nm", 54u"nm"))
-
-                ## Theory Consistency
-                # @test all(otf_support(tf, 512, 64u"nm"; ρ=-0.5) + otf_support(tf, 512, 64u"nm"; ρ=0.5) + otf_support(tf, 512, 64u"nm") .!= 1)
-                # @test otf_support(tf, 512, 64u"nm"; ρ=-0.5) .+ otf_support(tf, 512, 64u"nm"; ρ=0.5) == otf_support(tf, 512, 64u"nm")
-                # @test dropdims(any(isone,
-                #         cat([otf_support(tf, 512, 64u"nm"; ρ=ρ_int) for ρ_int in [0.1, (0.1, 0.5), (0.5, 0.7), -0.3]]..., dims=3),
-                #         dims=3),
-                #     dims=3) == otf_support(tf, 512, 64u"nm")
-                # @test all(otf(tf, 512, 64u"nm")[otf_support(tf, 512, 64u"nm").!=1] .== 0)
-
-                # cutoff_frequency
-                @test cutoff_frequency(tf) isa Frequency
-            end
         end
         # TODO: Add tests for the particular models <24-10-23> 
     end

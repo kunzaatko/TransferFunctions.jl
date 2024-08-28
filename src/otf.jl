@@ -9,16 +9,30 @@ optical transfer function
 
 # TODO: This should accept as many dimensions as the transfer function allows similar to IlluminationPatterns... Right
 # now this implementation does not work<28-11-23> 
+
 # @inline @traitfn function otf(tf::TF, freqs::Vararg{Frequency,N}) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
-@inline @traitfn function otf(OT::Type{<:Number}, tf::TF, kx::Frequency, ky::Frequency) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
+
+# TODO: We can define a macro that defines creates the radially symmetric functions instead of having it a trait... This
+# would however ruin the possibility of optimizing the array generation <28-08-24> 
+# FIX: It would be nice if the function could be something like
+#  @traitfn function (tf::TF where {N,TF<:ModelOTF{N}; RadiallySymmetric{TF}})(OT::Type{<:Number}, kx::Frequency, ky::Frequency)
+# <28-08-24> 
+@inline @traitfn function attenuation(OT::Type{<:Number}, tf::TF, kx::Frequency, ky::Frequency) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
     # FIX: The type should be passed to the method of on the model which for it to be able to optimize its run based on
     # it, and instead there should be a catch-all method that implements it if its not implemented in the implementation
     # <26-08-24> 
-    OT(otf(tf, hypot(kx, ky)))
+    OT(attenuation(tf, hypot(kx, ky)))
 end
 
-@inline @traitfn function otf(tf::TF, kx::Frequency, ky::Frequency) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
-    otf(preferred_type(TF), tf, kx, ky)
+@inline @traitfn function attenuation(OT::Type{<:Number}, tf::TF, kᵣ::Frequency) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
+    # FIX: The type should be passed to the method of on the model which for it to be able to optimize its run based on
+    # it, and instead there should be a catch-all method that implements it if its not implemented in the implementation
+    # <26-08-24> 
+    OT(attenuation(tf, kᵣ))
+end
+
+function attenuation(tf::TF, kx::Frequency, ky::Frequency) where {N,TF<:ModelOTF{N}}
+    attenuation(preferred_type(TF), tf, kx, ky)
 end
 
 # NOTE: Has to be defined for N-dims generally and not specific dimensions because otherwise, there could be ambiguity 

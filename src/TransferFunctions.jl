@@ -7,13 +7,8 @@
 
 module TransferFunctions
 
-using SimpleTraits
-using SpecialFunctions
+using SimpleTraits, SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots
 using OffsetArrays: centered, center, Origin
-using FillArrays
-using FFTW
-using LazyGrids
-using Interpolations
 
 using Base: Indices
 
@@ -56,8 +51,8 @@ const SampledTransferFunction{N} = Union{SampledOTF{N},SampledPSF{N}}
 # utils
 include("apodization.jl")
 
-export psf, otf, mtf, ptf, apsf, ipsf, pupil
-export cutoff_frequency, resolution_limit
+export psf, otf, mtf, ptf, apsf, ipsf, pupil, attenuation, support
+export cutoff, resolution_limit
 export BornWolf, IdealOTFwithCurvature
 
 export MeasuredPSF, MeasuredOTF

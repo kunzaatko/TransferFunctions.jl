@@ -60,6 +60,24 @@ end
 @traitimpl RadiallySymmetric{IdealOTFwithCurvature}
 preferred_type(::Type{IdealOTFwithCurvature{T}}) where {T} = T
 
+function attenuation(tf::IdealOTFwithCurvature, fᵣ::Frequency)
+    # TODO: Is the immersion refractive index necessary? <14-07-23> 
+    ν = (fᵣ * tf.λ) / (2 * tf.nᵢ * tf.NA)# normalized frequency
+    return ν >= one(ν) ? 0 : (2 / π) * (acos(ν) - ν * sqrt(1 - ν * ν)) * tf.curvature^ν
+end
+
+# TODO: Docs <28-08-24> 
+function cutoff(tf::IdealOTFwithCurvature)::Frequency
+    return (2 * tf.NA * tf.nᵢ) / tf.λ
+end
+function cutoff(tf::IdealOTFwithCurvature{T}, a::Real)::Frequency where {T}
+    0 <= a <= 1 || throw(DomainError(a, "OTF can only attenuate with a coefficient between 0 and 1"))
+    a == 0 && return cutoff(tf)
+    z = find_zero(ν -> (2 / π) * (acos(ν) - ν * sqrt(1 - ν * ν)) * tf.curvature^ν - a, (0, 1), Bisection())
+    return (2z * tf.nᵢ * tf.NA) / tf.λ
+end
+
+
 function otf(tf::IdealOTFwithCurvature, fᵣ::Frequency)
     # TODO: Is the immersion refractive index necessary? <14-07-23> 
     ν = (fᵣ * tf.λ) / (2 * tf.nᵢ * tf.NA)# normalized frequency

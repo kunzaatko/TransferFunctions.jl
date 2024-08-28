@@ -4,6 +4,10 @@ CurrentModule = TransferFunctions
 # OTF Models
 
 ```@docs
+ModelOTF
+```
+
+```@docs
 IdealOTFwithCurvature
 ```
 
