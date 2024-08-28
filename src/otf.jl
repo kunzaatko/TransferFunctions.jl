@@ -31,36 +31,3 @@ end
 #     tf_psf = promote_type(unique(typeof.(tf_psf[:]))...).(tf_psf)
 #     return fft(tf_psf) ./ sum(tf_psf)
 # end
-
-# TODO: Is this correct? This should be implemented as a method for a different algorithms for determining the
-# cut-off frequency <24-10-23> 
-@traitfn function cutoff_frequency(tf::TF) where {TF <: TransferFunction; RadiallySymmetric{TF}}
-    if all(hasfield.(TF, [:NA, :λ, :nᵢ]))
-        return (2 * tf.NA * tf.nᵢ) / tf.λ
-    else
-        throw(MethodError(cutoff_frequency, tf))
-    end
-end
-
-# TODO: Move to SIM tools <24-10-23> 
-# FIX: Add support for N-dim <30-11-23> 
-@traitfn function otf_support(
-    tf::TF,
-    wh::Tuple{Integer,Integer},
-    Δxy::Tuple{Length,Length};
-    ρ::Union{Real,Tuple{Real,Real}}=(0.0, 1.0),
-    inclusive::Union{Bool,Tuple{Bool,Bool}}=(true, true)
-) where {TF <: TransferFunction; RadiallySymmetric{TF}}
-    if ρ isa Real
-        ρ = ρ > 0 ? (0, ρ) : (1 + ρ, 1)
-    end
-    inclusive = inclusive isa Bool ? (inclusive, inclusive) : inclusive
-
-    fxs, fys = ndgrid(fftfreq(wh[1], 1 / Δxy[1]), fftfreq(wh[2], 1 / Δxy[2]))
-    left = inclusive[1] ? ρ[1] * cutoff_frequency(tf) .<= hypot.(fxs, fys) : ρ[1] * cutoff_frequency(tf) .< hypot.(fxs, fys)
-    right = inclusive[2] ? hypot.(fxs, fys) .< ρ[2] * cutoff_frequency(tf) : hypot.(fxs, fys) .< ρ[2] * cutoff_frequency(tf)
-    return left .* right
-end
-otf_support(tf, wh::Integer, args...; varargs...) = otf_support(tf, (wh, wh), args...; varargs...)
-otf_support(tf, wh::Tuple, Δxy::Length, args...; varargs...) = otf_support(tf, wh, (Δxy, Δxy), args...; varargs...)
-otf_support(tf, img::AbstractArray, args...; varargs...) = otf_support(tf, size(img), args...; varargs...)
