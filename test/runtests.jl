@@ -135,6 +135,7 @@ using Aqua, Test, Documenter
             @test all(otf(s_tf, (512, 512))[support(s_tf, (512, 512)).==false] .== 0)
 
             using TransferFunctions: overlap
+            @test overlap(s_tf, s_tf, img) isa BitArray
             @test overlap(s_tf, s_tf, (512, 512)) == support(s_tf, (512, 512))
             @test overlap(s_tf, s_tf, (512, 512); a_1=0.15) == support(s_tf, (512, 512), a=0.15)
             @test count(overlap(s_tf_1, s_tf, (512, 512))) < count(support(s_tf, (512, 512)))
