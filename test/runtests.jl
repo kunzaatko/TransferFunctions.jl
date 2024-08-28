@@ -10,6 +10,7 @@ using Aqua, Test, Documenter
         @testset "Code quality (Aqua.jl)" begin
             Aqua.test_all(
                 TransferFunctions;
+                ambiguities=(; exclude=VERSION >= v"1.11" ? [checkindex, checkbounds] : [] )
                 # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
             )
         end
@@ -196,9 +197,9 @@ using Aqua, Test, Documenter
             @test psf(s_tf, (512, 512)) isa OffsetArrays.OffsetMatrix
             @test psf(s_tf, img) isa OffsetArrays.OffsetMatrix
 
-            s_tf_1 = SampledPSF(tf, 64u"nm", (1,2))
+            s_tf_1 = SampledPSF(tf, 64u"nm", (1, 2))
             @test argmax(psf(s_tf_1, img)) == CartesianIndex(1, 2)
-            s_tf_2 = SampledPSF(tf, 64u"nm", (-1,-2))
+            s_tf_2 = SampledPSF(tf, 64u"nm", (-1, -2))
             @test argmax(psf(s_tf_2, img)) == CartesianIndex(-1, -2)
             s_tf_3 = SampledPSF(tf, 64u"nm", (1.98, 1.98))
             @test_broken argmax(psf(s_tf_3, img)) == CartesianIndex(2, 2)

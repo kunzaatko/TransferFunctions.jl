@@ -30,8 +30,6 @@ include("types.jl")
 include("common.jl")
 include("utils.jl")
 
-# POLICY: Any function that requires the image dimensions `Δxy` should have is as its last argument!
-
 # Measured transfer functions
 include("measured_otf.jl")
 include("measured_psf.jl")
