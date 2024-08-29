@@ -56,7 +56,10 @@ Generate an otf array for the given transfer function with the size `wh` (size o
 * `δ::Tuple = (0,0)`: shift of the OTF in the image plane in pixels. This is useful for some algorithms, e.g. in 
     structured illumination microscopy reconstruction algorithms.
 """
-# TODO: This should be shifted for a PSF that is real <15-09-23> 
+# TODO: Add a method for a single index... i.e. indexing of a sampled OTF. This should perhaps be an overload of the
+# `Base.getindex` function <29-08-24> 
+# TODO: Test this. Not covered by tests and should return only the data under `inds` so it should be more performant
+# when I do not need the full array. <29-08-24> 
 function otf(
     OT::Type{<:Number},
     tf::SampledOTF{N},
@@ -70,9 +73,9 @@ function otf(
 end
 function otf(
     tf::SampledOTF{N,OTF},
-    wh::Indices{N}
+    inds::Indices{N}
 ) where {N,OTF}
-    return otf(preferred_type(OTF), tf, wh)
+    return otf(preferred_type(OTF), tf, inds)
 end
 
 function otf(OT::Type{<:Number}, tf::SampledOTF{N,OTF}, wh::Tuple{Integer,Integer}, args...; vargs...) where {N,OTF}
