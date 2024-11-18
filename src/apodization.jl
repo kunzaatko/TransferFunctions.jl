@@ -1,3 +1,7 @@
+# TODO: Use reinterpret instead of `T.` for the changes of type in the places that it is used. <09-09-24> 
+using ImageFiltering: AbstractBorder, borderinstance, BorderSpecAny
+
+
 # TODO: This should really be a separate package <26-08-24> 
 # FIX: Type stability <13-12-23> 
 # FIX: Domain error, when ∉ (-1,1) <13-12-23> 

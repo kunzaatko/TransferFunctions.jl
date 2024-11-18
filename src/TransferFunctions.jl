@@ -7,7 +7,7 @@
 
 module TransferFunctions
 
-using SimpleTraits, SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots
+using SimpleTraits, SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets
 using OffsetArrays: centered, center, Origin
 
 using Base: Indices

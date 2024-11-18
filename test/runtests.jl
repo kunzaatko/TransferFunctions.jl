@@ -1,8 +1,6 @@
 using TransferFunctions
 using TransferFunctions: Frequency
-using FillArrays
-using FourierTools
-using FFTViews
+using FillArrays, FourierTools, IntervalSets, FFTViews
 using Aqua, Test, Documenter
 
 @testset "TransferFunctions.jl" begin
@@ -50,6 +48,117 @@ using Aqua, Test, Documenter
         @test TransferFunctions.contained(ones(3, 4, 2), (8, 3, 1)) == false
         @test TransferFunctions.contained(OffsetArray(ones(3, 3, 3), -2, -2, -2), (-1, 1, 0))
         @test TransferFunctions.contained(OffsetArray(ones(3, 3, 3), -2, -2, -2), (-2, 1, 0)) == false
+
+        @testset "Apodization" begin
+            using TransferFunctions: apodization, instrument, apodize, taperedges, Apodization
+            using TransferFunctions: Triangular, Blackman, Connes, Cosine, Gaussian, Hamming, Hann, Welch, PowerCosine, SineSum, Nuttall, BlackmanNuttall, BlackmanHarris, FlatTop, ExactBlackman
+            # using TransferFunctions: Bartlett
+
+            @testset "Types" begin
+                @test Triangular() isa Apodization
+                @test Welch() isa Apodization
+                @test Connes() isa Apodization
+                @test_throws ArgumentError PowerCosine{1 + 1im}()
+                @test Cosine() isa PowerCosine{1}
+                @test Hann() isa PowerCosine{2}
+                @test Hamming() isa SineSum{2}
+                @test Nuttall() isa SineSum{4}
+                @test BlackmanNuttall() isa SineSum{4}
+                @test BlackmanHarris() isa SineSum{4}
+                @test FlatTop() isa SineSum{5}
+                @test_throws ArgumentError Blackman{0.5}()
+                @test_throws ArgumentError Blackman{0.6}()
+                @test_throws ArgumentError Blackman{0}()
+                @test Blackman() == Blackman{0.16}()
+                @test Blackman() isa Apodization
+                @test ExactBlackman() isa Blackman
+                @test Gaussian(rand(0.01 .. 0.49)) isa Apodization
+                @test_throws ArgumentError Gaussian(0.6)
+            end
+
+
+            # FIX: Most of the apodization / window functions that are defined, should be 0 at the edge (for me the edge
+            # is in 1 for implementation reasons) and all should be 1 in the center. That is at 0 in my implementation.
+            # <02-09-24> 
+            @testset "methods $(typeof(apo))" for apo in [
+                Hamming(), Hann(), Welch(), Connes(), Cosine(),
+                Nuttall(), BlackmanNuttall(), BlackmanHarris(), FlatTop(), ExactBlackman(),
+                Blackman{0.4}(), Gaussian(0.4),
+            ]
+                @test apodization(apo, 0) == 1
+
+                r = rand()
+                @test apodization(apo, r) ≈ apodization(apo, -r)
+
+                if typeof(apo) ∈ (Hann, Triangular, Cosine, Connes, Welch)
+                    @test apodization(apo, 1) == apodization(apo, -1) == 0
+                end
+            end
+
+            @testset "equavalence $(equivs)" for equivs in [
+                (Hann(), SineSum{2,(0.5, 0.5)}()),
+                (PowerCosine{0}(), SineSum{1,(1,)}()),
+                (PowerCosine{2}(), SineSum{2,(0.5, 0.5)}()),
+                (PowerCosine{4}(), SineSum{3,(0.375, 0.5, 0.125)}()),
+                (PowerCosine{6}(), SineSum{4,(0.3125, 0.46875, 0.1875, 0.03125)}()),
+            ]
+                @test apodization.(equivs[1], -1:0.01:1) ≈ apodization.(equivs[2], -1:0.01:1)
+            end
+
+
+            @testset "methods" begin
+                using ImageFiltering: Pad
+                apo = Cosine()
+                @test taperedges(
+                          apo, ones(100, 100, 9), ((10, 10), (10, 10)); dims=(1, 2) # All the supplied arguments 
+                      ) == taperedges(
+                          apo, ones(100, 100, 9), ((10, 10), (10, 10)) # Infer dims
+                      ) == taperedges(
+                          apo, ones(100, 100, 9), 10; dims=(1, 2) # Supply single unified width
+                      ) == taperedges(
+                          apo, ones(100, 100, 9), (10, 10); dims=(1, 2) # Supply single width for each dimension
+                      ) == taperedges(
+                          apo, ones(100, 100, 9), (10, 10) # Infer dims
+                      ) == taperedges(
+                          ones(100, 100, 9), (10, 10) # default `apo`
+                      ) == taperedges(
+                          ones(100, 100, 9), (10, 10), "replicate"; dims=(1, 2) # default border 
+                      ) == taperedges(
+                          ones(100, 100, 9), (10, 10), Pad{0}(:replicate, (), ())  # instantiate border
+                      ) == taperedges(
+                          ones(100, 100, 9), (10, 10), Pad{3}(:replicate, (10, 10, 0), (10, 10, 0))  # Correct border size
+                      )
+
+                # TODO: Test with various padding edges... Does the arrays size match? <09-09-24> 
+
+                @test_throws ArgumentError taperedges(apo, ones(100, 100), 10; dims=(1, 2, 3))
+                @test_throws ArgumentError taperedges(apo, ones(100, 100), 10; dims=(1, 3))
+
+                # `dims`
+                @test_broken taperedges(ones(30, 30), 10; dims=:) isa AbstractArray
+                @test_broken taperedges(ones(30, 30), 10; dims=2) isa AbstractArray
+                @test taperedges(ones(30, 30), 10; dims=Dims((1, 2))) isa AbstractArray
+
+                @test size(taperedges(ones(30, 30), (10, 20))) == (50, 70)
+
+                A_tap = taperedges(Cosine(), ones(30, 30), 10)
+
+                # RESEARCH: Should this in fact be 0 at the other edge as well? This is done to make the signal periodic
+                # so if we taper one edge to 0 and the other edge to the 0 length - 1, we will already have a periodic
+                # signal, correct? <10-09-24> 
+                @test all(all.([
+                    (A_tap[-9, :] .== 0),
+                    (A_tap[40, :] .== 0),
+                    (A_tap[:, -9] .== 0),
+                    (A_tap[:, 40] .== 0),
+                    (A_tap[1:30, 1:30] .== 1),
+                    (A_tap[-9:0, -9:0] .!= 1),
+                    (A_tap[31:40, -9:0] .!= 1),
+                    (A_tap[-9:0, 31:40] .!= 1),
+                    (A_tap[31:40, 31:40] .!= 1)
+                ]))
+            end
+        end
     end
 
     @testset "OTF" begin
