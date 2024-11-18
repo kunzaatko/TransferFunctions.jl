@@ -111,7 +111,7 @@ julia> roundupcenter(ones(16,16))
 julia> roundupcenter(ones(15,15,15))
 (8, 8, 8)
 ```
- """
+"""
 function roundupcenter(arr::AbstractArray{N})::Coordinate where {N}
  axs = axes(arr)
  l = @. maximum(axs) .- minimum(axs)
@@ -134,7 +134,7 @@ julia> exactcenter(ones(16,16))
 julia> exactcenter(ones(15,15,15))
 (8.0, 8.0, 8.0)
 ```
- """
+"""
 function exactcenter(arr::AbstractArray{N})::Coordinate where {N}
  axs = axes(arr)
  return @. minimum(axs) + (maximum(axs) - minimum(axs)) / 2
