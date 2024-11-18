@@ -1,4 +1,4 @@
-include("models/spherical_aperture_otf.jl")
+include("models/spherical-aperture-otf.jl")
 
 # TODO: Add docs <28-11-23> 
 @doc """

@@ -26,8 +26,8 @@ include("common.jl")
 include("utils.jl")
 
 # Measured transfer functions
-include("measured_otf.jl")
-include("measured_psf.jl")
+include("measured-otf.jl")
+include("measured-psf.jl")
 
 @doc raw"""
 An abstract type for the measurement of the transfer function of an optical system. It can be either a PSF measurement 
@@ -41,15 +41,13 @@ include("psf.jl")
 include("pupil.jl")
 
 # Sampled transfer function API
-include("sampled_otf.jl")
-include("sampled_psf.jl")
+include("sampled-otf.jl")
+include("sampled-psf.jl")
 """
 TODO
 """
 const SampledTransferFunction{N} = Union{SampledOTF{N},SampledPSF{N}}
 
-# utils
-include("apodization.jl")
 
 export psf, otf, mtf, ptf, apsf, ipsf, pupil, attenuation, support
 export cutoff, resolution_limit

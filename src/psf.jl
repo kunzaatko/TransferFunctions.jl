@@ -1,5 +1,5 @@
-include("models/gibson_lanni.jl")
-include("models/born_wolf.jl")
+include("models/gibson-lanni.jl")
+include("models/born-wolf.jl")
 
 # FIX: Add support for N-dims <30-11-23> 
 @doc """

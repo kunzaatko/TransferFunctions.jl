@@ -148,3 +148,6 @@ function freqs(inds::Indices{N}, Δxy::PixelSize{N}, center::Coordinate{N}) wher
  fys = fys .- (center[2] - 1) / (Δxy[2] * length(inds[2]))
  return fxs, fys
 end
+
+# utils
+include("apodization.jl")
