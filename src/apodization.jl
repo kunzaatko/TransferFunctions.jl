@@ -10,127 +10,9 @@ abstract type Apodization end
 Broadcast.broadcastable(a::Apodization) = Ref(a)
 apodization(apo::Apodization, x::Real, halfwidth::Int) = apodization(apo, x / halfwidth)
 
-# TODO: How to document types? <17-07-24> 
+include("apodization-types.jl")
 
-@doc raw"""
-    Bartlett <: Apodization
-
- ``A(x) = 1-|x|/a``
-
-``I(k) = a \mathop{sinc}²(π k a)``
-
-Examples:
-```julia
-Bartlett(5) <: Apodization
-```
-"""
-struct Bartlett <: Apodization
-    a::Real
-end
-apodization(apo::Bartlett, x::Real) = 1 - abs(x) / apo.a
-instrument(apo::Bartlett, k::Real) = apo.a * sinc(π * k * apo.a)^2
-
-
-@doc raw"""
-    Blackman(a::Real) <: Apodization
-
-``A(x) = 0.42 + 0.5 \cos(\pi x/a) + 0.08 \cos(2\pi x/a)``
-
-``I(k) = \frac{a \mathop{sinc}(2\pi k a) (0.84 - 0.36a^2k^2)}{(1 - a^2k^2)(1 - 4a^2k^2)}``
-
-where ``a`` is the apodization parameter.
-"""
-struct Blackman <: Apodization
-    a::Real
-end
-function apodization(apo::Blackman, x::Real)
-    return 21 / 50 + cospi(x / apo.a) + 2 * cospi(2 * x / apo.a) / 25
-end
-function instrument(apo::Blackman, k::Real)
-    return apo.a * sinc(2π * k * apo.a) * (21 / 25 - 9apo.a^2 * k^2 / 25) /
-           ((1 - apo.a^2 * k^2) * (1 - 4apo.a^2 * k^2))
-end
-
-# TODO: Documentation <17-07-24> 
-@doc raw"""
-    Connes(a::Real) <: Apodization
-"""
-struct Connes <: Apodization
-    a::Real
-end
-apodization(apo::Connes, x::Real) = (1 - x^2 / apo.a^2)^2
-function instrument(apo::Connes, k::Real)
-    return 8apo.a * sqrt(2π) * SpecialFunctions.besselj(5 / 2, 2π * k * apo.a) /
-           (2π * k * apo.a)^(5 / 2)
-end
-
-@doc raw"""
-    Cosine(a::Real) <: Apodization
-
-Cosine apodization function with a given amplitude factor `a`.
-
-Formulas:
-* Apodization Function: ``\cos\left(\pi \frac{x}{2a}\right)``
-* Instrument Function: ``\frac{4a\cos\left(2ak\right)}{\pi\left(1 - 16a^2 k^2\right)}``
-"""
-struct Cosine <: Apodization
-    a::Real
-end
-apodization(apo::Cosine, x::Real) = cospi(x / 2apo.a)
-instrument(apo::Cosine, k::Real) = 4apo.a * cospi(2apo.a * k) / (π * (1 - 16apo.a^2 * k^2))
-
-@doc raw"""
-    Gaussian(σ::Real) <: Apodization
-
-Gaussian apodization function with a given standard deviation `σ`.
-
-Formulas:
-    - Apodization Function: ``e^{-\frac{x^2}{2\sigma^2}}``
-    - Instrument Function: Not implemented (Low Priority)
-"""
-struct Gaussian <: Apodization
-    σ::Real
-end
-apodization(apo::Gaussian, x::Real) = exp(-x^2 / (2apo.σ^2))
-function instrument(_::Gaussian, _::Real)
-    throw(NotImplementedError("Low Priority (if you need it, please open an issue)"))
-end
-
-# TODO: Documentation <17-07-24> 
-@doc raw"""
-    Hamming(a::Real) <: Apodization
-"""
-struct Hamming <: Apodization
-    a::Real
-end
-apodization(apo::Hamming, x::Real) = 27 / 50 + 23cospi(x / apo.a) / 50
-function instrument(apo::Hamming, k::Real)
-    return apo.a(27 / 25 - 16apo.a^2 * k^2 / 25) * sinc(2π * apo.a * k) /
-           (1 - 4apo.a^2 * k^2)
-end
-
-# TODO: Documentation <17-07-24> 
-@doc raw"""
-    Hanning(a::Real) <: Apodization
-"""
-struct Hanning <: Apodization
-    a::Real
-end
-apodization(apo::Hanning, x::Real) = cospi(x / 2apo.a)^2
-instrument(apo::Hanning, k::Real) = apo.a * sinc(2π * apo.a * k) / (1 - 4apo.a^2 * k^2)
-
-# TODO: Documentation <17-07-24> 
-@doc raw"""
-    Welch(a::Real) <: Apodization
-"""
-struct Welch <: Apodization
-    a::Real
-end
-apodization(apo::Welch, x::Real) = 1 - x^2 / apo.a^2
-function instrument(apo::Welch, k::Real)
-    return apo.a * (sinpi(2 * k * apo.a) - 2π * apo.a * k * cospi(2apo.a * k)) /
-           (2(apo.a * k * π)^3)
-end
+# FIX: The call stack must be rewritten to construct the arguments of the function from the beginning <02-09-24> 
 
 # TODO: There should be a mutating method and a non-mutating method that allocates the output array <26-08-24> 
 # TODO: Should allow padding with some scheme from `ImageFiltering.jl` before the tapering for an unobscured data
@@ -139,48 +21,130 @@ end
 # satisfied with the default `TransferFunctions.Cosine`. The `width` parameter should be part of the `apo` instance.
 # When only the width is set, the default apodization should be instantiated. The tendency should be for lower
 # parameter methods be easier and just call the general methods, which are the more flexible ones. <17-07-24> 
+# TODO: Document: how the widths arguments work <02-09-24> 
 @doc raw"""
-    taperedges(apo, A, width::Int, [dims])
-    taperedges(apo, A, (w1,...,wM), [(d1,...,dM)])
-    taperedges(apo, A, ((w1_start,...,wM_start), (w1_end,...,wM_end)), [(d1,...,dM)])
+    taperedges([apo], A, width::Int, [border="replicate"]; dims=1:N)
+    taperedges([apo], A, (w1,...,wM), [border="replicate"]; dims =1:M)
+    taperedges([apo], A, ((w1_start,...,wM_start), (w1_end,...,wM_end)), [border="replicate"]; dims=1:M)
 
-Taper the edges of the input array `A` using the apodization function `apo::Apodization`, along `dims::Tuple`
+Taper a given width of the array `A`'s edges using [`apo::Apodization`](@ref Apodization)
 
-- `apo::Apodization`: apodization function to apply.
-- `A::AbstractArray{<:Number,N}`: The input array to taper.
+- `apo`: [Apodization](@ref) function to use for the tapering. Default is `Cosine`.
+- `border="replicate"` : Similarly as with `imfilter`, the array `A` may be extended to avoid loss of the data at the edges
 - `width::NTuple{M,Int}` or `Int` or `Tuple{NTuple{M,Int},NTuple{M,Int}}`: The width of tapering at the edges.
 - `dims::NTuple{M,Int}`: The dimensions along which to taper the edges.
 """
-function taperedges(
-    apo::Apodization,
+taperedges
+
+function taperedges( # STEP 1A: Fill the apodization type
     A::AbstractArray{<:Number,N},
-    width::NTuple{M,Int},
-    dims::NTuple{M,Int}=Tuple(1:N),
-) where {N,M}
-    return taperedges(apo, A, (width, width), dims)
+    args...;
+    kwargs...
+) where {N}
+    return taperedges(Cosine(), A, args...; kwargs...)
 end
-function taperedges(
+function taperedges( # STEP 2A: Fill from `width` single width
     apo::Apodization,
     A::AbstractArray{<:Number,N},
     width::Int,
-    dims::NTuple{M,Int}=Tuple(1:N),
+    args...;
+    # FIX: Instead of this, should be default `Colon()` <02-09-24> 
+    dims::NTuple{M,Int}=Tuple(1:N), # TODO: Document by default taper along all the dimensions <03-09-24> 
+    kwargs...
 ) where {N,M}
-    return taperedges(apo, A, (Tuple(fill(width, M)), Tuple(fill(width, M))), dims)
+    # TODO: Test whether this works for permuted order of kwargs... I.e. whether dims must be supplied as the first
+    # argument or not. Otherwise, it must be done by testing if kwargs has dims in it... <02-09-24> 
+    return taperedges(apo, A, (Tuple(fill(width, M)), Tuple(fill(width, M))), args...; dims, kwargs...)
 end
-function taperedges(
+function taperedges( # STEP 2B: Fill from `width`s for each dimension
+    apo::Apodization,
+    A::AbstractArray{<:Number,N},
+    edge_widths::NTuple{M,Int},
+    args...;
+    kwargs...
+) where {N,M}
+    return taperedges(apo, A, (edge_widths, edge_widths), args...; kwargs...)
+end
+function taperedges( # STEP 3: Fill in the default `border`
+    apo::Apodization,
+    A::AbstractArray{<:Number,N},
+    widths::Tuple{NTuple{M,Int},NTuple{M,Int}},
+    args...;
+    kwargs...
+) where {N,M}
+    return taperedges(apo, A, widths, "replicate", args...; kwargs...)
+end
+function taperedges( # STEP 4: Create a border instance
+    apo::Apodization,
+    A::AbstractArray{<:Number,N},
+    widths::Tuple{NTuple{M,Int},NTuple{M,Int}},
+    border::AbstractString,
+    args...;
+    kwargs...
+) where {N,M}
+    return taperedges(apo, A, widths, borderinstance(border), args...; kwargs...)
+end
+function taperedges( # STEP 5: Set the border sizes
+    apo::Apodization,
+    A::AbstractArray{<:Number,N},
+    widths::Tuple{NTuple{M,Int},NTuple{M,Int}},
+    border::BorderSpecAny,
+    args...;
+    dims=Tuple(1:M),
+    kwargs...
+) where {N,M}
+    # FIX: Must be tested here and in the final because otherwise we would index out of bounds <09-09-24> 
+    (M > N || maximum(dims) > N) && throw(ArgumentError("The number of dimensions must be less than or equal to the number of axes."))
+
+    concrete_border = full_padding_border(border, widths, dims, N)
+    return taperedges(apo, A, widths, concrete_border, args...; kwargs...)
+end
+
+# TODO: Test this <09-09-24> 
+function full_padding_border(border::BorderSpecAny, widths::Tuple{NTuple{M,Int},NTuple{M,Int}}, dims::NTuple{M,Int}, ndims::Int) where {M}
+    all_left_widths, all_right_widths = zeros(Int, ndims), zeros(Int, ndims)
+    foreach(dims, widths[1], widths[2]) do dim, w_left, w_right
+        all_left_widths[dim] = w_left
+        all_right_widths[dim] = w_right
+    end
+    all_left_widths, all_right_widths = Tuple(all_left_widths), Tuple(all_right_widths)
+    if border isa Pad
+        return Pad(border.style, all_left_widths, all_right_widths)
+    elseif border isa Fill
+        return Fill(border.value, all_left_widths, all_right_widths)
+    elseif border isa Inner
+        return Inner(all_left_widths, all_right_widths)
+    else
+        throw(ErrorException("`NA` and `NoPad` borders should not occur here. Type is $(typeof(border))."))
+    end
+end
+
+# TODO: Perhaps there could be an argument to make the array odd sized for the Fourier transform. Since we do not have
+# to have 0 at both edges. For the signal to be periodic, only one edge to be 0 is sufficient. An odd size is beneficial
+# for a Fourier transform. <10-09-24> 
+function taperedges( # FINAL # TODO: Instead of this should be something like `_taperedges` function <02-09-24> 
     apo::Apodization,
     A::AbstractArray{<:Number,N},
     width::Tuple{NTuple{M,Int},NTuple{M,Int}},
-    dims::NTuple{M,Int}=Tuple(1:N),
+    border::AbstractBorder;
+    dims::NTuple{M,Int}=Tuple(1:M) # TODO: Document that the number of dimensions is by default taken as the first M 
+    # dimensions where M is the number of widths supplied <kunzaatko> 
 ) where {N,M}
-    for (d, low, high) in zip(dims, width[1], width[2])
-        lowedge = range(-1, 0; length=low + 1)
-        for (e, i) in enumerate(firstindex(axes(A, d)):(firstindex(axes(A, d))+low-1))
-            selectdim(A, d, i) .*= apodization(apo, lowedge[e])
+    # TODO: How can one handle the dimensions and the various types that can define them (such as Colon())... Ask on
+    # discourse and implement. <02-09-24> 
+    (M > N || maximum(dims) > N) && throw(ArgumentError("The number of dimensions must be less than or equal to the number of axes."))
+
+    A = padarray(A, border)
+
+    for (dim, low, high) in zip(dims, width[1], width[2])
+        lowedge = range(-1, 0; length=low + 1)[begin:(end-1)]
+        for (e, i) in enumerate(firstindex(axes(A, dim)):(firstindex(axes(A, dim))+(low-1)))
+            selectdim(A, dim, i) .*= apodization(apo, lowedge[e])
         end
-        highedge = range(0, 1; length=high + 1)
-        for (e, i) in enumerate((lastindex(axes(A, d))-high+1):lastindex(axes(A, d)))
-            selectdim(A, d, i) .*= apodization(apo, highedge[e])
+        highedge = range(0, 1; length=high + 1)[(begin+1):end]
+        @assert length(highedge) == length((lastindex(axes(A, dim))-(high-1)):lastindex(axes(A, dim)))
+        for (e, i) in enumerate((lastindex(axes(A, dim))-(high-1)):lastindex(axes(A, dim)))
+            selectdim(A, dim, i) .*= apodization(apo, highedge[e])
         end
     end
     return A
@@ -204,8 +168,8 @@ function apodize(
     A::AbstractArray{<:Number,N},
     cutoff::Real, # Tuple{NTuple{M,Int},NTuple{M,Int}}, # FIX: Generalize to non-symmetric cut-offs <21-12-23> 
     width::Real, # FIX: Generalize to non-symmetric widths <21-12-23> 
-    # dims::NTuple{M,Int}=Tuple(1:N) # FIX: Abstract over dimensions <22-12-23> 
-) where {N} # ,M}
+    dims::NTuple{M,Int}=Tuple(1:N) # FIX: Abstract over dimensions <22-12-23> 
+) where {N,M}
     # PERF: Should be done with no allocation... This is the KISS solution  
     # FIX: Work for all dimensions  
     rs = [hypot(abs(x), abs(y)) for x in fftfreq(size(A, 1), size(A, 1)), y in fftfreq(size(A, 2), size(A, 2))]
@@ -215,4 +179,3 @@ function apodize(
     coefs[cutoff.>rs.>(cutoff-width)] .= map(r -> apodization(apo, r - (cutoff - width), width), rs[cutoff.>rs.>(cutoff-width)])
     A .* coefs
 end
-

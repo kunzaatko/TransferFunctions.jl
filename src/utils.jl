@@ -142,6 +142,7 @@ end
 
 contained(arr::AbstractArray{T,N}, loc::Coordinate{N}) where {T,N} = all(loc .∈ axes(arr))
 
+# TODO: Documentation <02-09-24> 
 # TODO: test <28-08-24> 
 # TODO: Should be for N dimensions <28-08-24> 
 function freqs(inds::Indices{N}, Δxy::PixelSize{N}, center::Coordinate{N}) where {N}
