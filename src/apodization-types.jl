@@ -3,6 +3,7 @@
 # https://www.mathworks.com/help/signal/windows.html?s_tid=CRUX_lftnav
 # https://en.wikipedia.org/wiki/Window_function
 # https://mathworld.wolfram.com/ApodizationFunction.html
+# TODO: Warn when the apodization function is called out of the interval (-1,1) where it makes sense to sample it <18-11-24> 
 # TODO: Must implement the Tuckey, Planck-taper and other windows that are usable for apodization and not edge tapering
 # <10-09-24> 
 # TODO: There must be a some plots in the documentation... Otherwise this is a waste <10-09-24> 
@@ -30,7 +31,7 @@ instrument(::Triangular, k::Real) = sinc(π * k)^2
 # TODO: This should be instead implemented as a polynomial with some set parameters. It could even be by using the
 # B-Splines type. <10-09-24> 
 @doc raw"""
-    Welch() <: Apodization
+    Welch <: Apodization
 
 + zero-phase function: ``w₀(r) = 1 - r²``
 """
@@ -45,7 +46,7 @@ end
 # FIX: Is this the correct definition of Connes? Wikipedia does not have a Connes window. <10-09-24> 
 # TODO: Documentation <17-07-24> 
 @doc raw"""
-    Connes(a::Real) <: Apodization
+    Connes <: Apodization
 """
 struct Connes <: Apodization end
 apodization(::Connes, r::Real) = (1 - r^2)^2
@@ -57,6 +58,8 @@ end
     PowerCosine{α<:Real} <: Apodization
 
 + zero-phase function: ``w₀(r) = cos(πr/2)^α``
+
+Instances: [`Cosine`](@ref) and [`Hann`](@ref)
 """
 struct PowerCosine{α} <: Apodization
     function PowerCosine{α}() where {α}
@@ -76,7 +79,7 @@ apodization(::PowerCosine{α}, r::Real) where {α} = cospi(r / 2)^(α)
 const Cosine = PowerCosine{1}
 
 @doc raw"""
-Hann == PowerCosine{2} <: Apodization
+    Hann == PowerCosine{2} <: Apodization
 
 Formulas:
 + zero-phase function: ``w₀(r) = \cos²(πr/2)``
@@ -89,7 +92,7 @@ const Hann = PowerCosine{2}
 
 + zero-phase function: ``w₀(r) = ∑ᴺₖ₌₀ (-1)ᵏ Cs[k] \cos(πk(r + 1))``
 
-Specific instances with coefficients [`Hamming`](@ref), [`Nuttall`](@ref), [`BlackmanNuttall`](@ref), [`BlackmanHarris`](@ref), [`FlatTop`](@ref), [`Blackman`](@ref) and [`ExactBlackman`](@ref)
+Instances: [`Hamming`](@ref), [`Nuttall`](@ref), [`BlackmanNuttall`](@ref), [`BlackmanHarris`](@ref), [`FlatTop`](@ref), [`Blackman`](@ref) and [`ExactBlackman`](@ref)
 """
 struct SineSum{N,Cs} <: Apodization
     coefficients::NTuple{N,Real}
