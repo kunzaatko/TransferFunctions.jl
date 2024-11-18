@@ -55,6 +55,14 @@ Cosine
 Gaussian
 Hamming
 Welch
+BlackmanNuttall
+PowerCosine
+Triangular
+Nuttall
+SineSum
+BlackmanHarris
+FlatTop
+Hann
 ```
 
 # Deprecations

@@ -88,6 +88,8 @@ const Hann = PowerCosine{2}
     SineSum{N::UInt, Cs::NTuple{N, Real}} <: Apodization
 
 + zero-phase function: ``w₀(r) = ∑ᴺₖ₌₀ (-1)ᵏ Cs[k] \cos(πk(r + 1))``
+
+Specific instances with coefficients [`Hamming`](@ref), [`Nuttall`](@ref), [`BlackmanNuttall`](@ref), [`BlackmanHarris`](@ref), [`FlatTop`](@ref), [`Blackman`](@ref) and [`ExactBlackman`](@ref)
 """
 struct SineSum{N,Cs} <: Apodization
     coefficients::NTuple{N,Real}
@@ -137,7 +139,9 @@ const FlatTop = SineSum{5,(0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.0
 @doc raw"""
     Blackman{α::Real} == SineSum{3, ((1 - α) / 2, 1 / 2, α / 2) } <: Apodization
 
-`α = 0.16`
+Default is `α = 0.16`.
+
+See also [`ExactBlackman`](@ref)
 """
 struct Blackman{α} <: Apodization
     sine_sum::SineSum{3}
@@ -148,6 +152,10 @@ struct Blackman{α} <: Apodization
     end
 end
 Blackman() = Blackman{0.16}()
+
+@doc raw"""
+    ExactBlackman == Blackman{683 // 4652}
+"""
 const ExactBlackman = Blackman{683 // 4652}
 apodization(apo::Blackman{α}, r::Real) where {α} = apodization(apo.sine_sum, r)
 # FIX: Is there a way to do this properly? <10-09-24> 

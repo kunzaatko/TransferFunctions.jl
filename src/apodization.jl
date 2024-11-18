@@ -6,6 +6,12 @@ using ImageFiltering: AbstractBorder, borderinstance, BorderSpecAny
 # FIX: Type stability <13-12-23> 
 # FIX: Domain error, when ∉ (-1,1) <13-12-23> 
 # https://mathworld.wolfram.com/ApodizationFunction.html
+# TODO: Add documentation about what is an apodization function and how it is used. "An apodization function is ... zero-phase function ... Instrument function ... Links" <18-11-24> 
+@doc raw"""
+    Apodization
+
+Abstract type for apodization functions.
+"""
 abstract type Apodization end
 Broadcast.broadcastable(a::Apodization) = Ref(a)
 apodization(apo::Apodization, x::Real, halfwidth::Int) = apodization(apo, x / halfwidth)
