@@ -50,6 +50,7 @@ Apodization
 
 ```@docs
 Blackman
+ExactBlackman
 Connes
 Cosine
 Gaussian
