@@ -1,6 +1,6 @@
 using TransferFunctions
 using TransferFunctions: Frequency
-using FillArrays, FourierTools, IntervalSets, FFTViews
+using FillArrays, FourierTools, IntervalSets, FFTViews, Distributions
 using Aqua, Test, Documenter
 
 @testset "TransferFunctions.jl" begin
@@ -73,6 +73,7 @@ using Aqua, Test, Documenter
                 @test Blackman() isa Apodization
                 @test ExactBlackman() isa Blackman
                 @test Gaussian(rand(0.01 .. 0.49)) isa Apodization
+                @test Gaussian(rand(Uniform(0.01, 0.49))) isa Apodization
                 @test_throws ArgumentError Gaussian(0.6)
             end
 
@@ -232,6 +233,7 @@ using Aqua, Test, Documenter
             @test_broken otf(s_tf_2, (512, 512)) ≈ real(FourierTools.shift(otf(s_tf, (512, 512)), (0.5, -3.5)))
             @test_broken otf(s_tf_2, (511, 511)) ≈ real(FourierTools.shift(otf(s_tf, (511, 511)), (0.5, -3.5)))
 
+            using TransferFunctions: support
             # NOTE: The support calculation should match the generation of the array <26-08-24>
             @test support(s_tf, img) isa BitArray
             @test (otf(s_tf, (512, 512)) .> 0) == support(s_tf, (512, 512))

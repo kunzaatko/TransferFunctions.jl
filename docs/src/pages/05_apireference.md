@@ -45,17 +45,19 @@ taperedges
 
 Apodization Functions
 ```@docs
-Bartlett
+Apodization
+```
+
+```@docs
 Blackman
 Connes
 Cosine
 Gaussian
 Hamming
-Hanning
 Welch
 ```
 
-# To Deprecate
+# Deprecations
 ```@docs
 padtosize
 ```
