@@ -8,7 +8,7 @@ using Aqua, Test, Documenter
         @testset "Code quality (Aqua.jl)" begin
             Aqua.test_all(
                 TransferFunctions;
-                ambiguities=(; exclude=VERSION >= v"1.11" ? [checkindex, checkbounds] : [])
+                ambiguities=false
                 # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
             )
         end
@@ -27,6 +27,9 @@ using Aqua, Test, Documenter
         @info "Skipping Documenter.jl doctests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
     end
 
+    @testset "Ambiguities" begin
+        @test length(Test.detect_ambiguities(TransferFunctions)) == 0
+    end
     @testset "utils.jl + types.jl" begin
         using TransferFunctions: PixelSize, Coordinate, Frequency, Length
         using OffsetArrays
