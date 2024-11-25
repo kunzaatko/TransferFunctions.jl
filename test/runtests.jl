@@ -75,7 +75,6 @@ using Aqua, Test, Documenter
                 @test Blackman() == Blackman{0.16}()
                 @test Blackman() isa Apodization
                 @test ExactBlackman() isa Blackman
-                @test Gaussian(rand(0.01 .. 0.49)) isa Apodization
                 @test Gaussian(rand(Uniform(0.01, 0.49))) isa Apodization
                 @test_throws ArgumentError Gaussian(0.6)
             end
