@@ -4,31 +4,37 @@ using FillArrays, FourierTools, IntervalSets, FFTViews, Distributions
 using Aqua, Test, Documenter
 
 @testset "TransferFunctions.jl" begin
-    if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "GITHUB_ACTIONS")
-        @testset "Code quality (Aqua.jl)" begin
-            Aqua.test_all(
-                TransferFunctions;
-                ambiguities=false
-                # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
-            )
+    @testset "Code quality" begin
+        @testset "Aqua.jl" begin
+            if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "GITHUB_ACTIONS")
+                Aqua.test_all(
+                    TransferFunctions;
+                    ambiguities=false
+                    # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
+                )
+            else
+                @info "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
+            end
         end
-    else
-        @info "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
+        @testset "Ambiguities" begin
+            @test length(Test.detect_ambiguities(TransferFunctions)) == 0
+        end
     end
-
-    # FIX: When running locally, do not ask for SSH key password <10-12-23> 
-    if haskey(ENV, "RUNTESTS_FULL") && (!haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux")
-        @testset "DocTests" begin
+    @testset "DocTests" begin
+        # FIX: When running locally, do not ask for SSH key password <10-12-23> 
+        # NOTE: Show for `Unitful.jl` does nm⁻¹ on macOS and nm^-1 on Linux. This is necessary, since the `jldoctest` is only one
+        if !haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux"
             # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
-            DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(using TransferFunctions); recursive=true)
+            # NOTE: When updating, must update also in `docs/make.jl` <18-12-24> 
+            DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
+                    using TransferFunctions;
+                    using TestImages;
+                    using FFTW;
+                    using Logging; # NOTE: This does not need to be in the `make.jl` of docs. We want `@warn ` to function there <19-12-24> 
+                    Logging.disable_logging(Logging.Warn)
+                ); recursive=true)
             doctest(TransferFunctions)
         end
-    else
-        @info "Skipping Documenter.jl doctests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
-    end
-
-    @testset "Ambiguities" begin
-        @test length(Test.detect_ambiguities(TransferFunctions)) == 0
     end
     @testset "utils.jl + types.jl" begin
         using TransferFunctions: PixelSize, Coordinate, Frequency, Length
