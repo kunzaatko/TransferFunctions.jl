@@ -24,8 +24,8 @@ SampledPSF(tf::PointSpreadFunction{N}, Δxy::PixelSize{N}) where {N} = SampledPS
     tf::SampledPSF{N,PSF},
     wh::Tuple{Integer,Integer},
 ) where {N,PSF;!RadiallySymmetric{PSF}}
-    xs = isodd(wh[1]) ? (((-wh[1]-1)÷2):((wh[1]-1)÷2) .- tf.center[1]) .* tf.Δxy[1] : (((-wh[1]-2)÷2):(wh[1]÷2) .- tf.center[1]).*tf.Δxy[1]
-    ys = isodd(wh[2]) ? (((-wh[2]-1)÷2):((wh[2]-1)÷2) .- tf.center[2]) .* tf.Δxy[2] : (((-wh[2]-2)÷2):(wh[2]÷2) .- tf.center[2]).*tf.Δxy[2]
+    xs = isodd(wh[1]) ? (((-wh[1]-1)÷2):((wh[1]-1)÷2).-tf.center[1]) .* tf.Δxy[1] : (((-wh[1]-2)÷2):(wh[1]÷2).-tf.center[1]) .* tf.Δxy[1]
+    ys = isodd(wh[2]) ? (((-wh[2]-1)÷2):((wh[2]-1)÷2).-tf.center[2]) .* tf.Δxy[2] : (((-wh[2]-2)÷2):(wh[2]÷2).-tf.center[2]) .* tf.Δxy[2]
     return centered([psf(OT, tf, x, y) for x in xs, y in ys])
 end
 
@@ -127,6 +127,8 @@ end
 
 # psf(tf::TransferFunction, wh::Tuple{Integer,Integer}, Δxy::Length; vargs...) = psf(tf, wh, (Δxy, Δxy); vargs...)
 # psf(tf::TransferFunction, wh::Integer, args...; vargs...) = psf(tf, (wh, wh), args...; vargs...)
+
+# FIX: This does not work with `img` for since `args...` expects at least one argument it seems <19-12-24> 
 psf(tf::SampledPSF{N,PSF}, img::AbstractArray{OT,N}, args...; vargs...) where {OT,PSF,N} = psf(OT, tf, size(img), args...; vargs...)
 psf(OT::Type{<:Number}, tf::SampledPSF{N,PSF}, img::AbstractArray{T,N}, args...; vargs...) where {PSF,N,T} = psf(OT, tf, size(img), args...; vargs...)
 
@@ -174,4 +176,31 @@ function ipsf(tf::SampledPSF{N,PSF}, args...; vargs...) where {N,PSF}
     ipsf(evaluation_type, tf, args...; vargs...)
 end
 
-# TODO: Better Base.show <30-11-23> 
+@doc raw"""
+    apply(tf::SapledPSF, img::AbstractArray)
+Apply the transfer function `tf` to the image `img`, i.e. simulate the transfer through the optical system.
+
+# Examples
+```jldoctest; filter = r"\s*Downloading artifact:.*\n"
+julia> psf_model = BornWolf(444u"nm", 1.4, 1.2);
+
+julia> sampled_psf = SampledPSF(psf_model, 61u"nm");
+
+julia> img = testimage("moonsurface.tiff");
+
+julia> blurred_img = apply(sampled_psf, img);
+```
+"""
+apply(tf::SampledPSF{N}, img::AbstractArray{T,N}) where {T,N} = imfilter(img, psf(tf, size(img)))
+
+# TODO: Util function for printing the resolution if the both the dimensional resolutions are the same i.e. 64 nm
+# instead (64 nm, 64 nm). This will be used for both the sampled types. <19-12-24> 
+# TODO: Better Base.show using `typeof` and `nameof` <30-11-23> 
+function Base.show(io::IO, ::MIME"text/plain", tf::SampledPSF)
+    print(io, nameof(typeof(tf)), "(")
+    show(io, MIME("text/plain"), tf.transfer)
+    print(io, ") with Δxy=", allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)
+    if !all(iszero.(tf.center))
+        print(io, ", δ = ", tf.center)
+    end
+end

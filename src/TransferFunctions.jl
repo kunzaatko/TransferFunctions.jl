@@ -7,7 +7,7 @@
 
 module TransferFunctions
 
-using SimpleTraits, SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets
+using SimpleTraits, SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets, ColorTypes, ImageFiltering
 using OffsetArrays: centered, center, Origin
 
 using Base: Indices
@@ -33,7 +33,7 @@ include("measured-psf.jl")
 An abstract type for the measurement of the transfer function of an optical system. It can be either a PSF measurement 
 [`MeasuredPSF`](@ref) or a [`MeasuredOTF`](@ref).
 """
-const MeasuredTransferFunction{N} = Union{MeasuredOTF,MeasuredPSF}
+const MeasuredTransferFunction{N} = Union{MeasuredOTF{<:Number,N},MeasuredPSF{<:Number,N}}
 
 # Model transfer functions
 include("otf.jl")
@@ -55,5 +55,6 @@ export BornWolf, IdealOTFwithCurvature
 
 export MeasuredPSF, MeasuredOTF
 export SampledPSF, SampledOTF
+export apply
 
 end

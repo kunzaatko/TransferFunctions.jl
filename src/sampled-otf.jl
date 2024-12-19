@@ -120,6 +120,7 @@ end
 #         fys .- δ[2] / (Δxy[2] * wh[2]))
 # end
 
+# FIX: This does not work with `img` for since `args...` expects at least one argument it seems <19-12-24> 
 otf(tf::SampledOTF{N,OTF}, img::AbstractArray{OT,N}, args...; vargs...) where {OT,OTF,N} = otf(OT, tf, size(img), args...; vargs...)
 otf(OT::Type{<:Number}, tf::SampledOTF{N,OTF}, img::AbstractArray{T,N}, args...; vargs...) where {T,OTF,N} = otf(OT, tf, size(img), args...; vargs...)
 
@@ -183,6 +184,27 @@ overlap(tf_1::SampledOTF{N,OTF1}, tf_2::SampledOTF{N,OTF2}, img::AbstractArray; 
 # TODO: Consider implementing a `cutoff` function here as well that gives the pixel radius of the support. Look below
 # for an example of where it could be useful. We could instead of the attenuation determined support give a radius
 # determined one <29-08-24> 
+
+# FIX: When implemented, can remove the `size` <19-12-24> 
+# FIX: `gray` should not be here as it introduces type instability. Could it be defined somehow in `ImageFiltering` that I can copy here? <19-12-24> 
+# FIX: Currenty returns `ComplexF64` regardless of `T`. This should be changed such that it returns the same type if
+# this is expected during the transfer <19-12-24> 
+@doc raw"""
+    apply(tf::SampledOTF, img::AbstractArray)
+Apply the transfer function `tf` to the image `img`, i.e. simulate the transfer through the optical system.
+
+# Examples
+```jldoctest; filter = r"\s*Downloading artifact:.*\n" => s"" 
+julia> otf_model = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.9);
+
+julia> sampled_otf = SampledOTF(otf_model, 61u"nm");
+
+julia> img = testimage("moonsurface.tiff");
+
+julia> blurred_img = apply(sampled_otf, img);
+```
+"""
+apply(tf::SampledOTF{N}, img::AbstractArray{T,N}) where {N,T} = ifft(fft(gray.(img)) .* otf(tf, size(img))) 
 
 # FIX: Add support for N-dim <30-11-23> 
 # @traitfn function otf_support(

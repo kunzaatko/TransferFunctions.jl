@@ -9,8 +9,8 @@ using SpecialFunctions
 # TODO: Add examples with transfer functions. For example an model OTF, when `ifft`ed with padding of the same parity
 # should be real...
 @doc raw"""
-    padtosize(a::AbstractArray{T,N}, size...; fourier=false, padvalue=0)
-    padtosize(a::AbstractArray{T,N}, size; fourier=false, padvalue=0)
+    TransferFunctions.padtosize(a::AbstractArray{T,N}, size...; fourier=false, padvalue=0)
+    TransferFunctions.padtosize(a::AbstractArray{T,N}, size; fourier=false, padvalue=0)
 
 Pad `a` to a `size`
 
@@ -23,27 +23,27 @@ If `a` is in the Fourier domain, then `fourier` should de set to `true`.
 - `fourier`: `a` is in the Fourier domain (default: `false`).
 
 # Examples:
-```jldoctest; setup = :(using TransferFunctions: padtosize; using FFTW)
-julia> padtosize(reshape(1:4, 2,2), 3, 3)
+```jldoctest; setup = :(using TransferFunctions: TransferFunctions as TF; using FFTW)
+julia> TF.padtosize(reshape(1:4, 2,2), 3, 3)
 3×3 Matrix{Int64}:
  0  0  0
  0  1  3
  0  2  4
 
-julia> padtosize(reshape(1:4, 2,2), 4, 4)
+julia> TF.padtosize(reshape(1:4, 2,2), 4, 4)
 4×4 Matrix{Int64}:
  0  0  0  0
  0  1  3  0
  0  2  4  0
  0  0  0  0
 
-julia> padtosize(reshape(1:4, 2,2), 3, 3; fourier=true)
+julia> TF.padtosize(reshape(1:4, 2,2), 3, 3; fourier=true)
 3×3 Matrix{Int64}:
  4  2  0
  3  1  0
  0  0  0
 
-julia> padtosize(reshape(1:4, 2,2), 4, 4; fourier=true)
+julia> TF.padtosize(reshape(1:4, 2,2), 4, 4; fourier=true)
 4×4 Matrix{Int64}:
  1  0  0  3
  0  0  0  0
@@ -54,7 +54,7 @@ julia> ones(1,1) |> fft
 1×1 Matrix{ComplexF64}:
  1.0 + 0.0im
 
-julia> padtosize(ones(1,1), 2,2) |> fft
+julia> TF.padtosize(ones(1,1), 2,2) |> fft
 2×2 Matrix{ComplexF64}:
   1.0+0.0im  -1.0+0.0im
  -1.0+0.0im   1.0+0.0im
@@ -64,20 +64,20 @@ julia> ones(2,2) |> fft
  4.0+0.0im  0.0+0.0im
  0.0+0.0im  0.0+0.0im
 
-julia> padtosize(ones(2,2), 3, 3) |> fft # can be made symmetric
+julia> TF.padtosize(ones(2,2), 3, 3) |> fft # can be made symmetric
 3×3 Matrix{ComplexF64}:
   4.0+0.0im  -2.0+0.0im  -2.0+0.0im
  -2.0+0.0im   1.0+0.0im   1.0+0.0im
  -2.0+0.0im   1.0+0.0im   1.0+0.0im
 
-julia> padtosize(ones(2,2), 4, 4) |> fft # cannot be symmetric
+julia> TF.padtosize(ones(2,2), 4, 4) |> fft # cannot be symmetric
 4×4 Matrix{ComplexF64}:
   4.0+0.0im  -2.0-2.0im  0.0+0.0im  -2.0+2.0im
  -2.0-2.0im   0.0+2.0im  0.0+0.0im   2.0+0.0im
   0.0+0.0im   0.0+0.0im  0.0+0.0im   0.0+0.0im
  -2.0+2.0im   2.0+0.0im  0.0+0.0im   0.0-2.0im
 
-julia> @assert all(-10^-5 .< imag(fft(padtosize(ones(2,2), 5, 5))) .< 10^-5) # .== 0 (numerical errors)
+julia> @assert all(-10^-5 .< imag(fft(TF.padtosize(ones(2,2), 5, 5))) .< 10^-5) # .== 0 (numerical errors)
 
 ```
 """
@@ -96,19 +96,19 @@ end
 padtosize(a, size::Integer; vargs...) = padtosize(a, fill(size, ndims(a))...; vargs...)
 
 @doc raw"""
-    roundupcenter(arr::AbstractArray)
+    TransferFunctions.roundupcenter(arr::AbstractArray)
 
 Calculate center index of `arr` rounded-up (i.e. `fft` center)
 
 # Examples
-```jldoctest; setup = :(using TransferFunctions: roundupcenter)
-julia> roundupcenter(ones(15,15))
+```jldoctest; setup = :(using TransferFunctions: TransferFunctions as TF)
+julia> TF.roundupcenter(ones(15,15))
 (8, 8)
 
-julia> roundupcenter(ones(16,16))
+julia> TF.roundupcenter(ones(16,16))
 (9, 9)
 
-julia> roundupcenter(ones(15,15,15))
+julia> TF.roundupcenter(ones(15,15,15))
 (8, 8, 8)
 ```
 """
@@ -119,19 +119,19 @@ function roundupcenter(arr::AbstractArray{N})::Coordinate where {N}
 end
 
 @doc raw"""
-     exactcenter(a::AbstractArray)
+     TransferFunctions.exactcenter(a::AbstractArray)
 
 Calculate the exact center index of `a`
 
 # Examples
-```jldoctest; setup = :(using TransferFunctions: exactcenter)
-julia> exactcenter(ones(15,15))
+```jldoctest; setup = :(using TransferFunctions: TransferFunctions as TF)
+julia> TF.exactcenter(ones(15,15))
 (8.0, 8.0)
 
-julia> exactcenter(ones(16,16))
+julia> TF.exactcenter(ones(16,16))
 (8.5, 8.5)
 
-julia> exactcenter(ones(15,15,15))
+julia> TF.exactcenter(ones(15,15,15))
 (8.0, 8.0, 8.0)
 ```
 """

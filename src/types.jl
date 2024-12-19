@@ -48,3 +48,6 @@ If the pupil function of the system is symmetric, the OTF as well as the PSF are
 optimize the calculations.
 """
 @traitdef RadiallySymmetric{TF<:TransferFunction}
+
+
+# TODO: Implement a Base.show() in one method for types ModelPSF, ModelOTF using `typeof` and `nameof` <19-12-24> 
