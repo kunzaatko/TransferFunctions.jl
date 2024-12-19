@@ -25,7 +25,7 @@ using Aqua, Test, Documenter
         # NOTE: Show for `Unitful.jl` does nm⁻¹ on macOS and nm^-1 on Linux. This is necessary, since the `jldoctest` is only one
         if !haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux"
             # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
-            # NOTE: When updating, must update also in `docs/make.jl` <18-12-24> 
+            # NOTE: When updating, must update also in `docs/make.jl` & `test/fix_doctests.jl` <18-12-24> 
             DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
                     using TransferFunctions;
                     using TestImages;
