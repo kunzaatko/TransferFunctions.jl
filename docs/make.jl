@@ -1,7 +1,14 @@
 using TransferFunctions
-using Documenter, DocumenterCitations
+using Documenter, DocumenterCitations, DocumenterInterLinks
 
-DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(using TransferFunctions); recursive=true)
+links = InterLinks(
+    "Unitful" => "https://painterqubits.github.io/Unitful.jl/stable/",
+)
+
+DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
+        using TransferFunctions;
+        using TestImages
+    ); recursive=true)
 
 bib = CitationBibliography(
     joinpath(@__DIR__, "src", "refs.bib");
@@ -30,9 +37,9 @@ makedocs(;
             "API" => "pages/05_apireference.md",
             "Bibliography" => "pages/06_bibliography.md"
         ]],
-    plugins=[bib],
+    plugins=[bib, links],
     # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here
-    doctest = false
+    doctest=false
 )
 
 deploydocs(;
