@@ -19,7 +19,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
-ColorTypes = "0.12.0"
+ColorTypes = "^0.7,^0.8,^0.9,^0.10,^0.11,^0.12"
 FFTW = "^1"
 FillArrays = "^1"
 ImageFiltering = "^0.7"
