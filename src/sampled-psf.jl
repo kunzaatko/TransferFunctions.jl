@@ -1,3 +1,23 @@
+"""
+    SampledPSF{N,<:PointSpreadFunction}
+A struct representing a point spread function which has a defined pixel resolution. This can be then used to work with
+images that also have a sampling, i.e. a pixel size.
+
+# Examples
+```jldoctest
+julia> bw = BornWolf(444u"nm", 1.4, 1.2)
+BornWolf{Float64}(444.0 nm, 1.4, 1.2)
+
+julia> SampledPSF(bw, 64u"nm")
+SampledPSF(BornWolf{Float64}(444.0 nm, 1.4, 1.2)) with Δxy=64 nm
+
+julia> SampledPSF(bw, (64u"nm", 58u"nm")) # different pixel sizes in x and y
+SampledPSF(BornWolf{Float64}(444.0 nm, 1.4, 1.2)) with Δxy=(64 nm, 58 nm)
+
+julia> SampledPSF(bw, 58u"nm", (3, 7)) # offset center
+SampledPSF(BornWolf{Float64}(444.0 nm, 1.4, 1.2)) with Δxy=58 nm, δ = (3, 7)
+```
+"""
 struct SampledPSF{N,PSF<:PointSpreadFunction{N}}
     "physical illumination pattern"
     transfer::PSF
@@ -192,15 +212,3 @@ julia> blurred_img = apply(sampled_psf, img);
 ```
 """
 apply(tf::SampledPSF{N}, img::AbstractArray{T,N}) where {T,N} = imfilter(img, psf(tf, size(img)))
-
-# TODO: Util function for printing the resolution if the both the dimensional resolutions are the same i.e. 64 nm
-# instead (64 nm, 64 nm). This will be used for both the sampled types. <19-12-24> 
-# TODO: Better Base.show using `typeof` and `nameof` <30-11-23> 
-function Base.show(io::IO, ::MIME"text/plain", tf::SampledPSF)
-    print(io, nameof(typeof(tf)), "(")
-    show(io, MIME("text/plain"), tf.transfer)
-    print(io, ") with Δxy=", allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)
-    if !all(iszero.(tf.center))
-        print(io, ", δ = ", tf.center)
-    end
-end

@@ -43,10 +43,14 @@ include("pupil.jl")
 # Sampled transfer function API
 include("sampled-otf.jl")
 include("sampled-psf.jl")
+
 """
-TODO
+    SampledTransferFunction{N}
+A `Union` type of `N`-dimensional sampled transfer functions.
 """
-const SampledTransferFunction{N} = Union{SampledOTF{N},SampledPSF{N}}
+const SampledTransferFunction{N} = Union{SampledOTF{N},SampledPSF{N},MeasuredTransferFunction{N}}
+
+include("sampled-tf-base-overloads.jl")
 
 
 export psf, otf, mtf, ptf, apsf, ipsf, pupil, attenuation, support

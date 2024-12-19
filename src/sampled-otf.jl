@@ -20,6 +20,25 @@
 
 # FIX: How about the measured transfer function, is it compatible with this view of the API <26-08-24> 
 
+"""
+    SampledOTF{N,<:OpticalTransferFunction{N}}
+A struct representing an optical transfer function that has a defined pixel resolution. For working with images that also have a sampling, i.e. a pixel size
+
+# Examples
+```jldoctest
+julia> otf_model = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.9)
+IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)
+
+julia> sampled_otf = SampledOTF(otf_model, 63u"nm")
+SampledOTF(IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=63 nm, δ = (1, 1)
+
+julia> SampledOTF(otf_model, (45u"nm", 65u"nm")) # different pixel sized in x and y
+SampledOTF(IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=(45 nm, 65 nm), δ = (1, 1)
+
+julia> SampledOTF(otf_model, 63u"nm", (101.5, -90.3)) # offseted center
+SampledOTF(IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=63 nm, δ = (101.5, -90.3)
+```
+"""
 struct SampledOTF{N,OTF<:OpticalTransferFunction{N}}
     "physical illumination pattern"
     transfer::OTF
