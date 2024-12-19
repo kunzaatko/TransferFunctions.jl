@@ -32,4 +32,4 @@ Roots = "^2"
 SimpleTraits = "0.9"
 SpecialFunctions = "^2"
 Unitful = "^1"
-julia = "^1.8"
+julia = "^1.8"                # NOTE: Because use of `allequal` <19-12-24>
