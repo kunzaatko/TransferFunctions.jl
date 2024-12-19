@@ -6,15 +6,6 @@ CurrentModule = TransferFunctions
 TransferFunction
 ```
 
-```@docs
-MeasuredPSF
-MeasuredOTF
-```
-
-```@docs
-SampledTransferFunction
-```
-
 # Functions
 ```@docs
 psf
