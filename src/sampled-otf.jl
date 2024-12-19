@@ -194,7 +194,7 @@ overlap(tf_1::SampledOTF{N,OTF1}, tf_2::SampledOTF{N,OTF2}, img::AbstractArray; 
 Apply the transfer function `tf` to the image `img`, i.e. simulate the transfer through the optical system.
 
 # Examples
-```jldoctest; filter = r"\s*Downloading artifact:.*\n" => s"" 
+```jldoctest
 julia> otf_model = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.9);
 
 julia> sampled_otf = SampledOTF(otf_model, 61u"nm");
@@ -204,7 +204,7 @@ julia> img = testimage("moonsurface.tiff");
 julia> blurred_img = apply(sampled_otf, img);
 ```
 """
-apply(tf::SampledOTF{N}, img::AbstractArray{T,N}) where {N,T} = ifft(fft(gray.(img)) .* otf(tf, size(img))) 
+apply(tf::SampledOTF{N}, img::AbstractArray{T,N}) where {N,T} = ifft(fft(gray.(img)) .* otf(tf, size(img)))
 
 # FIX: Add support for N-dim <30-11-23> 
 # @traitfn function otf_support(

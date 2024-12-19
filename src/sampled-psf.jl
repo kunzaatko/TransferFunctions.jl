@@ -181,7 +181,7 @@ end
 Apply the transfer function `tf` to the image `img`, i.e. simulate the transfer through the optical system.
 
 # Examples
-```jldoctest; filter = r"\s*Downloading artifact:.*\n"
+```jldoctest
 julia> psf_model = BornWolf(444u"nm", 1.4, 1.2);
 
 julia> sampled_psf = SampledPSF(psf_model, 61u"nm");
