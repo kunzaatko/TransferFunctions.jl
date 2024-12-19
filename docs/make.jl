@@ -32,10 +32,11 @@ makedocs(;
         "General Interface" => "pages/02_interface.md",
         "Transfer Functions" => [
             "Transfer Function Models" => "pages/03_model_tfs.md",
-            "Transfer Functions Measurements" => "pages/04_measured_tfs.md"],
+            "Transfer Functions Measurements" => "pages/04_measured_tfs.md",
+            "Sampled Transfer Functions" => "pages/05_sampled_tfs.md",],
         "References" => [
-            "API" => "pages/05_apireference.md",
-            "Bibliography" => "pages/06_bibliography.md"
+            "API" => "pages/06_apireference.md",
+            "Bibliography" => "pages/07_bibliography.md"
         ]],
     plugins=[bib, links],
     # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here

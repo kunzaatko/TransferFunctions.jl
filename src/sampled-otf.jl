@@ -204,7 +204,7 @@ julia> img = testimage("moonsurface.tiff");
 julia> blurred_img = apply(sampled_otf, img);
 ```
 """
-apply(tf::SampledOTF{N}, img::AbstractArray{T,N}) where {N,T} = ifft(fft(gray.(img)) .* otf(tf, size(img)))
+apply(tf::SampledOTF{N}, img::AbstractArray{T,N}) where {T,N} = ifft(fft(gray.(img)) .* otf(tf, size(img)))
 
 # FIX: Add support for N-dim <30-11-23> 
 # @traitfn function otf_support(
