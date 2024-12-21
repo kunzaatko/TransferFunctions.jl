@@ -56,7 +56,7 @@ jobs:
           version: '1'
       - name: Configure doc environment
         run: |
-          julia --project=docs/ -e '
+          julia --project=docs/ --color=yes -e '
             using Pkg
             Pkg.develop(PackageSpec(path=pwd()))
             Pkg.instantiate()'
