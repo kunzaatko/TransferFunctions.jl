@@ -16,7 +16,8 @@ abstract type OpticalTransferFunction{N} <: TransferFunction{N} end
 @doc raw"""
 # Implementation
 
-To create a new OTF model `A <: ModelOTF{2}`, you must define the transfer coefficient at a given [frequency](@ref `Frequency`):
+To create a new OTF model `A <: ModelOTF{2}`, you must define the transfer coefficient at a given [frequency](@ref
+TransferFunctions.Frequency):
 + `attenuation(model::A, kx::Frequency, ky::Frequency)` for a non-symmetric OTF, or
 + `attenuation(model::A, kᵣ::Frequency)` for a radially symmetric OTF and use `@traitimpl RadiallySymmetric{A}` mark the
     trait implementation.

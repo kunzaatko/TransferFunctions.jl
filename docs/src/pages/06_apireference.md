@@ -9,6 +9,8 @@ TransferFunction
 # Types
 ```@docs
 Frequency
+FrequencyUnits
+FrequencyFreeUnits
 ```
 
 # Functions

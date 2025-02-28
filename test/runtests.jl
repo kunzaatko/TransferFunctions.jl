@@ -1,7 +1,7 @@
 using TransferFunctions
 using TransferFunctions: Frequency
 using FillArrays, FourierTools, IntervalSets, FFTViews, Distributions
-using Aqua, Test, Documenter
+using Aqua, Test, Documenter, CompatHelperLocal
 
 @testset "TransferFunctions.jl" begin
     @testset "Code quality" begin
@@ -18,6 +18,11 @@ using Aqua, Test, Documenter
         end
         @testset "Ambiguities" begin
             @test length(Test.detect_ambiguities(TransferFunctions)) == 0
+        end
+        if VERSION >= v"1.9" # NOTE: Only works for later Julia due to new version changes in the package <28-02-25> 
+            @testset "Compat" begin
+                CompatHelperLocal.@check(checktest = false)
+            end
         end
     end
     @testset "DocTests" begin
