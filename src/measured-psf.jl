@@ -1,30 +1,35 @@
 # FIX: Should allow Complex data. Interpolation does not support it... <30-11-23> 
 # FIX: Specialize on OffsetArrays for the constructors <10-12-23> 
+# TODO: Add a link to the types `Coordinate` and `PixelSize` <29-12-24> 
 
 # FIX: This should instead by part of the measurement if desired <26-08-24> 
 #> # TODO: Make a trait applies to a circularly symmetric PSF... That is to assume that the data is symmetric and the
 #> # non-compliance is caused only by noise. That can then be used for averaging the measurement if a `r::Length` is
 #> # supplied to the sampling procedure <15-09-23> 
 
-using Interpolations, OffsetArrays
+# TODO: This should be an OffsetArray instead and a conversion should be made if it is not in order to be able to
+# sample at arbitrary locations from the center. Maybe convert by using the maximum pixel or store the center in the
+# struct computed as the maximum of some interpolation? <15-09-23> 
+
+# TODO: Reformulate the documentation:  This allows you to make conversions to other representations of a transfer
+# function such as an OTF and to use interpolations to sample the PSF at arbitrary locations not included in the initial
+# measurement (in general to use the measurements similarly to how one could use a model). This can be useful for using
+# the same PSF measurement for an acquisition with a different pixelsize or in super resolution applications. <29-12-24> 
+
 @doc raw"""
-`MeasuredPSF` holds an array of measured data with information about the dimensions of the measurement. This allows
-you to make conversions to other representations of a transfer function such as an OTF and to use interpolations to
-sample the PSF at arbitrary locations not included in the initial measurement (in general to use the measurements 
-similarly to how one could use a model). This can be useful for using the same PSF measurement for an acquisition with 
-a different pixelsize or in super resolution applications.
+    MeasuredPSF{T<:Real, N} <: PointSpreadFunction{N}
+A measurement of a PSF fro the acquired image(s).
 
 A measurement can be done for example using an image of subresolution microspheres.
+
+# Fields
+- `data::AbstractArray{T,N}`
+- `Δxy::PixelSize{N}`
+- `center::Coordinate{N}`
 """
-struct MeasuredPSF{T<:Real,N}
-    # TODO: This should be an OffsetArray instead and a conversion should be made if it is not in order to be able to
-    # sample at arbitrary locations from the center. Maybe convert by using the maximum pixel or store the center in the
-    # struct computed as the maximum of some interpolation? <15-09-23> 
-    "array of the measured PSF"
+struct MeasuredPSF{T<:Real,N} <: PointSpreadFunction{N}
     data::AbstractArray{T,N}
-    "dimensions of the `data` array"
     Δxy::PixelSize{N}
-    "center of the PSF measurement"
     center::Coordinate{N}
     function MeasuredPSF(data::AbstractArray{T,N}, Δxy::PixelSize{N}, center::Coordinate{N}) where {T<:Real,N}
         # FIX: Should this in fact be an error? If we measure based on a bead that is outside our field of view <26-08-24> 

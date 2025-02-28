@@ -182,10 +182,11 @@ using Aqua, Test, Documenter
         end
 
         @testset "ModelOTF" begin
-            tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3)
+            tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3) # RadiallySymmetric
 
             ## Method Availability
             @test attenuation(tf, 1 // 250u"nm", 1 // 200u"nm") isa Number
+            @test attenuation(Float64, tf, 1 / 200u"nm", 0u"nm^-1") == attenuation(Float64, tf, 1 / 200u"nm")
             @test attenuation(tf, 1 // 250u"nm") isa Number # FIX: This should function only for a RadiallySymmetric psf <26-08-24> 
             @test attenuation(Float32, tf, 1 // 250u"nm") isa Float32
             @test attenuation(ComplexF32, tf, 1 // 250u"nm") isa ComplexF32

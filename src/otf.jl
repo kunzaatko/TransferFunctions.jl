@@ -5,23 +5,21 @@ include("models/spherical-aperture-otf.jl")
 optical transfer function
 """ otf
 
-# FIX: This should call the type instead of it being a function on the type?? <26-08-24> 
-
 # TODO: This should accept as many dimensions as the transfer function allows similar to IlluminationPatterns... Right
 # now this implementation does not work<28-11-23> 
 
 # @inline @traitfn function otf(tf::TF, freqs::Vararg{Frequency,N}) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
 
-# TODO: We can define a macro that defines creates the radially symmetric functions instead of having it a trait... This
-# would however ruin the possibility of optimizing the array generation <28-08-24> 
-# FIX: It would be nice if the function could be something like
-#  @traitfn function (tf::TF where {N,TF<:ModelOTF{N}; RadiallySymmetric{TF}})(OT::Type{<:Number}, kx::Frequency, ky::Frequency)
-# <28-08-24> 
-@inline @traitfn function attenuation(OT::Type{<:Number}, tf::TF, kx::Frequency, ky::Frequency) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
-    # FIX: The type should be passed to the method of on the model which for it to be able to optimize its run based on
-    # it, and instead there should be a catch-all method that implements it if its not implemented in the implementation
-    # <26-08-24> 
-    OT(attenuation(tf, hypot(kx, ky)))
+# RESEARCH: How does type conversion work in other packages that let you call a function with a specified output type?
+# Could probably be used to boost the performance! <29-12-24> 
+@inline @traitfn function attenuation(OT::Type{<:Number}, tf::TF, freqs::Vararg{Frequency,N}) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
+    OT(attenuation(tf, hypot(freqs)))
+end
+
+# FIX: ↑ Above does not work as a method for `attenuation(Float64, tf, 1/200u"nm", 1/200u"nm")`. Some problem with the
+# specification <28-02-25> 
+@inline @traitfn function attenuation(OT::Type{<:Number}, tf::TF, fx::Frequency, fy::Frequency) where {TF <: ModelOTF{2}; RadiallySymmetric{TF}}
+    OT(attenuation(tf, hypot(fx, fy)))
 end
 
 @inline @traitfn function attenuation(OT::Type{<:Number}, tf::TF, kᵣ::Frequency) where {N,TF<:ModelOTF{N};RadiallySymmetric{TF}}
@@ -31,7 +29,13 @@ end
     OT(attenuation(tf, kᵣ))
 end
 
-function attenuation(tf::TF, kx::Frequency, ky::Frequency) where {N,TF<:ModelOTF{N}}
+function attenuation(tf::TF, freqs::Vararg{Frequency,N}) where {N,TF<:ModelOTF{N}}
+    attenuation(preferred_type(TF), tf, freqs...)
+end
+
+# FIX: ↑ Above does not work as a method for `attenuation(tf, 1/200u"nm", 1/200u"nm")`. Some problem with the
+# specification <28-02-25> 
+function attenuation(tf::TF, kx::Frequency, ky::Frequency) where {TF<:ModelOTF{2}}
     attenuation(preferred_type(TF), tf, kx, ky)
 end
 

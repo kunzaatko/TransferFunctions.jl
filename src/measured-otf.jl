@@ -1,23 +1,31 @@
-# TODO: Are OTFs really measurable? Shouldn't it be only for the PSF? Maybe a MeasuredOTF is created as a measured PSF? <26-08-24> 
+# TODO: Reformulate the documentation: This allows you to make conversions to other representations of a transfer
+# function such as a PSF and to use interpolations to sample the OTF at arbitrary locations not included in the initial
+# measurement (in general to use the measurements similarly to how one could use a model). This can be useful for using
+# the same OTF measurement for an acquisition with a different pixel-size or in super resolution applications.
+
+# TODO: Should instead hold a sampled array or instead some derived type of a sampled array that has a frequencies axis <29-12-24> 
+
+# TODO: Are OTFs really measurable? Shouldn't it be only for the PSF? Maybe a MeasuredOTF is created as a measured PSF? Perhaps from the deconvolution (inversion) of the ground truth model problem and with the transferred data (H = I_gt/I_raw) <26-08-24> 
 @doc raw"""
-`MeasuredOTF` holds an array of measured data with information about the dimensions of the measurement. This allows
-you to make conversions to other representations of a transfer function such as a PSF and to use interpolations to
-sample the OTF at arbitrary locations not included in the initial measurement (in general to use the measurements 
-similarly to how one could use a model). This can be useful for using the same OTF measurement for an acquisition with 
-a different pixelsize or in super resolution applications.
+    MeasuredOTF{T<:Number, N} <: OpticalTransferFunction{N}
+A measurement of an OTF from the acquired image(s). 
+
+# Fields
+- `data::AbstractArray{T,N}`
+- `Δxy::PixelSize{N}`
+- `center::Coordinate{N}`
 """
-struct MeasuredOTF{T<:Number,N}
-    "array of the measured OTF"
+struct MeasuredOTF{T<:Number,N} <: OpticalTransferFunction{N}
     data::AbstractArray{T,N}
-    "dimensions of the `data` array"
     Δxy::PixelSize{N}
-    "center of the OTF measurement"
-    center::Coordinate{N} # FIX: Is this necessary? <26-08-24> 
+    center::Coordinate{N}
     function MeasuredOTF(data::AbstractArray{T,N}, Δxy::PixelSize{N}, center::Coordinate{N}) where {N,T<:Number}
         contained(data, center) || throw(DomainError(center, "The center is not within the data bounds: $center ∉ $(axes(data))"))
         new{T,N}(data, Δxy, center)
     end
 end
+
+# TODO: Should infer the center if an OffsetArray that contains the origin is used in the constructor <29-12-24> 
 
 MeasuredOTF(data::AbstractArray{T,N}, Δxy::Length, args...) where {T,N} = MeasuredOTF(data, fillsize(Δxy, N), args...)
 

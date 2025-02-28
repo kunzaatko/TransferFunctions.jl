@@ -6,6 +6,11 @@ CurrentModule = TransferFunctions
 TransferFunction
 ```
 
+# Types
+```@docs
+Frequency
+```
+
 # Functions
 ```@docs
 psf
@@ -34,7 +39,7 @@ apodize
 taperedges
 ```
 
-Apodization Functions
+## Apodization Functions
 ```@docs
 Apodization
 ```
