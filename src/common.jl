@@ -31,7 +31,3 @@ function Base.hash(tf::TF, h::UInt) where {TF<:TransferFunction}
 
     return hashed
 end
-
-struct NotImplementedError <: Exception
-    msg::String
-end

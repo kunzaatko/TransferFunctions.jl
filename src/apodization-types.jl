@@ -184,6 +184,4 @@ struct Gaussian <: Apodization
     end
 end
 apodization(apo::Gaussian, r::Real) = exp(-r^2 / (2apo.σ^2))
-function instrument(::Gaussian, ::Real)
-    throw(NotImplementedError("Low Priority (if you need it, please open an issue)"))
-end
+instrument(::Gaussian, ::Real) = throw(ErrorException("Not yet implemented: Low Priority (if you need it, please open an issue)"))
