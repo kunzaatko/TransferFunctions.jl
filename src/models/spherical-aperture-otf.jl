@@ -1,5 +1,9 @@
+# RESEARCH: Should curvature in this sense be implemented as a composable property that can be added as a modification
+# to any OTF (maybe should be reduced to elliptically (or radially) symmetric OTFs?) <01-03-25> 
+# TODO: Add examples to documentation <01-03-25> 
+# TODO!: Update name in documentation <01-03-25> 
 @doc raw"""
-    IdealCircularPupilOTF(ρ₀::Real)
+    CircularPupilOTF(ρ₀::Real)
 
 Ideal (aberration free) OTF of a diffraction limited imaging system with incoherent light with the cutoff-frequency `ρ₀`
 
@@ -7,14 +11,9 @@ The OTF is derived from the diffraction caused by the exit pupil of the system a
 pupil... thus assumes no reshaping of the wavefronts in the optical system. The exit pupil, being located in the optical
 system just before the light reaches the image plane, has a greater effect on the optical system OTF.
 
-See also `IdealCircularPupilPSF` (TODO)
-
-# Examples
-    - TODO
-
 # Extended help
 
-The OTF can be written in as a function of the cutoff frequency ``ρ₀`` [^1] 
+The OTF can be written in as a function of the cutoff frequency ``ρ₀`` [goodman2005a](@cite)
 
 ```math
     ℋ(ρ) = 
@@ -29,11 +28,12 @@ The OTF can be written in as a function of the cutoff frequency ``ρ₀`` [^1]
 The cutoff frequency can be written in terms of the wavelength ``λ``, distance between entrance pupil and the image plane ``f₂`` and the circular pupil radius ``w`` as
 
 ```math
-    \rho_0 = w/(λ f₂).
+    ρ_0 = w/(λ f₂).
 ```
 
-[^1]:
-    > Frequency Analysis of Optical Imaging Systems. In Introduction to Fourier optics; Roberts & Co: Englewood, Colo, 2005; pp. 127–172 ISBN 978-0-9747077-2-3.
+# References
+
++ [goodman2005a](@cite) Goodman, J.W., 2005. Frequency Analysis of Optical Imaging Systems, in: Introduction to Fourier Optics. Roberts & Co, Englewood, Colo, pp. 127–172.
 """
 Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ModelOTF{2}
     λ::Length{T}
