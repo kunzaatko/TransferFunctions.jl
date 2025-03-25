@@ -1,3 +1,4 @@
+# # TODO: Test this... <11-03-25> 
 # TODO: Should this be a thing for the `MeasuredTransferFunction` as well? <26-08-24> 
 # NOTE: Allows broadcasting `func.(tf::ModelTransferFunction, a:b)`where `func` can be any of `psf`,`otf`,`mtf`, etc.
 Broadcast.broadcastable(tf::ModelTransferFunction) = Ref(tf)
@@ -17,6 +18,18 @@ for func in (:(==), :isequal, :isapprox)
         end
 
         return true
+    end
+end
+
+# TODO: Util function for printing the resolution if the both the dimensional resolutions are the same i.e. 64 nm
+# instead (64 nm, 64 nm). This will be used for both the sampled types. <19-12-24> 
+# TODO: Better Base.show using `typeof` and `nameof` <30-11-23> 
+function Base.show(io::IO, ::MIME"text/plain", tf::S) where {S<:SampledTransferFunction}
+    print(io, nameof(typeof(tf)), "(")
+    show(io, MIME("text/plain"), tf.transfer)
+    print(io, ") with Δxy=", allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)
+    if !all(iszero.(tf.center))
+        print(io, ", δ = ", tf.center)
     end
 end
 

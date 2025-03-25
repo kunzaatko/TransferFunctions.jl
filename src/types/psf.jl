@@ -1,6 +1,3 @@
-include("models/gibson-lanni.jl")
-include("models/born-wolf.jl")
-
 # FIX: Add support for N-dims <30-11-23> 
 @doc """
   Intensity point spread function i.e. the intensity ratio and phase shift of the sample intensity density

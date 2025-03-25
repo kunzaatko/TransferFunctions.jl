@@ -1,19 +1,26 @@
+# TODO: DimensionalData should be added as an extension and a "Sync" for sampling. By default, we should use only
+# internal representation... <11-03-25> 
 # TODO: Deconvolution techniques here too. So RL-deconv and Weiner deconvolution <26-08-24> 
+# TODO: Consider the PointSpreadFunction and the OpticalTransferFunction interface with `Interfaces.jl` for easier
+# testing and documentation <04-03-25> 
+
 # FIX: Adapt to dimensionality <28-11-23> 
 
 # FIX: Generic methods without argument types should be made concrete, because if not, the error when supplying a wrong
 # type of argument is not a MethodError for that function but another or worse, it can be a different error type
 # entirely <12-12-23> 
 
+# TODO: Add exported types programmatically. How do they do this in the generation of default documentation? `names(::Module)`? Does it work? <11-03-25> 
+"""
+Package for models, estimation, sampling and deconvolution with microscopy transfer functions.
+"""
 module TransferFunctions
 
-using SimpleTraits, SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets, ColorTypes, ImageFiltering, OffsetArrays
+using SimpleTraits, SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets, ColorTypes,
+    ImageFiltering, OffsetArrays
 using OffsetArrays: centered, center, Origin
 
 using Reexport
-@reexport using Unitful
-using Unitful: Length
-@derived_dimension Frequency Unitful.𝐋^-1 true
 
 using Base: Indices
 
@@ -21,42 +28,24 @@ using Base: Indices
 # `psf2otf`. This should be investigated <12-08-24> 
 
 # IDEA: Add defocus and other aberration modifiers. Look into
-# https://github.com/RainerHeintzmann/PointSpreadFunctions.jl which implements these "simulations" <24-10-23> 
+# https://github.com/RainerHeintzmann/PointSpreadFunctions.jl which implements these "simulations". Simulations via
+# semi-groups? <24-10-23> 
 
 ### source files
 
-# Common type system and `Base` function overloads
-include("types.jl")
-include("common.jl")
-include("utils.jl")
+# Types for representing a transfer function and abstract functions on these types
+include("types/types.jl")
 
-# Measured transfer functions
-include("measured-otf.jl")
-include("measured-psf.jl")
+# Utility functions for working with transfer functions and internal functions
+include("utils/utils.jl")
 
-@doc raw"""
-A `Union` type for the measurement of a transfer function of an optical system. It can be either a PSF measurement 
-[`MeasuredPSF`](@ref) or a [`MeasuredOTF`](@ref).
-"""
-const MeasuredTransferFunction{N} = Union{MeasuredOTF{<:Number,N},MeasuredPSF{<:Number,N}}
+# transfer function models
+include("models/spherical-aperture-otf.jl")
+include("models/gibson-lanni.jl")
+include("models/born-wolf.jl")
 
-# Model transfer functions
-include("otf.jl")
-include("psf.jl")
-include("pupil.jl")
-
-# Sampled transfer function API
-include("sampled-otf.jl")
-include("sampled-psf.jl")
-
-"""
-    SampledTransferFunction{N}
-A `Union` type of `N`-dimensional sampled transfer functions.
-"""
-const SampledTransferFunction{N} = Union{SampledOTF{N},SampledPSF{N},MeasuredTransferFunction{N}}
-
-include("sampled-tf-base-overloads.jl")
-
+# Model of a Beads 
+include("estimation/beads-acquisition.jl")
 
 export psf, otf, mtf, ptf, apsf, ipsf, pupil, attenuation, support
 export cutoff, resolution_limit

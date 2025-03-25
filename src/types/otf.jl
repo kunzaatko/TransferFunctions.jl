@@ -1,5 +1,3 @@
-include("models/spherical-aperture-otf.jl")
-
 # TODO: Add docs <28-11-23> 
 @doc """
 optical transfer function
