@@ -45,7 +45,7 @@ include("models/gibson-lanni.jl")
 include("models/born-wolf.jl")
 
 # Model of a Beads 
-include("estimation/beads-acquisition.jl")
+include("estimation/estimation.jl")
 
 export psf, otf, mtf, ptf, apsf, ipsf, pupil, attenuation, support
 export cutoff, resolution_limit
