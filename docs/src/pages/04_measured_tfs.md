@@ -6,3 +6,10 @@ CurrentModule = TransferFunctions
 MeasuredPSF
 MeasuredOTF
 ```
+
+# Estimation
+
+```@docs
+Estimation.bead
+```
+

@@ -9,12 +9,20 @@ There are two main categories of transfer function types that are provided by th
     known sampling rates/schemes.
 
 # Transfer Functions
+```@docs
+TransferFunction
+```
 You can describe a transfer of a microscope with either the _optical transfer function_ (OTF) the _point spread
     function_ (PSF) or the _generalized pupil function_.
 These descriptions are mostly interchangeable/convertible between each other.
 !!! note
     It may the case that a model can be in a closed form expression for some of these and must be approximated for the
     others, which may be a reason for the choice between them for a specific model.
+
+```@docs
+OpticalTransferFunction
+PointSpreadFunction
+```
 
 You can get a transfer function of your optical setup by supplying parameters of the apparatus to a model transfer
     function that is developed from the underlining physics of a microscope, then you will use a subtype of
