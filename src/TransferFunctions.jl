@@ -49,7 +49,7 @@ include("estimation/estimation.jl")
 
 export psf, otf, mtf, ptf, apsf, ipsf, pupil, attenuation, support
 export cutoff, resolution_limit
-export BornWolf, IdealOTFwithCurvature
+export BornWolf, CircularPupilOTF
 
 export MeasuredPSF, MeasuredOTF
 export SampledPSF, SampledOTF

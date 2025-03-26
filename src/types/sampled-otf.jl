@@ -26,17 +26,17 @@ A struct representing an optical transfer function that has a defined pixel reso
 
 # Examples
 ```jldoctest
-julia> otf_model = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.9)
-IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)
+julia> otf_model = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.9)
+CircularPupilOTF{Float64}(488.0 nm, 1.4, 1.0, 0.9)
 
 julia> sampled_otf = SampledOTF(otf_model, 63u"nm")
-SampledOTF(IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=63 nm, δ = (1, 1)
+SampledOTF(CircularPupilOTF{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=63 nm, δ = (1, 1)
 
 julia> SampledOTF(otf_model, (45u"nm", 65u"nm")) # different pixel sized in x and y
-SampledOTF(IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=(45 nm, 65 nm), δ = (1, 1)
+SampledOTF(CircularPupilOTF{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=(45 nm, 65 nm), δ = (1, 1)
 
 julia> SampledOTF(otf_model, 63u"nm", (101.5, -90.3)) # offseted center
-SampledOTF(IdealOTFwithCurvature{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=63 nm, δ = (101.5, -90.3)
+SampledOTF(CircularPupilOTF{Float64}(488.0 nm, 1.4, 1.0, 0.9)) with Δxy=63 nm, δ = (101.5, -90.3)
 ```
 """
 struct SampledOTF{N,OTF<:OpticalTransferFunction{N}}
@@ -214,7 +214,7 @@ Apply the transfer function `tf` to the image `img`, i.e. simulate the transfer 
 
 # Examples
 ```jldoctest
-julia> otf_model = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.9);
+julia> otf_model = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.9);
 
 julia> sampled_otf = SampledOTF(otf_model, 61u"nm");
 

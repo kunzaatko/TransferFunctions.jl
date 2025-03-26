@@ -35,12 +35,12 @@ The cutoff frequency can be written in terms of the wavelength ``λ``, distance 
 
 + [goodman2005a](@cite) Goodman, J.W., 2005. Frequency Analysis of Optical Imaging Systems, in: Introduction to Fourier Optics. Roberts & Co, Englewood, Colo, pp. 127–172.
 """
-Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ModelOTF{2}
+Base.@kwdef struct CircularPupilOTF{T<:Real} <: ModelOTF{2}
     λ::Length{T}
     NA::T
     nᵢ::T = 4 // 3
     curvature::T
-    function IdealOTFwithCurvature(λ::Length{T}, NA::T, nᵢ::T, curvature::T) where {T<:Real}
+    function CircularPupilOTF(λ::Length{T}, NA::T, nᵢ::T, curvature::T) where {T<:Real}
         one(curvature) >= curvature > zero(curvature) || throw(DomainError(curvature, "Valid domain for curvature is (0,1]"))
         λ > zero(λ) || throw(DomainError(λ, "λ (wavelength) > 0"))
         NA > zero(NA) || throw(DomainError(NA, "NA (numerical aperture) > 0"))
@@ -50,21 +50,21 @@ Base.@kwdef struct IdealOTFwithCurvature{T<:Real} <: ModelOTF{2}
 end
 
 # Casting to promoted types
-function IdealOTFwithCurvature(λ::Length{R}, NA::Real, nᵢ::Real, curvature::Real) where {R<:Real}
+function CircularPupilOTF(λ::Length{R}, NA::Real, nᵢ::Real, curvature::Real) where {R<:Real}
     _, NA, nᵢ, curvature = promote(ustrip(λ), NA, nᵢ, curvature)
-    return IdealOTFwithCurvature(convert(Quantity{typeof(NA)}, λ), NA, nᵢ, curvature)
+    return CircularPupilOTF(convert(Quantity{typeof(NA)}, λ), NA, nᵢ, curvature)
 end
 
 # TODO: It should be possible to provide only a selected subset of dimensions of the transfer function that are
 # RadiallySymmetric. It would be helpful for the defocus `z` <26-08-24> 
-@traitimpl RadiallySymmetric{IdealOTFwithCurvature}
-preferred_type(::Type{IdealOTFwithCurvature{T}}) where {T} = T
+@traitimpl RadiallySymmetric{CircularPupilOTF}
+preferred_type(::Type{CircularPupilOTF{T}}) where {T} = T
 
-attenuation_normalized(tf::IdealOTFwithCurvature, ν::Number) = ν >= one(ν) ? 0 : (2 / π) * (acos(ν) - ν * sqrt(1 - ν * ν)) * tf.curvature^ν
+attenuation_normalized(tf::CircularPupilOTF, ν::Number) = ν >= one(ν) ? 0 : (2 / π) * (acos(ν) - ν * sqrt(1 - ν * ν)) * tf.curvature^ν
 # TODO: Is the immersion refractive index necessary? <14-07-23> 
-attenuation(tf::IdealOTFwithCurvature, fᵣ::Frequency) = attenuation_normalized(tf, (fᵣ * tf.λ) / (2 * tf.nᵢ * tf.NA))
+attenuation(tf::CircularPupilOTF, fᵣ::Frequency) = attenuation_normalized(tf, (fᵣ * tf.λ) / (2 * tf.nᵢ * tf.NA))
 
-function cutoff(tf::IdealOTFwithCurvature{T}, a::Real)::Frequency where {T}
+function cutoff(tf::CircularPupilOTF{T}, a::Real)::Frequency where {T}
     if iszero(a)
         return (2 * tf.NA * tf.nᵢ) / tf.λ
     else
@@ -74,4 +74,5 @@ function cutoff(tf::IdealOTFwithCurvature{T}, a::Real)::Frequency where {T}
     end
 end
 
-@deprecate otf(tf::IdealOTFwithCurvature, fᵣ::Frequency) attenuation(tf, fᵣ)
+@deprecate otf(tf::CircularPupilOTF, fᵣ::Frequency) attenuation(tf, fᵣ)
+@deprecate IdealOTFwithCurvature(args...) CircularPupilOTF(args...)

@@ -187,7 +187,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "ModelOTF" begin
-            tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3) # RadiallySymmetric
+            tf = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3) # RadiallySymmetric
 
             ## Method Availability
             @test attenuation(tf, 1 // 250u"nm", 1 // 200u"nm") isa Number
@@ -201,7 +201,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "SampledOTF" begin
-            tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3)
+            tf = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3)
             psf_tf = BornWolf(488u"nm", 1.4, 1.7)
 
             ## Method Availability
@@ -295,7 +295,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
         @testset "SampledPSF" begin
             using OffsetArrays
             tf = BornWolf(488u"nm", 1.4, 1.7)
-            otf_tf = IdealOTFwithCurvature(488u"nm", 1.4, 1.0, 0.3)
+            otf_tf = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3)
 
             ## Method Availability - Construction
             @test SampledPSF(tf, 64u"nm") isa SampledPSF # NOTE: Fill in the sizes <26-08-24> 

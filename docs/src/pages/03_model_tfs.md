@@ -8,7 +8,7 @@ ModelOTF
 ```
 
 ```@docs
-IdealOTFwithCurvature
+CircularPupilOTF
 ```
 
 # PSF Models
