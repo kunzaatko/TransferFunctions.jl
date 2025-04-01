@@ -9,8 +9,9 @@ using Aqua, Test, Documenter, CompatHelperLocal
             if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "GITHUB_ACTIONS")
                 Aqua.test_all(
                     TransferFunctions;
-                    ambiguities=false
+                    ambiguities=false,
                     # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
+                    project_toml_formatting=false, # NOTE: Not compatible with extensions <01-04-25> 
                 )
             else
                 @info "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
