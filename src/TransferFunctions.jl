@@ -10,7 +10,6 @@
 # type of argument is not a MethodError for that function but another or worse, it can be a different error type
 # entirely <12-12-23> 
 
-# TODO: Add exported types programmatically. How do they do this in the generation of default documentation? `names(::Module)`? Does it work? <11-03-25> 
 """
 Package for models, estimation, sampling and deconvolution with microscopy transfer functions.
 """

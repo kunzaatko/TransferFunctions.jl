@@ -1,3 +1,6 @@
+<!-- FIX: These documentation pages should be textual and structured by concepts. The API reference is then for the API
+structured documentation. Types, functions, model types etc. These could be also organized by some key but they should
+mostly obey the their programming structure <30-03-25> -->
 ```@meta
 CurrentModule = TransferFunctions
 ```
@@ -10,7 +13,7 @@ There are two main categories of transfer function types that are provided by th
 
 # Transfer Functions
 ```@docs
-TransferFunction
+TransferFunctions
 ```
 You can describe a transfer of a microscope with either the _optical transfer function_ (OTF) the _point spread
     function_ (PSF) or the _generalized pupil function_.
