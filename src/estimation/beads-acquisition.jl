@@ -2,15 +2,17 @@ using Unitful
 using Unitful: Length, Quantity, 𝐋
 using OffsetArrays: OffsetMatrix, OffsetArray
 using Statistics
+using TransferFunctions: PixelSize
 const PerLength = Quantity{<:Any,inv(𝐋)}
+
 # FIX: Use `cite` for the link to wikipedia <06-03-25> 
 """
-    bead([T=Float64], d::Length, α::PerLength, (Δxy::Length,Δxy::Length))
+    bead([T=Float64], d, Δxy, [α=0u"nm^-1"],)
     bead(d, α, Δxy::Length)
 Generate a model of a bead with diameter `d` and pixel-sizes `Δxy`.
 
 # Arguments
-- `α::PerLength=1u"nm^-1`: evanescent wave attenuation constant in the [TIR-FM microscopy modulation](https://en.wikipedia.org/wiki/Total_internal_reflection_microscopy). For a normal acquisition without total internal reflection 0u"nm^-1" is setting.
+- `α::PerLength=1u"nm^-1`: evanescent wave attenuation constant in the [TIR-FM microscopy modulation](@cite 2025). For a normal acquisition without total internal reflection 0u"nm^-1" is setting.
 - `pixel_grid_length::Int = 10`: length of each pixel in the grid
 - `peak_intensity = 1.0`: peak intensity value
 -  `subpixel_shift =(0, 0)`
@@ -47,8 +49,9 @@ julia> Estimation.bead(0.1u"μm", 50.5u"nm"; peak_intensity=0.5)
 function bead(
     T::Type{<:Real},
     d::Length,
-    Δxy::NTuple{2,Length};
-    α::PerLength=0u"nm^-1", pixel_grid_length=10, peak_intensity=one(T), subpixel_shift=(0, 0)
+    Δxy::PixelSize{2},
+    α::PerLength=0u"nm^-1";
+    pixel_grid_length=10, peak_intensity=one(T), subpixel_shift::Tuple{Real, Real}=(0.0, 0.0)
 )::OffsetMatrix{T}
     @assert all(abs.(subpixel_shift) .< one(eltype(subpixel_shift))) "|subpixel_shift| must be < 1"
     subpx_pad = map(subpixel_shift) do x
