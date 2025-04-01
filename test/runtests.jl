@@ -5,20 +5,22 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
 @testset "TransferFunctions.jl" begin
     @testset "Code quality" begin
+        aqua_ambiguities = true
         @testset "Aqua.jl" begin
             if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "GITHUB_ACTIONS")
                 Aqua.test_all(
                     TransferFunctions;
-                    ambiguities=false,
+                    ambiguities=aqua_ambiguities,
                     # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
-                    project_toml_formatting=false, # NOTE: Not compatible with extensions <01-04-25> 
                 )
             else
                 @info "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
             end
         end
         @testset "Ambiguities" begin
-            @test length(Test.detect_ambiguities(TransferFunctions)) == 0
+            if !aqua_ambiguities
+                @test length(Test.detect_ambiguities(TransferFunctions)) == 0
+            end
         end
         if VERSION >= v"1.9" # NOTE: Only works for later Julia due to new version changes in the package <28-02-25> 
             @testset "Compat" begin
