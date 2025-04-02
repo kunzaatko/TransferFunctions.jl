@@ -1,14 +1,4 @@
-# TODO: DimensionalData should be added as an extension and a "Sync" for sampling. By default, we should use only
-# internal representation... <11-03-25> 
 # TODO: Deconvolution techniques here too. So RL-deconv and Weiner deconvolution <26-08-24> 
-# TODO: Consider the PointSpreadFunction and the OpticalTransferFunction interface with `Interfaces.jl` for easier
-# testing and documentation <04-03-25> 
-
-# FIX: Adapt to dimensionality <28-11-23> 
-
-# FIX: Generic methods without argument types should be made concrete, because if not, the error when supplying a wrong
-# type of argument is not a MethodError for that function but another or worse, it can be a different error type
-# entirely <12-12-23> 
 
 """
 Package for models, estimation, sampling and deconvolution with microscopy transfer functions.
