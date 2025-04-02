@@ -1,14 +1,17 @@
+using TransferFunctions: Length, PixelSize, Coordinate
 using ImageFiltering: padarray
-# NOTE: For `taperedges` border <02-09-24>  
 @reexport using ImageFiltering: Inner, Pad, Fill
 using SpecialFunctions
+
+fillsize(Δxy::Length, n::Int)::PixelSize = fill(Δxy, n) |> Tuple
+no_implemementation_error(t::Type, fname::Symbol, args...) = error("`$(nameof(t))` does not implement `$fname`!")
 
 # NOTE: Currently it is not used anywhere else anyway, so it is quite cheap to just throw it away. <27-08-24> 
 # TODO: This should be probably left to the `ImageFiltering.jl` package. It already has a function that pads the
 # needed amount <26-08-24> 
 # TODO: Add examples with transfer functions. For example an model OTF, when `ifft`ed with padding of the same parity
 # should be real...
-@doc raw"""
+"""
     TransferFunctions.padtosize(a::AbstractArray{T,N}, size...; fourier=false, padvalue=0)
     TransferFunctions.padtosize(a::AbstractArray{T,N}, size; fourier=false, padvalue=0)
 
@@ -95,7 +98,7 @@ function padtosize(
 end
 padtosize(a, size::Integer; vargs...) = padtosize(a, fill(size, ndims(a))...; vargs...)
 
-@doc raw"""
+"""
     TransferFunctions.roundupcenter(arr::AbstractArray)
 
 Calculate center index of `arr` rounded-up (i.e. `fft` center)
@@ -118,7 +121,7 @@ function roundupcenter(arr::AbstractArray{N})::Coordinate where {N}
  return @. minimum(axs) + round(Int, l ./ 2, RoundUp)
 end
 
-@doc raw"""
+"""
      TransferFunctions.exactcenter(a::AbstractArray)
 
 Calculate the exact center index of `a`
@@ -142,15 +145,6 @@ end
 
 contained(arr::AbstractArray{T,N}, loc::Coordinate{N}) where {T,N} = all(loc .∈ axes(arr))
 
-# TODO: Documentation <02-09-24> 
-# TODO: test <28-08-24> 
-# TODO: Should be for N dimensions <28-08-24> 
-function freqs(inds::Indices{N}, Δxy::PixelSize{N}, center::Coordinate{N}) where {N}
- fxs, fys = ndgrid(fftfreq(length(inds[1]), 1 / Δxy[1]), fftfreq(length(inds[2]), 1 / Δxy[2]))
- fxs = fxs .- (center[1] - 1) / (Δxy[1] * length(inds[1]))
- fys = fys .- (center[2] - 1) / (Δxy[2] * length(inds[2]))
- return fxs, fys
-end
+fftfreqs(sz::Dims{2}, Δxy::PixelSize{2}) = ndgrid(fftfreq(sz[1], 1 / Δxy[1]), fftfreq(sz[2], 1 / Δxy[2]))
 
-# utils
-include("apodization.jl")
+
