@@ -1,4 +1,4 @@
-@doc raw"""
+"""
 Born & Wolf model of the transfer function for a circular aperture.
 
 # Parameters
@@ -10,7 +10,7 @@ Born & Wolf model of the transfer function for a circular aperture.
 
 The Born & Wolf model is a scalar diffraction model derived for perfect systems. It assumes that the only aberration of the system is due to *defocus*. Modern microscope objectives are designed to provide optimal imaging conditions for sources located directly on the coverslip, in which case the Born & Wolf model is applicable (if the coverslip and immersion is used as designed). The model disregards spherical and higher order aberrations that are due to the source of illumination being shifted from the coverslip boundary.
 """
-Base.@kwdef struct BornWolf{T<:Real} <: ModelPSF{2}
+Base.@kwdef struct BornWolf{T<:Real} <: RadialPSF
     λ::Length{T}
     NA::T
     nᵢ::T = 4 // 3
@@ -27,10 +27,8 @@ function BornWolf(λ::Length{R}, NA::Number, nᵢ::Number) where {R<:Real}
     _, NA, nᵢ = promote(ustrip(λ), NA, nᵢ)
     return BornWolf(convert(Quantity{typeof(NA)}, λ), NA, nᵢ)
 end
-@traitimpl RadiallySymmetric{BornWolf}
-preferred_type(::Type{BornWolf{T}}) where {T} = T
 
-function psf(tf::BornWolf{T}, r::Length)::T where {T}
+function intensity(tf::BornWolf{T}, r::Length)::T where {T}
     k = 2π / tf.λ
     k₀ = k / tf.nᵢ
     # FIX: Is this correct?! <14-07-23> 
