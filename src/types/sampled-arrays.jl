@@ -25,4 +25,5 @@ const SpatialArray{T,N} = SampledArray{T,<:Length,N}
     SpatialArray(data::AbstractArray, Δ::Length)
 Construct a SpatialArray with `data` values and a uniform sampling with the distance `Δ` in every direction.
 """
+SpatialArray(data::AbstractArray, Δ) = SampledArray(data, Δ)
 SpatialArray(data::AbstractArray{<:Any,N}, Δ::Length) where {N} = SampledArray(data, fillsize(Δ, Val(N)))
