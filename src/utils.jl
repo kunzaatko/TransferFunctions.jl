@@ -171,12 +171,13 @@ end
 
 contained(arr::AbstractArray{T,N}, loc::Coordinate{N}) where {T,N} = all(loc .∈ axes(arr))
 
-fftfreqs(sz::Dims{2}, Δxy::PixelSize{2}) = ndgrid(fftfreq(sz[1], 1 / Δxy[1]), fftfreq(sz[2], 1 / Δxy[2]))
+fftfreqs(sz::Dims{2}, Δ::PixelSize{2}) = ndgrid(fftfreq.(sz, 1 ./ Δ)...)
+fftfreqs(sz::Dims{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, Val(2)))
 
-function posgrid(sz::Dims{2}, Δxy::PixelSize{2})
-    c = roundupcenter(sz)
-    ndgrid((Base.OneTo(sz[1]) .- c[1]) .* Δxy[1], (Base.OneTo(sz[2]) .- c[2]) .* Δxy[2])
-end
+posgrid(sz::Dims{2}, Δ::PixelSize{2}) =  ndgrid(map(sz,Tuple(roundupcenter(sz)), Δ) do len,c,samp
+    (range(1,len) .- c) .* samp
+end...)
+posgrid(sz::Dims{2}, Δ::Length) = posgrid(sz, fillsize(Δ, Val(2))) 
 
 struct OriginAt{N}
     origin::CartesianIndex{N}
