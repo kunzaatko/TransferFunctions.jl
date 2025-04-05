@@ -25,4 +25,4 @@ function Base.show(io::IO, ::MIME"text/plain", tf::OTFArray{T}) where {T}
     centerstring = showcenter ? ", center = $(tf.origin)" : ""
     print(io, "OTFArray(Δxy = $(allequal(tf.Δxy) ? tf.Δxy[1] : tf.Δxy)$(centerstring)) with eltype $T with $(join(map(string, size(tf.data)), "×")) points:\n")
     Base.print_array(io, tf.data)
-enD
+end

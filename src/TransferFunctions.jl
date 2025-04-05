@@ -4,6 +4,7 @@ Package for models, estimation, sampling and deconvolution with microscopy trans
 module TransferFunctions
 using SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets, ColorTypes,
     ImageFiltering, OffsetArrays
+using ImageCore
 using OffsetArrays: centered, center, Origin
 using Reexport
 using Base: Indices
@@ -25,7 +26,7 @@ include("apodization.jl")
 export psf, attenuation, intensity, restore, transfer
 export otf, cutoff
 export BornWolf, CircularPupilOTF
-export SpatialImage
+export SpatialArray
 
 export PSFArray, OTFArray
 

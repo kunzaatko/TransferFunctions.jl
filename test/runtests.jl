@@ -1,6 +1,7 @@
 using TransferFunctions
 using TransferFunctions: Frequency
-using FillArrays, FourierTools, IntervalSets, FFTViews, Distributions
+using TransferFunctions: IntervalSets
+using FourierTools, FFTViews, Distributions, TransferFunctions.FillArrays
 using Aqua, Test, Documenter, CompatHelperLocal
 
 @testset "TransferFunctions.jl" begin
@@ -39,27 +40,30 @@ using Aqua, Test, Documenter, CompatHelperLocal
                     using TestImages;
                     filenames = ["moonsurface.tiff"]; # NOTE: This is a fix for failing doctests since on download, there is a print-out <19-12-24> 
                     testimage.(filenames; download_only=false);
-                    using FFTW;
+                    using TransferFunctions: FFTW;
                     using Logging; # NOTE: This does not need to be in the `make.jl` of docs. We want `@warn ` to function there <19-12-24> 
                     Logging.disable_logging(Logging.Warn)
                 ); recursive=true)
-            doctest(TransferFunctions)
+            !haskey(ENV, "FIX_DOCTESTS") && @info "You can fix doctests by setting `ENV[\"FIX_DOCTESTS\"] = true`."
+            doctest(TransferFunctions; fix=ifelse(haskey(ENV, "FIX_DOCTESTS"), true, false))
         end
     end
     @testset "utils.jl" begin
         using TransferFunctions: PixelSize, Coordinate, Frequency, Length
-        using OffsetArrays
+        using TransferFunctions.OffsetArrays
+
         @test 1 / 32u"nm" isa Frequency
         Δkx = 1 / 61u"nm"
         @test 1 / Δkx isa Length
         @test (31.5u"nm", 40u"nm", 50u"nm") isa PixelSize{3}
         @test TransferFunctions.fillsize(31u"nm", 2) == (31u"nm", 31u"nm")
+        @test TransferFunctions.fillsize(31u"nm", Val(2)) == (31u"nm", 31u"nm")
         @test (3, 3, 3) isa Coordinate{3}
         @test (3.0, 3.0, 3.0) isa Coordinate{3}
         @test (2.4, 3, 3) isa Coordinate{3} # NOTE: Must accept diverse types <26-08-24> 
-        @test TransferFunctions.roundupcenter(ones(3, 4, 2)) == (2, 3, 2)
-        @test TransferFunctions.roundupcenter(OffsetArray(ones(3, 3, 3), -2, -2, -2)) == Tuple(zeros(3))
-        @test TransferFunctions.roundupcenter(OffsetArray(ones(4, 3, 3), -2, -2, -2)) == (1, 0, 0)
+        @test TransferFunctions.roundupcenter(ones(3, 4, 2)) == CartesianIndex(2, 3, 2)
+        @test TransferFunctions.roundupcenter(OffsetArray(ones(3, 3, 3), -2, -2, -2)) == CartesianIndex(0, 0, 0)
+        @test TransferFunctions.roundupcenter(OffsetArray(ones(4, 3, 3), -2, -2, -2)) == CartesianIndex(1, 0, 0)
         @test TransferFunctions.exactcenter(ones(3, 4, 2)) == (2, 2.5, 1.5)
         @test TransferFunctions.exactcenter(OffsetArray(ones(3, 3, 3), -2, -2, -2)) == Tuple(zeros(3))
         @test TransferFunctions.exactcenter(OffsetArray(ones(4, 3, 3), -2, -2, -2)) == (0.5, 0, 0)
@@ -126,7 +130,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "methods" begin
-            using ImageFiltering: Pad
+            using TransferFunctions.ImageFiltering: Pad
             apo = Cosine()
             @test taperedges(
                       apo, ones(100, 100, 9), ((10, 10), (10, 10)); dims=(1, 2) # All the supplied arguments 
@@ -226,7 +230,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
         @testset "Sample OTF" begin
             tf = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3)
-            s_img = SpatialImage(img, 32u"nm")
+            s_img = SpatialArray(img, 32u"nm")
 
             ## Methods - Array generation
             @test otf(tf, 60u"nm", (512, 512)) isa Matrix
@@ -270,7 +274,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "ModelPSF" begin
-            using OffsetArrays
+            using TransferFunctions: OffsetArrays
             tf = BornWolf(488u"nm", 1.4, 1.7)
 
             ## Method Availability
@@ -279,9 +283,9 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "Sampled PSF" begin
-            using OffsetArrays
+            using TransferFunctions: OffsetArrays
 
-            s_img = SpatialImage(img, 32u"nm")
+            s_img = SpatialArray(img, 32u"nm")
             tf = BornWolf(488u"nm", 1.4, 1.7)
 
             ## Method Availability - Construction

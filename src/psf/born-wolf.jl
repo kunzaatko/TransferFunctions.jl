@@ -14,18 +14,14 @@ Base.@kwdef struct BornWolf{T<:Real} <: RadialPSF
     λ::Length{T}
     NA::T
     nᵢ::T = 4 // 3
-    function BornWolf(λ::Length{T}, NA::T, nᵢ::T) where {T<:Real}
+    function BornWolf(λ::Length{A}, NA::B, nᵢ::C) where {A<:Real,B<:Real,C<:Real}
         λ > zero(λ) || throw(DomainError(λ, "λ (wavelength) > 0"))
         NA > zero(NA) || throw(DomainError("NA (numerical aperture) > 0"))
         nᵢ > zero(nᵢ) || throw(DomainError("nᵢ(refractive index of immersion medium) > 0"))
+        T = promote_type(A, B, C)
+        λ = convert(T, ustrip(λ)) * unit(λ)
         return new{T}(λ, NA, nᵢ)
     end
-end
-
-# Casting to promoted types
-function BornWolf(λ::Length{R}, NA::Number, nᵢ::Number) where {R<:Real}
-    _, NA, nᵢ = promote(ustrip(λ), NA, nᵢ)
-    return BornWolf(convert(Quantity{typeof(NA)}, λ), NA, nᵢ)
 end
 
 function intensity(tf::BornWolf{T}, r::Length)::T where {T}

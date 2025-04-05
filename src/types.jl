@@ -1,9 +1,9 @@
-include("types/sampled-images.jl")
+include("types/sampled-arrays.jl")
 include("types/extension-methods.jl")
 
 abstract type TransferFunction end
-transfer(t::TransferFunction, ::SpatialImage) = no_implemementation_error(typeof(t), :transfer)
-restore(t::TransferFunction, ::SpatialImage) = no_implemementation_error(typeof(t), :restore)
+transfer(t::TransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :transfer)
+restore(t::TransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :restore)
 
 # NOTE: Taken from Distributions.jl <kunzaatko> 
 for func in (:(==), :isequal, :isapprox)
