@@ -6,10 +6,13 @@ To create a new OTF model `A <: OpticalTransferFunction`, you must define the at
 """
 abstract type OpticalTransferFunction <: LinearTransferFunction end
 Broadcast.broadcastable(tf::OpticalTransferFunction) = Ref(tf)
-conv(::OpticalTransferFunction, ::SpatialImage) = error("TODO")
-deconv(::OpticalTransferFunction, ::SpatialImage) = error("TODO")
-attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency) = no_implemementation_error(typeof(otf), :attenuation)
-insupport(otf::OpticalTransferFunction, fx::Frequency, fy::Frequency) = error("TODO")
+_fft_conv(otf_arr::AbstractArray, img::AbstractArray) = ifft(otf_arr .* fft(img))
+conv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _fft_conv(otf(tf, img), img)
+conv(tf::OpticalTransferFunction, img::SpatialArray{<:Gray,2}) = conv(tf, channelview(img))
+
+deconv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _wiener_deconv(otf(tf, img), img)
+attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency) = throw_notimplemented_error(typeof(otf), :attenuation)
+istransferred(otf::OpticalTransferFunction, fx::Frequency, fy::Frequency) = error("TODO")
 
 
 """
@@ -22,10 +25,10 @@ If the pupil function of the system is symmetric, the OTF as well as the PSF are
 `attenuation(model, f) > 0` if `a = 0`.
 """
 abstract type RadialOTF <: OpticalTransferFunction end
-attenuation(otf::RadialOTF, ::Frequency) = no_implemementation_error(typeof(otf), :attenuation)
-attenuation(otf::RadialOTF, fx::Frequency, fy::Frequency) = attenuation(otf, hypot(fx, fy))
+attenuation(otf::RadialOTF, ::Frequency) = throw_notimplemented_error(typeof(otf), :attenuation)
+attenuation(otf::RadialOTF, fx::Frequency, fy::Frequency) = (@inline; attenuation(otf, hypot(fx, fy)))
 cutoff(::RadialOTF, a=0.0) = error("TODO")
-insupport(otf::RadialOTF, fx::Frequency, fy::Frequency) = hypot(fx, fy) <= cutoff(otf)
+istransferred(otf::RadialOTF, fx::Frequency, fy::Frequency) = (@inline; hypot(fx, fy) <= cutoff(otf))
 
 
 otf(
@@ -33,8 +36,7 @@ otf(
     Δxy::PixelSize{2},
     wh::Dims{2}
 ) = attenuation.(tf, fftfreqs(wh, Δxy)...)
-otf(tf::OpticalTransferFunction, Δxy::Length, wh::Dims{2}) = otf(tf, fillsize(Δxy, 2), wh)
-otf(tf::OpticalTransferFunction, img::SpatialImage{T,2}) where {T} = otf(tf, img.Δxy, size(img))
-
+otf(tf::OpticalTransferFunction, Δ::Length, wh::Dims{2}) = otf(tf, fillsize(Δ, 2), wh)
+otf(tf::OpticalTransferFunction, img::SpatialArray{T,2}) where {T} = otf(tf, sampling(img), size(img))
 include("./otf-array.jl")
 include("./circular-pupil-otf.jl")

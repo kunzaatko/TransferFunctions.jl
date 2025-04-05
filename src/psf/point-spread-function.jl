@@ -1,24 +1,20 @@
 abstract type PointSpreadFunction <: LinearTransferFunction end
 Broadcast.broadcastable(tf::PointSpreadFunction) = Ref(tf)
-intensity(psf::PointSpreadFunction, ::Length, ::Length) = no_implemementation_error(typeof(psf), :intensity)
-function psf(
+intensity(psf::PointSpreadFunction, ::Length, ::Length) = throw_notimplemented_error(typeof(psf), :intensity)
+psf(
     tf::PointSpreadFunction,
     Δxy::PixelSize{2},
     wh::Dims{2}
-)
-    xs = isodd(wh[1]) ? (((-wh[1]-1)÷2):((wh[1]-1)÷2)) .* Δxy[1] : (((-wh[1]-2)÷2):(wh[1]÷2)) .* Δxy[1]
-    ys = isodd(wh[2]) ? (((-wh[2]-1)÷2):((wh[2]-1)÷2)) .* Δxy[2] : (((-wh[2]-2)÷2):(wh[2]÷2)) .* Δxy[2]
-    return centered([intensity(tf, x, y) for x in xs, y in ys])
-end
+) = OriginAt(roundupcenter(wh))(intensity.(tf, posgrid(wh, Δxy)...))
 psf(tf::PointSpreadFunction, Δxy::Length, wh::Dims{2}) = psf(tf, fillsize(Δxy, 2), wh)
-conv(tf::PointSpreadFunction, img::SpatialImage{T,2}) where {T} = imfilter(img, psf(tf, img))
-deconv(::PointSpreadFunction, ::SpatialImage) = error("TODO")
+conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}) = imfilter(img, reflect(psf(tf, img.Δxy, size(img))))
+deconv(tf::PointSpreadFunction, img::SpatialArray) = _wiener_deconv(fft(psf(tf, img.Δxy, size(img))), img)
 
 abstract type ModelPSF <: PointSpreadFunction end
 fit(::ModelPSF, ::AbstractMatrix) = error("TODO")
 
 abstract type RadialPSF <: ModelPSF end
-intensity(psf::RadialPSF, ::Length) = no_implemementation_error(typeof(psf), :intensity)
+intensity(psf::RadialPSF, ::Length) = throw_notimplemented_error(typeof(psf), :intensity)
 intensity(psf::RadialPSF, x::Length, y::Length) = intensity(psf, hypot(x, y))
 
 abstract type MeasuredPSF <: PointSpreadFunction end
