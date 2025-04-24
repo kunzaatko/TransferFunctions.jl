@@ -3,8 +3,7 @@ CurrentModule = TransferFunctions
 ```
 
 ```@docs
-MeasuredPSF
-MeasuredOTF
+PSFArray
 ```
 
 # Estimation

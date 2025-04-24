@@ -3,10 +3,7 @@ CurrentModule = TransferFunctions
 ```
 # OTF Models
 
-```@docs
-ModelOTF
-```
-
+<!-- TODO:  <24-04-25> -->
 ## Circular Pupil Optical Function
 
 

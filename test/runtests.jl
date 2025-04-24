@@ -297,7 +297,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
             # FIX: @test_broken otf(s_tf_2, (511, 511)) ≈ real(FourierTools.shift(otf(s_tf, (511, 511)), (0.5, -3.5)))
         end
 
-        @testset "ModelOTF" begin
+        @testset "OTF models" begin
             for tf in (
                 CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3),
             )
