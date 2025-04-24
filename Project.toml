@@ -1,6 +1,6 @@
 name = "TransferFunctions"
 uuid = "ea859a41-d6bf-4726-8e40-524191381158"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Martin Kunz <martinkunz@email.cz> and contributors"]
 
 [deps]
