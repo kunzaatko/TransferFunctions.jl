@@ -55,4 +55,4 @@ SpecialFunctions = "^2"
 StaticArraysCore = "1.4.3"
 Statistics = "^1"
 Unitful = "^1"
-julia = "^1.9"
+julia = "^1.10"                                 # NOTE: Restricted by BlockArrays <24-04-25>

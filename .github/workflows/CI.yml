@@ -20,8 +20,9 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.9' # oldest possible version
-          - '~1.10.0-0'
+          - '1.10' # NOTE: Restricted by BlockArrays <24-04-25> 
+          - '1.11'
+          - '~1.12.0-0'
           - 'nightly'
         os:
           - ubuntu-latest
