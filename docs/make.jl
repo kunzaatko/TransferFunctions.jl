@@ -4,6 +4,7 @@ using Documenter, DocumenterCitations, DocumenterInterLinks
 links = InterLinks(
     "Julia" => "https://docs.julialang.org/en/v1/",
     "Unitful" => "https://painterqubits.github.io/Unitful.jl/stable/",
+    # "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/"
 )
 
 DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
@@ -33,11 +34,10 @@ makedocs(;
         "General Interface" => "pages/02_interface.md",
         "Transfer Functions" => [
             "Transfer Function Models" => "pages/03_model_tfs.md",
-            "Transfer Functions Measurements" => "pages/04_measured_tfs.md",
-            "Sampled Transfer Functions" => "pages/05_sampled_tfs.md",],
+            "Transfer Functions Measurements" => "pages/04_measured_tfs.md",],
         "References" => [
-            "API" => "pages/06_apireference.md",
-            "Bibliography" => "pages/07_bibliography.md"
+            "API" => "pages/05_apireference.md",
+            "Bibliography" => "pages/06_bibliography.md"
         ]],
     plugins=[bib, links],
     # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here

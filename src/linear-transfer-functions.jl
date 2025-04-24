@@ -1,5 +1,14 @@
+"""
+    LinearTransferFunction <: TransferFunction
+""" # TODO: Docs <24-04-25> 
 abstract type LinearTransferFunction <: TransferFunction end
+"""
+    conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
+""" # TODO: Docs <24-04-25> 
 conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :conv)
+"""
+    deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
+""" # TODO: Docs <24-04-25> 
 deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :deconv)
 transfer(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = conv(t, img)
 restore(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = deconv(t, img)

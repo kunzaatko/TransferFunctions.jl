@@ -2,6 +2,9 @@ include("types/sampled-arrays.jl")
 include("types/extension-methods.jl")
 include("types/circulant-tensor.jl")
 
+"""
+    TransferFunction
+""" # TODO: Docs <24-04-25> 
 abstract type TransferFunction end
 transfer(t::TransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :transfer)
 restore(t::TransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :restore)

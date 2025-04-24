@@ -9,7 +9,7 @@ const SBitVector{N} = SVector{N,Bool}
 `N`-dimensional array that consists of an `M` dimensional 'outer' array `OA<:AbstractArray{IA,M}` of `K` dimensional `T`
 valued 'inner' arrays `IA{T,K}`. The constructor ensures that `M+K==N` and that the inner arrays have the same axes.
 
-See also [`Slices`](@extref)
+See also [`Slices`](@extref Julia :jl:type:`Base.Slices`)
 
 # Fields
 - `outer::OA` -- Array containing 
@@ -69,7 +69,7 @@ the first `M` dimensions have interior filtering coordinates `interior` given by
 A correlation filtering result of `A` with a kernel array `K`can be obtained by outer tensor contraction over the tail
 `M` dimensions of the `CirculantTensor(A,K)`.
 
-See also [`BlockCirculantWithCirculantBlocksMatrix`](@ref), [`imfilter`](@extref)
+See also [`BlockCirculantWithCirculantBlocksMatrix`](@ref), `imfilter`
 """
 struct CirculantTensor{T,N,M,AA<:AbstractArray{T,M}} <: AbstractArray{T,N}
     A::AA
@@ -90,9 +90,8 @@ struct CirculantTensor{T,N,M,AA<:AbstractArray{T,M}} <: AbstractArray{T,N}
     end
 end
 
-# !FIX: The axes of the output indices should be created in terms of the interior or "valid" indices. Therefore the
-# output of a tensor contraction should have the correct indices in terms of the interior of the array being the output
-# of the convolution. <19-04-25> 
+@reexport using ImageFiltering: reflect # NOTE: For convolution instead of correlation <24-04-25> 
+
 # TODO: Same constructors as for `imfilter!` <19-04-25>
 CirculantTensor(A::AbstractArray{<:Any,N}, kern::AbstractArray{<:Any,N}) where {N} = CirculantTensor(A, axes(kern))
 CirculantTensor(A::AbstractArray{<:Any,N}, size::NTuple{N,Int}) where {N} = CirculantTensor(A, map(Base.OneTo, size))
@@ -112,11 +111,16 @@ shrink(inds::Indices{N}, kern::Indices{N}) where {N} = map(shrinkind, inds, kern
 shrinkind(ind::AbstractUnitRange, kern::AbstractUnitRange) = typeof(ind)(first(ind)-first(kern):last(ind)-last(kern))
 shrinkind(ind::Base.OneTo, kern::AbstractUnitRange) = shrinkind(UnitRange(ind), kern)
 
+"""
+    BlockCirculantWithCirculantBlocksMatrix{T} <: AbstractBlockMatrix{T}
+""" # TODO: Docs <24-04-25> 
 struct BlockCirculantWithCirculantBlocksMatrix{T} <: AbstractBlockMatrix{T}
-    parent::CirculantTensor{T,4}
+    circulant::CirculantTensor{T,4}
+    parent::SubArray{T,2,CirculantTensor{T,4}}
+    # function BlockCirculantWithCirculantBlocksMatrix(circulant::CirculantTensor{T,4})
+    #     parent = view(circulant, )
+    # end
 end
-
-
 
 function conv_kern(A::AbstractMatrix{T}, d::Dims{2}) where {T}
     A_axs = axes(A)
