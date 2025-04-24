@@ -2,17 +2,23 @@
     SampledArray{T,ST,N,AA<:AbstractArray} <: AbstractArray{T,N}
 An `N`-dimensional sampled array with data of type `T` sample spacing of type `ST`.
 """
-struct SampledArray{T,ST,N,AA<:AbstractArray{<:T}} <: AbstractArray{T,N}
+struct SampledArray{T,ST,N,AA<:AbstractArray{T}} <: AbstractArray{T,N}
     parent::AA
     sampling::NTuple{N,ST}
+    function SampledArray(parent::AbstractArray{T}, sampling::Tuple{ST,Vararg{ST}}) where {T,ST}
+        ndims(parent) == length(sampling) || throw(DimensionMismatch("In constructor `SampledArray(parent::AbstractArray{T},sampling::NTuple)`. The length of the sampling rate `sampling` does not match the dimensionality of the parent array `parent`, `length(sampling)==$(length(sampling))!=$(ndims(parent))==ndims(parent)`."))
+        return new{T,ST,ndims(parent),typeof(parent)}(parent, sampling)
+    end
+    SampledArray(parent::AbstractArray{<:Any,0}, sampling::NTuple{0,<:Any}) = new{eltype(parent),eltype(sampling),0,typeof(parent)}(parent, sampling)
 end
 
-Base.size(a::SampledArray) = Base.size(a.parent)
-Base.axes(a::SampledArray) = Base.axes(a.parent)
+Base.size(a::SampledArray) = (@inline; size(a.parent))
+Base.axes(a::SampledArray) = (@inline; axes(a.parent))
 Base.parent(a::SampledArray) = a.parent
 Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S} = typeof(a)(similar(parent(a), S, dims), a.sampling)
-Base.getindex(a::SampledArray, i) = (@inline; Base.getindex(parent(a), i))
-Base.IndexStyle(::Type{<:SampledArray{T,ST,N,AA}}) where {T,ST,N,AA} = Base.IndexStyle(AA)
+Base.getindex(a::SampledArray, i) = (@inline; getindex(parent(a), i))
+Base.setindex!(A::SampledArray, v, i::Int) = (@inline; setindex!(parent(A), v, i))
+Base.IndexStyle(::Type{<:SampledArray{T,ST,N,AA}}) where {T,ST,N,AA} = IndexStyle(AA)
 sampling(a::SampledArray) = a.sampling
 
 """

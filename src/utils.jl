@@ -26,7 +26,7 @@ If `a` is in the Fourier domain, then `fourier` should de set to `true`.
 - `fourier`: `a` is in the Fourier domain (default: `false`).
 
 # Examples:
-```jldoctest; setup = :(using TransferFunctions: TransferFunctions as TF; using TransferFunctions: FFTW)
+```jldoctest; setup = :(using TransferFunctions: TransferFunctions as TF; using FFTW)
 julia> TF.padtosize(reshape(1:4, 2,2), 3, 3)
 3×3 Matrix{Int64}:
  0  0  0
@@ -54,58 +54,33 @@ julia> TF.padtosize(reshape(1:4, 2,2), 4, 4; fourier=true)
  2  0  0  4
 
 julia> ones(1,1) |> fft
-ERROR: UndefVarError: `fft` not defined in `Main`
-Suggestion: check for spelling errors or missing imports.
-Hint: a global variable of this name also exists in AbstractFFTs.
-Hint: a global variable of this name also exists in FFTW.
-Stacktrace:
- [1] top-level scope
-   @ none:1
+1×1 Matrix{ComplexF64}:
+ 1.0 + 0.0im
 
 julia> TF.padtosize(ones(1,1), 2,2) |> fft
-ERROR: UndefVarError: `fft` not defined in `Main`
-Suggestion: check for spelling errors or missing imports.
-Hint: a global variable of this name also exists in AbstractFFTs.
-Hint: a global variable of this name also exists in FFTW.
-Stacktrace:
- [1] top-level scope
-   @ none:1
+2×2 Matrix{ComplexF64}:
+  1.0+0.0im  -1.0+0.0im
+ -1.0+0.0im   1.0+0.0im
 
 julia> ones(2,2) |> fft
-ERROR: UndefVarError: `fft` not defined in `Main`
-Suggestion: check for spelling errors or missing imports.
-Hint: a global variable of this name also exists in AbstractFFTs.
-Hint: a global variable of this name also exists in FFTW.
-Stacktrace:
- [1] top-level scope
-   @ none:1
+2×2 Matrix{ComplexF64}:
+ 4.0+0.0im  0.0+0.0im
+ 0.0+0.0im  0.0+0.0im
 
 julia> TF.padtosize(ones(2,2), 3, 3) |> fft # can be made symmetric
-ERROR: UndefVarError: `fft` not defined in `Main`
-Suggestion: check for spelling errors or missing imports.
-Hint: a global variable of this name also exists in AbstractFFTs.
-Hint: a global variable of this name also exists in FFTW.
-Stacktrace:
- [1] top-level scope
-   @ none:1
+3×3 Matrix{ComplexF64}:
+  4.0+0.0im  -2.0+0.0im  -2.0+0.0im
+ -2.0+0.0im   1.0+0.0im   1.0+0.0im
+ -2.0+0.0im   1.0+0.0im   1.0+0.0im
 
 julia> TF.padtosize(ones(2,2), 4, 4) |> fft # cannot be symmetric
-ERROR: UndefVarError: `fft` not defined in `Main`
-Suggestion: check for spelling errors or missing imports.
-Hint: a global variable of this name also exists in AbstractFFTs.
-Hint: a global variable of this name also exists in FFTW.
-Stacktrace:
- [1] top-level scope
-   @ none:1
+4×4 Matrix{ComplexF64}:
+  4.0+0.0im  -2.0-2.0im  0.0+0.0im  -2.0+2.0im
+ -2.0-2.0im   0.0+2.0im  0.0+0.0im   2.0+0.0im
+  0.0+0.0im   0.0+0.0im  0.0+0.0im   0.0+0.0im
+ -2.0+2.0im   2.0+0.0im  0.0+0.0im   0.0-2.0im
 
 julia> @assert all(-10^-5 .< imag(fft(TF.padtosize(ones(2,2), 5, 5))) .< 10^-5) # .== 0 (numerical errors)
-ERROR: UndefVarError: `fft` not defined in `Main`
-Suggestion: check for spelling errors or missing imports.
-Hint: a global variable of this name also exists in AbstractFFTs.
-Hint: a global variable of this name also exists in FFTW.
-Stacktrace:
- [1] top-level scope
-   @ none:1
 
 ```
 """
@@ -174,12 +149,21 @@ contained(arr::AbstractArray{T,N}, loc::Coordinate{N}) where {T,N} = all(loc .�
 fftfreqs(sz::Dims{2}, Δ::PixelSize{2}) = ndgrid(fftfreq.(sz, 1 ./ Δ)...)
 fftfreqs(sz::Dims{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, Val(2)))
 
-posgrid(sz::Dims{2}, Δ::PixelSize{2}) =  ndgrid(map(sz,Tuple(roundupcenter(sz)), Δ) do len,c,samp
-    (range(1,len) .- c) .* samp
+posgrid(sz::Dims{2}, Δ::PixelSize{2}) = ndgrid(map(sz, Tuple(roundupcenter(sz)), Δ) do len, c, samp
+    (range(1, len) .- c) .* samp
 end...)
-posgrid(sz::Dims{2}, Δ::Length) = posgrid(sz, fillsize(Δ, Val(2))) 
+posgrid(sz::Dims{2}, Δ::Length) = posgrid(sz, fillsize(Δ, Val(2)))
 
 struct OriginAt{N}
     origin::CartesianIndex{N}
 end
 (oat::OriginAt{N})(x::AbstractArray{<:Any,N}) where {N} = Origin(CartesianIndex{N}(ntuple(_ -> 1, Val(N))) - oat.origin)(x)
+
+# NOTE: https://github.com/JuliaLang/julia/issues/6733
+"""
+    @__FUNCTION__
+Return current function name. For debugging and error message purposes.
+"""
+macro __FUNCTION__()
+    return :($(esc(Expr(:isdefined, :var"#self#"))) ? $(esc(:var"#self#")) : nothing)
+end
