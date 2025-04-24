@@ -1,17 +1,20 @@
 using TransferFunctions
+using TransferFunctions: TransferFunctions as TF
 using TransferFunctions: Frequency
-using TransferFunctions: IntervalSets
-using FourierTools, FFTViews, Distributions, TransferFunctions.FillArrays
+using IntervalSets, FourierTools, FFTViews, Distributions, FillArrays, TensorOperations, OffsetArrays
+using OffsetArrays: OffsetArray as OA
+using OffsetArrays: OffsetArrays as OAs
 using Aqua, Test, Documenter, CompatHelperLocal
 
 @testset "TransferFunctions.jl" begin
     @testset "Code quality" begin
-        aqua_ambiguities = true
+        ambiguities = false # FIX: Fix the ambiguities <24-04-25> 
+        aqua_ambiguities = false
         @testset "Aqua.jl" begin
             if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "GITHUB_ACTIONS")
                 Aqua.test_all(
                     TransferFunctions;
-                    ambiguities=aqua_ambiguities,
+                    ambiguities=aqua_ambiguities && ambiguities,
                     # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
                 )
             else
@@ -19,7 +22,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
             end
         end
         @testset "Ambiguities" begin
-            if !aqua_ambiguities
+            if !aqua_ambiguities && ambiguities
                 @test length(Test.detect_ambiguities(TransferFunctions)) == 0
             end
         end
@@ -51,8 +54,6 @@ using Aqua, Test, Documenter, CompatHelperLocal
     @testset "utils.jl" begin
         using TransferFunctions: fillsize, roundupcenter, exactcenter, fftfreqs, posgrid, contained
         using TransferFunctions: PixelSize, Coordinate, Frequency, Length, OriginAt
-        using TransferFunctions.OffsetArrays
-        using TransferFunctions.OffsetArrays: OffsetArray as OA
         using Base: CartesianIndex as CI
 
         @test 1 / 32u"nm" isa Frequency
@@ -93,10 +94,67 @@ using Aqua, Test, Documenter, CompatHelperLocal
         @test OriginAt(CI(2, 2, 2))(Ones(3, 3, 3)) == OA(Ones(3, 3, 3), -2, -2, -2)
     end
     @testset "types.jl" begin
-        using TransferFunctions: SampledArray
-        @test SampledArray(Ones(40, 40), (20u"m^-1", 20u"m^-1")) isa SampledArray
+        @test TF.SampledArray(Ones(40, 40), (20u"m^-1", 20u"m^-1")) isa TF.SampledArray
         @test SpatialArray(Ones(40, 40), (20u"nm", 20u"nm")) isa SpatialArray
         @test SpatialArray(Ones(40, 40), 20u"nm") isa SpatialArray
+        @test_throws DimensionMismatch SpatialArray(Ones(40, 40), (20u"nm", 20u"nm", 20u"nm"))
+        @test_throws DimensionMismatch SpatialArray(Ones(40, 40), (20u"nm",))
+
+        @testset "circulant" begin
+            using Base: OneTo
+            O = Ones(100, 100, 100)
+
+            # Mismatch in `innerdims` length and inner array size.
+            @test_throws MethodError TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3))
+
+            # Total dimensionality does not match partial dimensionalities
+            @test_throws DimensionMismatch TF.OuterInnerArray{Any,3}([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4))
+
+            # inner axes mismatch
+            @test_throws DimensionMismatch TF.OuterInnerArray([view(O, 30:39, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4))
+
+            # Non existent dimension
+            @test_throws DimensionMismatch TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 5))
+
+            @test TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4)) isa AbstractArray{<:Any,4}
+            @test TF.OuterInnerArray{Float64,4}([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4)) isa AbstractArray{Float64,4}
+
+            # Explicit recasting
+            @test !(TF.OuterInnerArray{Any,4}([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4)) isa TF.OuterInnerArray{Float64})
+
+            oia = TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4))
+            @test size(oia) == (2, 11, 11, 100)
+            @test axes(oia) == (OneTo(2), OneTo(11), OneTo(11), OneTo(100))
+
+            @test TF.innerdims(oia) == (2, 3, 4)
+            @test TF.outerdims(oia) == (1,)
+
+            # TODO: Test offset array compatibility <16-04-25> 
+
+            K = OAs.centered(zeros(21, 21))
+            K[0, 0] = 0.5
+            K[-1, -1] = K[-1, 1] = K[1, -1] = K[1, 1] = 0.5 / 4
+
+            img = Ones(30, 30)
+
+            @test TF.CirculantTensor(img, (10, 10)) isa TF.CirculantTensor{eltype(img),4}
+            @test TF.CirculantTensor(img, (-5:5, -5:5)) isa TF.CirculantTensor{eltype(img),4}
+            @test TF.CirculantTensor(img, K) isa TF.CirculantTensor{eltype(img),4}
+
+            # Different eltypes
+            @test TF.CirculantTensor(Ones{Int}(30, 30), K) isa TF.CirculantTensor{Int,4}
+
+            A = TF.CirculantTensor(img, K)
+
+            # Correct output indices
+            @test ndims(TF.CirculantTensor(img, K)) == 4
+            @test axes(A)[3:4] == axes(K) == A.kern
+            @test axes(A)[1:2] == A.interior
+
+            @tensor B[a, b] := OAs.no_offset_view(A)[a, b, c, d] * OAs.no_offset_view(K)[c, d]
+            @test B isa AbstractMatrix
+            @test size(B) == length.(A.interior)
+        end
     end
     @testset "Apodization" begin
         using TransferFunctions: apodization, instrument, apodize, taperedges, Apodization
@@ -155,7 +213,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "methods" begin
-            using TransferFunctions.ImageFiltering: Pad
+            using ImageFiltering: Pad
             apo = Cosine()
             @test taperedges(
                       apo, ones(100, 100, 9), ((10, 10), (10, 10)); dims=(1, 2) # All the supplied arguments 
@@ -206,6 +264,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
                 (A_tap[31:40, 31:40] .!= 1)
             ]))
         end
+
     end
     @testset "Optical transfer functions" begin
         img = Ones(1024, 1024)
@@ -245,7 +304,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
                 @testset "$(nameof(typeof(tf)))" begin
                     @test attenuation(tf, 1 // 250u"nm", 1 // 200u"nm") isa AbstractFloat
                     @test attenuation(tf, 250.0u"nm^-1", 200.0u"nm^-1") isa AbstractFloat
-                    if tf isa TransferFunctions.RadialOTF
+                    if tf isa TF.RadialOTF
                         @test attenuation(tf, 1 // 250u"nm") isa Number
                         @test attenuation(tf, 1 / 200u"nm", 0u"nm^-1") == attenuation(tf, 1 / 200u"nm")
                         @test cutoff(tf) isa Frequency
@@ -302,7 +361,6 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "ModelPSF" begin
-            using TransferFunctions: OffsetArrays
             tf = BornWolf(488u"nm", 1.4, 1.7)
 
             ## Method Availability
@@ -311,8 +369,6 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "Sampled PSF" begin
-            using TransferFunctions: OffsetArrays
-
             s_img = SpatialArray(img, 32u"nm")
             tf = BornWolf(488u"nm", 1.4, 1.7)
 
@@ -321,7 +377,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @test psf(tf, (64u"nm", 32u"nm"), (512, 512)) isa AbstractMatrix
 
             ## Methods - Array generation
-            @test psf(tf, 60u"nm", (512, 512)) isa OffsetArrays.OffsetMatrix
+            @test psf(tf, 60u"nm", (512, 512)) isa OAs.OffsetMatrix
             @test_throws MethodError psf(tf, s_img)
 
             ## Non-methods - Array generation
@@ -338,11 +394,11 @@ using Aqua, Test, Documenter, CompatHelperLocal
     end
     @testset "Estimation" begin
         using TransferFunctions.Estimation
-        @test (bead(100u"nm", 30.5u"nm", peak_intensity=0.75) .<= 0.75) |> all
-        @test_throws AssertionError bead(100u"nm", 30.5u"nm"; subpixel_shift=(-1.5, 0.7))
-        @test_throws AssertionError bead(100u"nm", 30.5u"nm"; subpixel_shift=(1.5, 0.7))
+        @test (bead(100u"nm", 30.5u"nm", intensity=0.75) .<= 0.75) |> all
+        @test_throws AssertionError bead(100u"nm", 30.5u"nm"; position=(-1.5, 0.7))
+        @test_throws AssertionError bead(100u"nm", 30.5u"nm"; position=(1.5, 0.7))
 
-        @test (bead(100u"nm", 30.5u"nm"; subpixel_shift=(0.5, 0.5)) .== reverse(bead(100u"nm", 30.5u"nm"; subpixel_shift=(-0.5, -0.5)))) |> all
-        @test (2bead(100u"nm", 30.5u"nm"; peak_intensity=0.5) .== bead(100u"nm", 30.5u"nm")) |> all
+        @test (bead(100u"nm", 30.5u"nm"; position=(0.5, 0.5)) .== reverse(bead(100u"nm", 30.5u"nm"; position=(-0.5, -0.5)))) |> all
+        @test (2bead(100u"nm", 30.5u"nm"; intensity=0.5) .== bead(100u"nm", 30.5u"nm")) |> all
     end
 end

@@ -23,11 +23,7 @@ include("linear-transfer-functions.jl")
 # utils
 include("apodization.jl")
 
-export psf, attenuation, intensity, restore, transfer
-export otf, cutoff
-export BornWolf, CircularPupilOTF
-export SpatialArray
-
-export PSFArray, OTFArray
+export restore, transfer
+export SpatialArray, SampledArray
 
 end

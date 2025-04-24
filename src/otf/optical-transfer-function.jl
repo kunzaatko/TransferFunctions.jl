@@ -40,3 +40,6 @@ otf(tf::OpticalTransferFunction, Δ::Length, wh::Dims{2}) = otf(tf, fillsize(Δ,
 otf(tf::OpticalTransferFunction, img::SpatialArray{T,2}) where {T} = otf(tf, sampling(img), size(img))
 include("./otf-array.jl")
 include("./circular-pupil-otf.jl")
+
+export otf, cutoff, conv, deconv, attenuation
+export CircularPupilOTF, OTFArray

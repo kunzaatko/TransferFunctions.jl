@@ -6,15 +6,15 @@ using TransferFunctions: PixelSize
 const PerLength = Quantity{<:Any,inv(𝐋)}
 
 """
-    bead([T=Float64], d, Δxy, [α=0u"nm^-1"],)
-    bead(d, α, Δxy)
-Generate a model of a bead with diameter `d` and pixel-size `Δxy`.
+    bead([T=Float64], d, Δ; <kwargs>)
+    bead(d, α, Δ)
+Generate a model of a fluorescent microsphere (AKA calibration bead) with diameter `d` and pixel-size `Δ`.
 
 # Arguments
-- `α = 1u"nm^-1`: evanescent wave attenuation constant in the [TIR-FM microscopy modulation](@cite 2025). For a normal acquisition without total internal reflection 0u"nm^-1" is setting.
-- `pixel_grid_length::Int = 10`: length of each pixel in the grid
-- `peak_intensity = 1.0`: peak intensity value
-- `subpixel_shift = (0.0, 0.0)`
+- `α=0u"nm^-1`: evanescent wave attenuation constant in the [TIR-FM microscopy modulation](@cite 2025). An acquisition that is not TIR-FM is equivalent to setting `α=0u"nm^-1"`.
+- `pixel_grid=10`: aliasing of the pixels is done by averaging values at a larger grid. `pixel_grid` sets the dimensions equivalent to each pixel in the grid
+- `intesity=1.0`: peak intensity value, i.e. the theoretical value at the center of the bead
+- `position=(0.0, 0.0)`: set the subpixel position of the peak (center) of the bead within the generated array 
 
 # Examples
 ```jldoctest; setup = :(using TransferFunctions: Estimation)
@@ -32,13 +32,13 @@ julia> Estimation.bead(0.1u"μm", 30.5u"nm"; α=0.01u"nm^-1")
  0.0        0.606779  0.892914   0.606779  0.0
  0.0        0.0       0.0705075  0.0       0.0
 
-julia> Estimation.bead(0.1u"μm", 50.5u"nm"; subpixel_shift=(-0.3,-0.2))
+julia> Estimation.bead(0.1u"μm", 50.5u"nm"; position=(-0.3,-0.2))
 3×3 OffsetArray(::Matrix{Float64}, -1:1, -1:1) with eltype Float64 with indices -1:1×-1:1:
  0.333333  0.737374  0.0808081
  0.59596   1.0       0.20202
  0.020202  0.141414  0.0
 
-julia> Estimation.bead(0.1u"μm", 50.5u"nm"; peak_intensity=0.5)
+julia> Estimation.bead(0.1u"μm", 50.5u"nm"; intensity=0.5)
 3×3 OffsetArray(::Matrix{Float64}, -1:1, -1:1) with eltype Float64 with indices -1:1×-1:1:
  0.03  0.23  0.03
  0.23  0.5   0.23
@@ -50,22 +50,24 @@ function bead(
     d::Length,
     Δxy::PixelSize{2};
     α::PerLength=0u"nm^-1",
-    pixel_grid_length=10, peak_intensity=one(T), subpixel_shift::Tuple{Real,Real}=(0.0, 0.0)
+    pixel_grid=10,
+    intensity=one(T),
+    position::Tuple{Real,Real}=(0.0, 0.0)
 )::OffsetMatrix{T}
-    @assert all(abs.(subpixel_shift) .< one(eltype(subpixel_shift))) "|subpixel_shift| must be < 1"
-    subpx_pad = map(subpixel_shift) do x
+    @assert all(abs.(position) .< one(eltype(position))) "|position| must be < 1"
+    subpx_pad = map(position) do x
         (x < zero(x) ? x : 0, x > zero(x) ? x : 0)  # padding to apply to the buffer to fit the sub-pixel shift
     end
     buf_axes_px = map(Tuple((-x, x) for x in (d ./ (2 .* Δxy)) .- 1 / 2), subpx_pad) do ax_range, pad # center pixel size => -½
         round.(Int, (ax_range .+ pad), RoundFromZero) # range of the axes in px including the sub-pixel padding
     end
 
-    grid = Matrix{T}(undef, (((b - a + 1) * pixel_grid_length) for (a, b) in buf_axes_px)...)
-    grid_subpixel_shift = subpixel_shift .* pixel_grid_length
-    grid_center = ((1 / 2 .- first.(buf_axes_px)) .* pixel_grid_length) .+ grid_subpixel_shift
+    grid = Matrix{T}(undef, (((b - a + 1) * pixel_grid) for (a, b) in buf_axes_px)...)
+    grid_subpixel_shift = position .* pixel_grid
+    grid_center = ((1 / 2 .- first.(buf_axes_px)) .* pixel_grid) .+ grid_subpixel_shift
 
     r_grid = map(CartesianIndices(grid)) do xy
-        (Tuple(xy) .- grid_center .- 1 / 2) ./ pixel_grid_length .* Δxy |> splat(hypot)
+        (Tuple(xy) .- grid_center .- 1 / 2) ./ pixel_grid .* Δxy |> splat(hypot)
     end # radii from the center
     supp_grid = r_grid .< (d / 2) # support of the bead
     z_grid = similar(r_grid, Union{Missing,Length}) # z-axes offset from the focal plane
@@ -78,12 +80,12 @@ function bead(
     buf = Matrix{T}(undef, ((b - a + 1) for (a, b) in buf_axes_px)...)
     map!(buf, CartesianIndices(buf)) do ind
         indsx, indsy = map(Tuple(ind)) do i
-            ((i-1)*pixel_grid_length+1):(i*pixel_grid_length)
+            ((i-1)*pixel_grid+1):(i*pixel_grid)
         end
         mean(intensity_grid[indsx, indsy])
     end
     buf = OffsetArray(buf, (first.(buf_axes_px) .- 1)...)
-    buf .*= peak_intensity / buf[0, 0]
+    buf .*= intensity / buf[0, 0]
     return buf
 end
 # NOTE: step 1 add default type
