@@ -20,10 +20,9 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.10' # NOTE: Restricted by BlockArrays <24-04-25> 
-          - '1.11'
+          - '1.11' # NOTE: Latest possible version
           - '~1.12.0-0'
-          - 'nightly'
+          # - 'nightly'
         os:
           - ubuntu-latest
           - macOS-latest
