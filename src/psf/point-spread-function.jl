@@ -11,7 +11,7 @@ Broadcast.broadcastable(tf::PointSpreadFunction) = Ref(tf)
     intensity(psf::PointSpreadFunction, ::Length, ::Length)
 
 """ # TODO: Docs <24-04-25> 
-intensity(psf::PointSpreadFunction, ::Length, ::Length) = throw_notimplemented_error(typeof(psf), :intensity)
+@require_interface intensity(psf::PointSpreadFunction, ::Length, ::Length)
 
 """
     psf(tf::PointSpreadFunction, Δ::PixelSize{2}, wh::Dims{2})
@@ -39,7 +39,7 @@ fit(::ModelPSF, ::SpatialArray) = error("TODO")
     RadialPSF <: ModelPSF
 """ # TODO: Docs <24-04-25> 
 abstract type RadialPSF <: ModelPSF end
-intensity(psf::RadialPSF, ::Length) = throw_notimplemented_error(typeof(psf), :intensity)
+@require_interface intensity(psf::RadialPSF, ::Length)
 intensity(psf::RadialPSF, x::Length, y::Length) = intensity(psf, hypot(x, y))
 
 """

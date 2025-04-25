@@ -32,6 +32,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
             end
         end
     end
+
     @testset "DocTests" begin
         # FIX: When running locally, do not ask for SSH key password <10-12-23> 
         # NOTE: Show for `Unitful.jl` does nm⁻¹ on macOS and nm^-1 on Linux. This is necessary, since the `jldoctest` is only one
@@ -51,48 +52,71 @@ using Aqua, Test, Documenter, CompatHelperLocal
             doctest(TransferFunctions; fix=ifelse(haskey(ENV, "FIX_DOCTESTS"), true, false))
         end
     end
+
     @testset "utils.jl" begin
         using TransferFunctions: fillsize, roundupcenter, exactcenter, fftfreqs, posgrid, contained
         using TransferFunctions: PixelSize, Coordinate, Frequency, Length, OriginAt
         using Base: CartesianIndex as CI
 
-        @test 1 / 32u"nm" isa Frequency
-        Δkx = 1 / 61u"nm"
-        @test 1 / Δkx isa Length
+        @testset "types" begin
+            @testset "units" begin
+                @test 1 / 32u"nm" isa Frequency
+                Δkx = 1 / 61u"nm"
+                @test 1 / Δkx isa Length
+            end
 
-        @test (31.5u"nm", 40u"nm", 50u"nm") isa PixelSize{3}
-        @test (31.5u"nm", 40u"nm") isa PixelSize{2}
+            @test (31.5u"nm", 40u"nm", 50u"nm") isa PixelSize{3}
+            @test (31.5u"nm", 40u"nm") isa PixelSize{2}
 
-        @test (3, 3, 3) isa Coordinate{3}
-        @test (3.0, 3.0, 3.0) isa Coordinate{3}
-        @test (2.4, 3, 3) isa Coordinate{3} # NOTE: Must accept diverse types <26-08-24> 
+            @test (3, 3, 3) isa Coordinate{3}
+            @test (3.0, 3.0, 3.0) isa Coordinate{3}
+            @test (2.4, 3, 3) isa Coordinate{3} # NOTE: Must accept diverse types <26-08-24> 
+        end
 
-        @test fillsize(31u"nm", 2) == (31u"nm", 31u"nm")
-        @test fillsize(31u"nm", Val(2)) == (31u"nm", 31u"nm")
 
-        @test (posgrid((11, 11), (31u"nm", 31u"nm")) |> first |> first) isa Length
-        @test posgrid((11, 11), 31u"nm") == posgrid((11, 11), (31u"nm", 31u"nm"))
-        @test_throws MethodError posgrid((11, 11, 11), (31u"nm", 31u"nm"))
+        @testset "utility functions" begin
+            @test fillsize(31u"nm", 2) == (31u"nm", 31u"nm")
+            @test fillsize(31u"nm", Val(2)) == (31u"nm", 31u"nm")
 
-        @test (fftfreqs((11, 11), (31u"nm", 31u"nm")) |> first |> first) isa Frequency
-        @test fftfreqs((11, 11), 31u"nm") == fftfreqs((11, 11), (31u"nm", 31u"nm"))
-        @test_throws MethodError fftfreqs((11, 11, 11), (31u"nm", 31u"nm"))
+            @test (posgrid((11, 11), (31u"nm", 31u"nm")) |> first |> first) isa Length
+            @test posgrid((11, 11), 31u"nm") == posgrid((11, 11), (31u"nm", 31u"nm"))
+            @test_throws MethodError posgrid((11, 11, 11), (31u"nm", 31u"nm"))
 
-        @test roundupcenter(Ones(3, 4, 2)) == CI(2, 3, 2)
-        @test roundupcenter(OA(Ones(3, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
-        @test roundupcenter(OA(Ones(4, 3, 3), -2, -2, -2)) == CI(1, 0, 0)
+            @test (fftfreqs((11, 11), (31u"nm", 31u"nm")) |> first |> first) isa Frequency
+            @test fftfreqs((11, 11), 31u"nm") == fftfreqs((11, 11), (31u"nm", 31u"nm"))
+            @test_throws MethodError fftfreqs((11, 11, 11), (31u"nm", 31u"nm"))
 
-        @test exactcenter(Ones(3, 4, 2)) == (2.0, 2.5, 1.5)
-        @test exactcenter(OA(Ones(3, 3, 3), -2, -2, -2)) == (0.0, 0.0, 0.0)
-        @test exactcenter(OA(Ones(4, 3, 3), -2, -2, -2)) == (0.5, 0.0, 0.0)
+            @test roundupcenter(Ones(3, 4, 2)) == CI(2, 3, 2)
+            @test roundupcenter(OA(Ones(3, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
+            @test roundupcenter(OA(Ones(4, 3, 3), -2, -2, -2)) == CI(1, 0, 0)
 
-        @test contained(Ones(3, 4, 2), (2, 3, 1))
-        @test !contained(Ones(3, 4, 2), (8, 3, 1))
-        @test contained(OA(Ones(3, 3, 3), -2, -2, -2), (-1, 1, 0))
-        @test !contained(OA(Ones(3, 3, 3), -2, -2, -2), (-2, 1, 0))
+            @test exactcenter(Ones(3, 4, 2)) == (2.0, 2.5, 1.5)
+            @test exactcenter(OA(Ones(3, 3, 3), -2, -2, -2)) == (0.0, 0.0, 0.0)
+            @test exactcenter(OA(Ones(4, 3, 3), -2, -2, -2)) == (0.5, 0.0, 0.0)
 
-        @test OriginAt(CI(2, 2, 2))(Ones(3, 3, 3)) == OA(Ones(3, 3, 3), -2, -2, -2)
+            @test contained(Ones(3, 4, 2), (2, 3, 1))
+            @test !contained(Ones(3, 4, 2), (8, 3, 1))
+            @test contained(OA(Ones(3, 3, 3), -2, -2, -2), (-1, 1, 0))
+            @test !contained(OA(Ones(3, 3, 3), -2, -2, -2), (-2, 1, 0))
+
+            @test OriginAt(CI(2, 2, 2))(Ones(3, 3, 3)) == OA(Ones(3, 3, 3), -2, -2, -2)
+        end
+
+        @testset "macros" begin
+            @test_throws LoadError @macroexpand TF.@require_interface(function some() end) # No arguments
+            @test_throws LoadError @macroexpand TF.@require_interface(some())              # No arguments
+            @test_throws LoadError @macroexpand TF.@require_interface(some = 5)            # Not a call
+            @test_throws LoadError @macroexpand TF.@require_interface(some(a))             # No type
+            @test_throws LoadError @macroexpand TF.@require_interface(some(a::Float64))    # Concrete type
+
+            @test (@macroexpand TF.@require_interface(some(a::AbstractFloat))).args[2].head == Symbol("function")
+            @test (@macroexpand TF.@require_interface(some(a::AbstractFloat, b::Int))).args[2].head == Symbol("function")
+            @test_broken (@macroexpand TF.@require_interface(some(a::AbstractFloat, b::Int)::Float64)).args[2].head == Symbol("function")
+            @test_broken (@macroexpand TF.@require_interface(some(::AbstractFloat, b::Int))).args[2].head == Symbol("function")
+            @test_broken (@macroexpand TF.@require_interface(some(::AbstractFloat{A}, b::Int) where {A})).args[2].head == Symbol("function")
+        end
     end
+
     @testset "types.jl" begin
         @test TF.SampledArray(Ones(40, 40), (20u"m^-1", 20u"m^-1")) isa TF.SampledArray
         @test SpatialArray(Ones(40, 40), (20u"nm", 20u"nm")) isa SpatialArray
@@ -156,6 +180,38 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @test size(B) == length.(A.interior)
         end
     end
+
+    @testset "interfaces" begin
+        A = TF.SpatialArray(Ones(40, 40), 20u"nm")
+
+        struct TF_1 <: TF.TransferFunction end
+        tf_1 = TF_1()
+        @test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialArray.*)"] transfer(tf_1, A)
+        @test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialArray.*)"] restore(tf_1, A)
+
+        struct LTF_1 <: TF.LinearTransferFunction end
+        ltf_1 = LTF_1()
+        @test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.conv(ltf_1, A)
+        @test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.deconv(ltf_1, A)
+
+        struct PSF_1 <: TF.PointSpreadFunction end
+        psf_1 = PSF_1()
+        @test_throws ["does not implement", r"intensity(.*::PointSpreadFunction, .*::Length, .*::Length)"] intensity(psf_1, 10u"nm", 10u"nm")
+        @test_throws MethodError intensity(psf_1, 10u"nm")
+
+        struct PSF_2 <: TF.RadialPSF end
+        psf_2 = PSF_2()
+        @test_throws ["does not implement", r"intensity(.*::RadialPSF, .*::Length)"] intensity(psf_2, 10u"nm")
+
+        struct OTF_1 <: TF.OpticalTransferFunction end
+        otf_1 = OTF_1()
+        @test_throws ["does not implement", r"attenuation(.*::OpticalTransferFunction, .*::Frequency, .*::Frequency)"] attenuation(otf_1, 10u"nm^-1", 10u"nm^-1")
+
+        struct OTF_2 <: TF.RadialOTF end
+        otf_2 = OTF_2()
+        @test_throws ["does not implement", r"attenuation(*::RadialOTF, .*::Frequency)"] attenuation(otf_2, 10u"nm^-1")
+    end
+
     @testset "Apodization" begin
         using TransferFunctions: apodization, instrument, apodize, taperedges, Apodization
         using TransferFunctions: Triangular, Blackman, Connes, Cosine, Gaussian, Hamming, Hann, Welch, PowerCosine, SineSum, Nuttall, BlackmanNuttall, BlackmanHarris, FlatTop, ExactBlackman
@@ -264,8 +320,8 @@ using Aqua, Test, Documenter, CompatHelperLocal
                 (A_tap[31:40, 31:40] .!= 1)
             ]))
         end
-
     end
+
     @testset "Optical transfer functions" begin
         img = Ones(1024, 1024)
 
@@ -306,9 +362,18 @@ using Aqua, Test, Documenter, CompatHelperLocal
                     @test attenuation(tf, 250.0u"nm^-1", 200.0u"nm^-1") isa AbstractFloat
                     if tf isa TF.RadialOTF
                         @test attenuation(tf, 1 // 250u"nm") isa Number
-                        @test attenuation(tf, 1 / 200u"nm", 0u"nm^-1") == attenuation(tf, 1 / 200u"nm")
+
+                        c = 1 / 200u"nm"
+                        @test attenuation(tf, c, 0u"nm^-1") == attenuation(tf, c) ≈
+                              attenuation(tf, c / sqrt(10), 3c / sqrt(10)) ≈ attenuation(tf, c / sqrt(2), c / sqrt(2))
+
                         @test cutoff(tf) isa Frequency
                         @test cutoff(tf, 0.15) isa Frequency
+
+                        ρ_max = cutoff(tf)
+                        @test TF.insupport(tf, ρ_max / sqrt(2) / 2) == true
+                        @test TF.insupport(tf, ρ_max / 2sqrt(2), ρ_max / 2sqrt(2)) == true
+                        @test TF.insupport(tf, ρ_max / sqrt(10), 3ρ_max / 2sqrt(10)) == true
                     end
                     # FIX: @test attenuation(Float32, tf, 1 // 250u"nm") isa Float32
                     # FIX: @test attenuation(ComplexF32, tf, 1 // 250u"nm") isa ComplexF32
@@ -316,7 +381,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
             end
         end
 
-        @testset "Sample OTF" begin
+        @testset "Sampled OTF" begin
             tf = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3)
             s_img = SpatialArray(img, 32u"nm")
 
@@ -351,6 +416,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @test_throws MethodError otf(tf, 64u"nm", (512.1, 512.4))
         end
     end
+
     @testset "Point Spread Function" begin
         img = Ones(1024, 1024)
 
@@ -384,14 +450,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @test_throws MethodError psf(tf, 60u"nm", (512.1, 512.4))
         end
     end
-    @testset "interfaces from Base" begin
-        psf1 = BornWolf(488u"nm", 1, 1.7)
-        psf2 = BornWolf(488u"nm", 1.0, 1.7)
 
-        @test psf1 == psf2
-        @test hash(psf1) == hash(psf2)
-        @test isequal(psf1, psf2)
-    end
     @testset "Estimation" begin
         using TransferFunctions.Estimation
         @test (bead(100u"nm", 30.5u"nm", intensity=0.75) .<= 0.75) |> all
@@ -400,5 +459,14 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
         @test (bead(100u"nm", 30.5u"nm"; position=(0.5, 0.5)) .== reverse(bead(100u"nm", 30.5u"nm"; position=(-0.5, -0.5)))) |> all
         @test (2bead(100u"nm", 30.5u"nm"; intensity=0.5) .== bead(100u"nm", 30.5u"nm")) |> all
+    end
+
+    @testset "Base" begin
+        psf1 = BornWolf(488u"nm", 1, 1.7)
+        psf2 = BornWolf(488u"nm", 1.0, 1.7)
+
+        @test psf1 == psf2
+        @test hash(psf1) == hash(psf2)
+        @test isequal(psf1, psf2)
     end
 end

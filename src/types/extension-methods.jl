@@ -1,8 +1,8 @@
 abstract type ExtensionMethod end
-interpolate(m::ExtensionMethod, ::Coordinate{2}) = throw_notimplemented_error(typeof(m), :interpolate)
-extrapolate(m::ExtensionMethod, ::Coordinate{2}) = throw_notimplemented_error(typeof(m), :interpolate)
+@require_interface extend(m::ExtensionMethod, ::Coordinate{2})
 
 abstract type InterpolateExtrapolate end
-extend(m::InterpolateExtrapolate, ::Coordinate{2}) = throw_notimplemented_error(typeof(m), :extend)
-interpolate(m::InterpolateExtrapolate, c::Coordinate{2}) = extend(m, c)
-extrapolate(m::InterpolateExtrapolate, c::Coordinate{2}) = extend(m, c)
+@require_interface extend(m::InterpolateExtrapolate, ::Coordinate{2})
+@require_interface inconvexhull(m::InterpolateExtrapolate, ::Coordinate{2})
+@require_interface interpolate(m::InterpolateExtrapolate, ::Coordinate{2})
+@require_interface extrapolate(m::InterpolateExtrapolate, ::Coordinate{2})

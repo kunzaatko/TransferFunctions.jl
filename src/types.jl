@@ -6,8 +6,8 @@ include("types/circulant-tensor.jl")
     TransferFunction
 """ # TODO: Docs <24-04-25> 
 abstract type TransferFunction end
-transfer(t::TransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :transfer)
-restore(t::TransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :restore)
+@require_interface transfer(t::TransferFunction, ::SpatialArray{<:Real,2})
+@require_interface restore(t::TransferFunction, ::SpatialArray{<:Real,2})
 
 # NOTE: Taken from Distributions.jl <kunzaatko> 
 for func in (:(==), :isequal, :isapprox)

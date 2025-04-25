@@ -111,6 +111,8 @@ shrink(inds::Indices{N}, kern::Indices{N}) where {N} = map(shrinkind, inds, kern
 shrinkind(ind::AbstractUnitRange, kern::AbstractUnitRange) = typeof(ind)(first(ind)-first(kern):last(ind)-last(kern))
 shrinkind(ind::Base.OneTo, kern::AbstractUnitRange) = shrinkind(UnitRange(ind), kern)
 
+# TODO: Decide what to do with the indices of the array. They will not be linearly spaced if it should make sense.
+# Or it could be documented that the indices are not reflecting the actual indices of the reference array. <24-04-25> 
 """
     BlockCirculantWithCirculantBlocksMatrix{T} <: AbstractBlockMatrix{T}
 """ # TODO: Docs <24-04-25> 

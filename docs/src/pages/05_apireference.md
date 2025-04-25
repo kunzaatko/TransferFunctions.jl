@@ -73,7 +73,7 @@ CirculantTensor
 fit
 RadialOTF
 cutoff
-istransferred
+insupport
 intensity
 MeasuredPSF
 LinearTransferFunction
