@@ -13,11 +13,14 @@ deconv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _wiener_decon
 """
     attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency)
 """ # TODO: Docs <24-04-25> 
-attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency) = throw_notimplemented_error(typeof(otf), :attenuation)
+@require_interface attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency)
 """
-    istransferred(otf::OpticalTransferFunction, fx::Frequency, fy::Frequency)
+    insupport(otf::OpticalTransferFunction, fx::Frequency, fy::Frequency)
 """ # TODO: Docs <24-04-25> 
-istransferred(otf::OpticalTransferFunction, fx::Frequency, fy::Frequency) = error("TODO")
+function insupport(otf::OpticalTransferFunction, fx::Frequency, fy::Frequency)
+    a = abs(attenuation(otf, fx, fy))
+    return a > zero(a)
+end
 
 
 """
@@ -41,17 +44,18 @@ If the pupil function of the system is symmetric, the OTF as well as the PSF are
 `attenuation(model, f) > 0` if `a = 0`.
 """
 abstract type RadialOTF <: OpticalTransferFunction end
-attenuation(otf::RadialOTF, ::Frequency) = throw_notimplemented_error(typeof(otf), :attenuation)
+@require_interface attenuation(otf::RadialOTF, ::Frequency)
 attenuation(otf::RadialOTF, fx::Frequency, fy::Frequency) = (@inline; attenuation(otf, hypot(fx, fy)))
 """
     cutoff(::RadialOTF, a=0.0)
 """ # TODO: Docs <24-04-25> 
 cutoff(::RadialOTF, a=0.0) = error("TODO")
-istransferred(otf::RadialOTF, fx::Frequency, fy::Frequency) = (@inline; hypot(fx, fy) <= cutoff(otf))
+insupport(otf::RadialOTF, fr::Frequency) = (@inline; fr <= cutoff(otf))
+insupport(otf::RadialOTF, fx::Frequency, fy::Frequency) = (@inline; hypot(fx, fy) <= cutoff(otf))
 
 
 include("./otf-array.jl")
 include("./circular-pupil-otf.jl")
 
-export otf, cutoff, conv, deconv, attenuation
+export otf, cutoff, attenuation
 export CircularPupilOTF, OTFArray

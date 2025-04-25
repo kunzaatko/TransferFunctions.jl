@@ -5,11 +5,11 @@ abstract type LinearTransferFunction <: TransferFunction end
 """
     conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 """ # TODO: Docs <24-04-25> 
-conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :conv)
+@require_interface conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 """
     deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 """ # TODO: Docs <24-04-25> 
-deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2}) = throw_notimplemented_error(typeof(t), :deconv)
+@require_interface deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 transfer(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = conv(t, img)
 restore(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = deconv(t, img)
 
@@ -31,3 +31,5 @@ end
 
 include("otf/optical-transfer-function.jl")
 include("psf/point-spread-function.jl")
+
+export conv, deconv
