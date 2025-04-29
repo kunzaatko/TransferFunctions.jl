@@ -7,7 +7,6 @@ const PerLength = Quantity{<:Any,inv(𝐋)}
 
 """
     bead([T=Float64], d, Δ; <kwargs>)
-    bead(d, α, Δ)
 Generate a model of a fluorescent microsphere (AKA calibration bead) with diameter `d` and pixel-size `Δ`.
 
 # Arguments

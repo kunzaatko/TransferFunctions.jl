@@ -2,13 +2,13 @@
 CurrentModule = TransferFunctions
 ```
 
-```@docs
+# Estimation
+
+```@docs; canonical=false
 PSFArray
 ```
 
-# Estimation
-
-```@docs
+```@docs; canonical=false
 Estimation.bead
 ```
 

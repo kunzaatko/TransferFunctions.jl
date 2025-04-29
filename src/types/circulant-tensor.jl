@@ -51,6 +51,10 @@ end
 function innerdims(A::OuterInnerArray{<:Any,N}) where {N}
     ntuple(identity, Val(N))[A.isinnerdim]
 end
+innersize(A::OuterInnerArray{<:Any,N}) where {N} = size(A)[A.isinnerdim]
+innerlength(A::OuterInnerArray{<:Any,N}) where {N} = prod(innersize(A))
+outersize(A::OuterInnerArray{<:Any,N}) where {N} = size(A)[A.isinnerdim.==false]
+outerlength(A::OuterInnerArray{<:Any,N}) where {N} = prod(outersize(A))
 
 Base.size(A::OuterInnerArray) = A.size
 Base.axes(A::OuterInnerArray) = A.axes
@@ -69,7 +73,7 @@ the first `M` dimensions have interior filtering coordinates `interior` given by
 A correlation filtering result of `A` with a kernel array `K`can be obtained by outer tensor contraction over the tail
 `M` dimensions of the `CirculantTensor(A,K)`.
 
-See also [`BlockCirculantWithCirculantBlocksMatrix`](@ref), `imfilter`
+See also [`FilteringMatrix`](@ref), `imfilter`
 """
 struct CirculantTensor{T,N,M,AA<:AbstractArray{T,M}} <: AbstractArray{T,N}
     A::AA
@@ -100,7 +104,7 @@ Base.size(A::CirculantTensor) = (@inline; size(parent(A)))
 Base.size(A::CirculantTensor, dim) = (@inline; size(parent(A), dim))
 Base.getindex(A::CirculantTensor, ind...) = (@inline; getindex(parent(A), ind...))
 Base.axes(A::CirculantTensor, ind...) = (@inline; axes(parent(A), ind...))
-Base.similar(A::CirculantTensor, args...) = (@inline; similar(parent(A), args...))
+Base.similar(A::CirculantTensor{T}, eltype::Type{T}, dims::Dims) where {T} = (@inline; similar(parent(A), eltype, dims))
 
 interior(inds::Indices{N}, others::Vararg{Indices{N}}) where {N} = map(intersect, inds, others...)
 """
@@ -111,25 +115,44 @@ shrink(inds::Indices{N}, kern::Indices{N}) where {N} = map(shrinkind, inds, kern
 shrinkind(ind::AbstractUnitRange, kern::AbstractUnitRange) = typeof(ind)(first(ind)-first(kern):last(ind)-last(kern))
 shrinkind(ind::Base.OneTo, kern::AbstractUnitRange) = shrinkind(UnitRange(ind), kern)
 
+# NOTE: K = 2N should be satisfied by the constructor of `CirculantTensor` <26-04-25> 
 # TODO: Decide what to do with the indices of the array. They will not be linearly spaced if it should make sense.
 # Or it could be documented that the indices are not reflecting the actual indices of the reference array. <24-04-25> 
 """
-    BlockCirculantWithCirculantBlocksMatrix{T} <: AbstractBlockMatrix{T}
-""" # TODO: Docs <24-04-25> 
-struct BlockCirculantWithCirculantBlocksMatrix{T} <: AbstractBlockMatrix{T}
-    circulant::CirculantTensor{T,4}
-    parent::SubArray{T,2,CirculantTensor{T,4}}
-    # function BlockCirculantWithCirculantBlocksMatrix(circulant::CirculantTensor{T,4})
-    #     parent = view(circulant, )
-    # end
+    FilteringMatrix{T,K,P} <: AbstractMatrix{T}
+A matrix that for a given kernel `K`, array size `size(A)` and a padding scheme `P` gives an array `F` such that
+filtering (correlation or convolution if `reflect(K)` is used as the kernel) output of the kernel `K` and an array as
+`A` can be computed as `F * A[:]`. It is a view into the [`CirculantTensor`](@ref) for the kernel array `K`.
+"""
+struct FilteringMatrix{T,K} <: AbstractMatrix{T}
+    parent::OuterInnerArray{T,2,1,1}
+    array_dims::Dims{K}
+    function FilteringMatrix(A::CirculantTensor{<:Any,K}) where {K}
+        @assert iseven(K) "`K` in a `CirculantTensor{<:Any,K}` must always be even"
+        return new{eltype(A),K}(A)
+    end
 end
 
-function conv_kern(A::AbstractMatrix{T}, d::Dims{2}) where {T}
+Base.parent(A::FilteringMatrix) = A.parent
+function Base.size(A::FilteringMatrix)
+    array_length = prod(A.array_dims)
+    kern_length = length(parent(A))
+    return (array_length, kern_length)
+end
+
+function Base.axes(A::FilteringMatrix)
+    tensor_size = size(A.circulant)
+    return (Base.OneTo(tensor_size[1] * tensor_size[3]), Base.OneTo(tensor_size[2] * tensor_size[4]))
+end
+BlockArrays.blockaxes(A::FilteringMatrix) = (BlockRange(axes(A.circulant, 1)), BlockRange(axes(A.circulant, 2)))
+Base.getindex(A::FilteringMatrix, I::Block{1}) = error("TODO")
+
+function conv_kern(A::AbstractMatrix{T}, s::NTuple{2,Int}) where {T}
     A_axs = axes(A)
     rows = Vector{SubArray}()
-    for y in A_axs[2][begin:(end-d[2])]
-        for x in A_axs[1][begin:(end-d[1])]
-            push!(rows, view(view(A, x:(x+d[1]), y:(y+d[2])), :))
+    for y in A_axs[2][begin:(end-s[2])]
+        for x in A_axs[1][begin:(end-s[1])]
+            push!(rows, view(view(A, x:(x+s[1]), y:(y+s[2])), :))
         end
     end
     return rows
