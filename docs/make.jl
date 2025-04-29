@@ -30,14 +30,18 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "Theory" => "pages/01_theory.md",
-        "General Interface" => "pages/02_interface.md",
-        "Transfer Functions" => [
-            "Transfer Function Models" => "pages/03_model_tfs.md",
-            "Transfer Functions Measurements" => "pages/04_measured_tfs.md",],
-        "References" => [
-            "API" => "pages/05_apireference.md",
-            "Bibliography" => "pages/06_bibliography.md"
+        "Manual" => [
+            "pages/01-interface.md",
+            "pages/02-transfer-functions.md",
+            "pages/03-estimation.md",
+            "pages/04-apodization.md"
+        ],
+        "Reference" => [
+            "Internals" => [
+                "Array types" => "pages/internals/01-arrays.md"
+            ],
+            "API Index" => "pages/05-apireference.md",
+            "Bibliography" => "pages/06-bibliography.md"
         ]],
     plugins=[bib, links],
     # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here

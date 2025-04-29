@@ -45,9 +45,17 @@ intensity(psf::RadialPSF, x::Length, y::Length) = intensity(psf, hypot(x, y))
 """
     MeasuredPSF <: PointSpreadFunction
 """ # TODO: Docs <24-04-25> 
-abstract type MeasuredPSF <: PointSpreadFunction end
+struct MeasuredPSF{T<:PointSpreadFunction} <: PointSpreadFunction
+    psf::T
+    function MeasuredPSF(psf::T) where {T<:PointSpreadFunction}
+        psf isa MeasuredPSF && return psf
+        return new{T}(T)
+    end
+end
 
 include("./psf-array.jl")
+
+# Models
 include("./gibson-lanni.jl")
 include("./born-wolf.jl")
 

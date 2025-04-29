@@ -426,6 +426,8 @@ using Aqua, Test, Documenter, CompatHelperLocal
             # FIX: @test MeasuredPSF(ones(3, 3, 3), 32u"nm") isa MeasuredPSF{<:Real,3}
         end
 
+        @testset "PSFArray" begin end
+
         @testset "ModelPSF" begin
             tf = BornWolf(488u"nm", 1.4, 1.7)
 
