@@ -4,20 +4,16 @@ Package for models, estimation, sampling and deconvolution with microscopy trans
 module TransferFunctions
 using SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets, ColorTypes,
     ImageFiltering, OffsetArrays
-using ImageCore
-using OffsetArrays: centered, center, Origin
-using Reexport
-using Base: Indices
+using ImageCore, StaticArraysCore
+using OffsetArrays: centered, center
+using OffsetArrays: OffsetArrays as OA
 
+using Reexport
 @reexport using Unitful
 
-using Unitful: Length
-@derived_dimension Frequency Unitful.𝐋^-1 true
-const PixelSize{N} = NTuple{N,Length}
-const Coordinate{N} = NTuple{N,Real}
-
-include("utils.jl")
 include("types.jl")
+include("utils.jl")
+include("interfaces.jl")
 include("linear-transfer-functions.jl")
 
 # utils
