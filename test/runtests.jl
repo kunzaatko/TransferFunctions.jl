@@ -213,30 +213,30 @@ using Aqua, Test, Documenter, CompatHelperLocal
     end
 
     @testset "Apodization" begin
-        using TransferFunctions: apodization, instrument, apodize, taperedges, Apodization
-        using TransferFunctions: Triangular, Blackman, Connes, Cosine, Gaussian, Hamming, Hann, Welch, PowerCosine, SineSum, Nuttall, BlackmanNuttall, BlackmanHarris, FlatTop, ExactBlackman
+        using TransferFunctions.Apodization
+        using TransferFunctions: Apodization as Apo
         # using TransferFunctions: Bartlett
 
         @testset "Types" begin
-            @test Triangular() isa Apodization
-            @test Welch() isa Apodization
-            @test Connes() isa Apodization
-            @test_throws ArgumentError PowerCosine{1 + 1im}()
-            @test Cosine() isa PowerCosine{1}
-            @test Hann() isa PowerCosine{2}
-            @test Hamming() isa SineSum{2}
-            @test Nuttall() isa SineSum{4}
-            @test BlackmanNuttall() isa SineSum{4}
-            @test BlackmanHarris() isa SineSum{4}
-            @test FlatTop() isa SineSum{5}
-            @test_throws ArgumentError Blackman{0.5}()
-            @test_throws ArgumentError Blackman{0.6}()
-            @test_throws ArgumentError Blackman{0}()
-            @test Blackman() == Blackman{0.16}()
-            @test Blackman() isa Apodization
-            @test ExactBlackman() isa Blackman
-            @test Gaussian(rand(Uniform(0.01, 0.49))) isa Apodization
-            @test_throws ArgumentError Gaussian(0.6)
+            @test Apo.Triangular() isa Apo.ApodizationFunction
+            @test Apo.Welch() isa Apo.ApodizationFunction
+            @test Apo.Connes() isa Apo.ApodizationFunction
+            @test_throws ArgumentError Apo.PowerCosine{1 + 1im}()
+            @test Apo.Cosine() isa Apo.PowerCosine{1}
+            @test Apo.Hann() isa Apo.PowerCosine{2}
+            @test Apo.Hamming() isa Apo.SineSum{2}
+            @test Apo.Nuttall() isa Apo.SineSum{4}
+            @test Apo.BlackmanNuttall() isa Apo.SineSum{4}
+            @test Apo.BlackmanHarris() isa Apo.SineSum{4}
+            @test Apo.FlatTop() isa Apo.SineSum{5}
+            @test_throws ArgumentError Apo.Blackman(0.5)
+            @test_throws ArgumentError Apo.Blackman(0.6)
+            @test_throws ArgumentError Apo.Blackman(0)
+            @test Apo.Blackman() == Apo.Blackman(0.16)
+            @test Apo.Blackman() isa Apo.ApodizationFunction
+            @test Apo.ExactBlackman() isa Apo.Blackman
+            @test Apo.Gaussian(rand(Uniform(0.01, 0.49))) isa Apo.ApodizationFunction
+            @test_throws ArgumentError Apo.Gaussian(0.6)
         end
 
 
@@ -244,33 +244,33 @@ using Aqua, Test, Documenter, CompatHelperLocal
         # is in 1 for implementation reasons) and all should be 1 in the center. That is at 0 in my implementation.
         # <02-09-24> 
         @testset "methods $(typeof(apo))" for apo in [
-            Hamming(), Hann(), Welch(), Connes(), Cosine(),
-            Nuttall(), BlackmanNuttall(), BlackmanHarris(), FlatTop(), ExactBlackman(),
-            Blackman{0.4}(), Gaussian(0.4),
+            Apo.Hamming(), Apo.Hann(), Apo.Welch(), Apo.Connes(), Apo.Cosine(),
+            Apo.Nuttall(), Apo.BlackmanNuttall(), Apo.BlackmanHarris(), Apo.FlatTop(), Apo.ExactBlackman(),
+            Apo.Blackman(0.4), Apo.Gaussian(0.4),
         ]
-            @test apodization(apo, 0) == 1
+            @test Apo.apodization(apo, 0) == 1
 
             r = rand()
-            @test apodization(apo, r) ≈ apodization(apo, -r)
+            @test Apo.apodization(apo, r) ≈ Apo.apodization(apo, -r)
 
-            if typeof(apo) ∈ (Hann, Triangular, Cosine, Connes, Welch)
-                @test apodization(apo, 1) == apodization(apo, -1) == 0
+            if typeof(apo) ∈ (Apo.Hann, Apo.Triangular, Apo.Cosine, Apo.Connes, Apo.Welch)
+                @test Apo.apodization(apo, 1) == Apo.apodization(apo, -1) == 0
             end
         end
 
         @testset "equavalence $(equivs)" for equivs in [
-            (Hann(), SineSum{2,(0.5, 0.5)}()),
-            (PowerCosine{0}(), SineSum{1,(1,)}()),
-            (PowerCosine{2}(), SineSum{2,(0.5, 0.5)}()),
-            (PowerCosine{4}(), SineSum{3,(0.375, 0.5, 0.125)}()),
-            (PowerCosine{6}(), SineSum{4,(0.3125, 0.46875, 0.1875, 0.03125)}()),
+            (Apo.Hann(), Apo.SineSum((0.5, 0.5))),
+            (Apo.PowerCosine{0}(), Apo.SineSum((1.0,))),
+            (Apo.PowerCosine{2}(), Apo.SineSum((0.5, 0.5))),
+            (Apo.PowerCosine{4}(), Apo.SineSum((0.375, 0.5, 0.125))),
+            (Apo.PowerCosine{6}(), Apo.SineSum((0.3125, 0.46875, 0.1875, 0.03125))),
         ]
-            @test apodization.(equivs[1], -1:0.01:1) ≈ apodization.(equivs[2], -1:0.01:1)
+            @test Apo.apodization.(equivs[1], -1:0.01:1) ≈ Apo.apodization.(equivs[2], -1:0.01:1)
         end
 
         @testset "methods" begin
             using ImageFiltering: Pad
-            apo = Cosine()
+            apo = Apo.Cosine()
             @test taperedges(
                       apo, ones(100, 100, 9), ((10, 10), (10, 10)); dims=(1, 2) # All the supplied arguments 
                   ) == taperedges(
@@ -303,7 +303,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
             @test size(taperedges(ones(30, 30), (10, 20))) == (50, 70)
 
-            A_tap = taperedges(Cosine(), ones(30, 30), 10)
+            A_tap = taperedges(Apo.Cosine(), ones(30, 30), 10)
 
             # RESEARCH: Should this in fact be 0 at the other edge as well? This is done to make the signal periodic
             # so if we taper one edge to 0 and the other edge to the 0 length - 1, we will already have a periodic
