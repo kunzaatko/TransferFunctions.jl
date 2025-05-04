@@ -61,7 +61,8 @@ function taperedges( # STEP 2A: Fill from `width` single width
     # TODO: Use `Val` for the `fill` <30-04-25> 
     # TODO: Test whether this works for permuted order of kwargs... I.e. whether dims must be supplied as the first
     # argument or not. Otherwise, it must be done by testing if kwargs has dims in it... <02-09-24> 
-    return taperedges(apo, A, (Tuple(fill(w, M)), Tuple(fill(w, M))), args...; dims, kwargs...)
+    ws = ntuple(_ -> w, Val(M))
+    return taperedges(apo, A, (ws, ws), args...; dims, kwargs...)
 end
 function taperedges( # STEP 2B: Fill from `width`s for each dimension
     apo::ApodizationFunction,
@@ -158,15 +159,14 @@ function taperedges( # FINAL # TODO: Instead of this should be something like `_
 end
 
 # TODO: There should be a mutating method and a non-mutating method that allocates the output array <26-08-24> 
-# TODO: Add documentation <21-12-23> 
+# TODO: Default values for the width and cutoff <04-05-25> 
 """
-    apodize(apo::ApodizationFunction, A::AbstractArray{<:Number,N}, cutoff::Real, width::Real) where {N}
+    apodize(apo::ApodizationFunction, A, cutoff::Real, width::Real)
 
 Apply apodization to the input array `A`.
 
 # Arguments
 - `apo::ApodizationFunction`: The type of apodization to apply.
-- `A::AbstractArray{<:Number,N}`: The input array to be apodized.
 - `cutoff::Real`: The cutoff frequency for the apodization.
 - `width::Real`: The width of the transition region for the apodization.
 """
@@ -175,8 +175,8 @@ function apodize(
     A::AbstractArray{<:Number,N},
     cutoff::Real, # Tuple{NTuple{M,Int},NTuple{M,Int}}, # FIX: Generalize to non-symmetric cut-offs <21-12-23> 
     width::Real, # FIX: Generalize to non-symmetric widths <21-12-23> 
-    dims::NTuple{M,Int}=Tuple(1:N) # FIX: Abstract over dimensions <22-12-23> 
-) where {N,M}
+    dims::Dims=Tuple(1:N) # FIX: Abstract over dimensions <22-12-23> 
+) where {N}
     # PERF: Should be done with no allocation... This is the KISS solution  
     # FIX: Work for all dimensions  
     rs = [hypot(abs(x), abs(y)) for x in fftfreq(size(A, 1), size(A, 1)), y in fftfreq(size(A, 2), size(A, 2))]
@@ -184,7 +184,7 @@ function apodize(
     coefs[rs.>=cutoff] .= 0
     coefs[rs.<=(cutoff-width)] .= 1
     coefs[cutoff.>rs.>(cutoff-width)] .= map(r -> apodization(apo, r - (cutoff - width), width), rs[cutoff.>rs.>(cutoff-width)])
-    A .* coefs
+    return A .* coefs
 end
 
 # https://www.gaussianwaves.com/2020/09/window-function-figure-of-merits/
@@ -206,7 +206,7 @@ end
 # FIX: There are multiple Triangular types of apodization that are based on where the zero is... See
 # https://en.wikipedia.org/w/index.php?title=Window_function&oldid=1237444898#Triangular_window <10-09-24>. These could
 # be implemented as constants of the Triangular window similar to how PowerCosine and SineSum are defined.
-"""
+raw"""
     Triangular <: ApodizationFunction
 
 Formulas:
@@ -246,7 +246,7 @@ end
 """
     PowerCosine{α<:Real} <: ApodizationFunction
 
-+ zero-phase function: ``w₀(r) = \\cos(πr/2)^α``
++ zero-phase function: ``w₀(r) = cos(πr/2)^α``
 
 Instances: [`Cosine`](@ref) and [`Hann`](@ref)
 """
@@ -262,8 +262,8 @@ apodization(::PowerCosine{α}, r::Real) where {α} = cospi(r / 2)^(α)
 """
     Cosine == PowerCosine{1} <: ApodizationFunction
 
-+ zero-phase function: ``w₀(r) = \\cos(πr/2)``
-+ instrument function: ``I(k) = 4\\cos(2k)/(π(1 - 16k²))``
++ zero-phase function: ``w₀(r) = cos(πr/2)``
++ instrument function: ``I(k) = 4cos(2k)/(π(1 - 16k²))``
 """
 const Cosine = PowerCosine{1}
 
@@ -271,7 +271,7 @@ const Cosine = PowerCosine{1}
     Hann == PowerCosine{2} <: ApodizationFunction
 
 Formulas:
-+ zero-phase function: ``w₀(r) = \\cos²(πr/2)``
++ zero-phase function: ``w₀(r) = cos²(πr/2)``
 """
 const Hann = PowerCosine{2}
 # instrument(apo::Hann, k::Real) = sinc(2π *  k) / (1 - 4*k^2)
@@ -279,7 +279,7 @@ const Hann = PowerCosine{2}
 """
     SineSum{N,T,Cs::NTuple{N,T}} <: ApodizationFunction
 
-+ zero-phase function: ``w₀(r) = ∑ᴺₖ₌₀ (-1)ᵏ Cs[k] \\cos(πk(r + 1))``
++ zero-phase function: ``w₀(r) = ∑ᴺₖ₌₀ (-1)ᵏ Cs[k] cos(πk(r + 1))``
 
 Instances: [`Hamming`](@ref), [`Nuttall`](@ref), [`BlackmanNuttall`](@ref), [`BlackmanHarris`](@ref), [`FlatTop`](@ref), [`Blackman`](@ref) and [`ExactBlackman`](@ref)
 """
