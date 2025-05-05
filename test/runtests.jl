@@ -103,11 +103,11 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "macros" begin
-            @test_throws LoadError @macroexpand TF.@require_interface(function some() end) # No arguments
-            @test_throws LoadError @macroexpand TF.@require_interface(some())              # No arguments
-            @test_throws LoadError @macroexpand TF.@require_interface(some = 5)            # Not a call
-            @test_throws LoadError @macroexpand TF.@require_interface(some(a))             # No type
-            @test_throws LoadError @macroexpand TF.@require_interface(some(a::Float64))    # Concrete type
+            @test_throws ["atleast one argument"] @macroexpand TF.@require_interface(function some() end) # No arguments
+            @test_throws ["atleast one argument"] @macroexpand TF.@require_interface(some())              # No arguments
+            @test_throws ["function or a `:call`"] @macroexpand TF.@require_interface(some = 5)           # Not a call
+            @test_throws ["known type"] @macroexpand TF.@require_interface(some(a))                       # No type
+            @test_throws ["must be abstract"] @macroexpand TF.@require_interface(some(a::Float64))        # Concrete type
 
             @test (@macroexpand TF.@require_interface(some(a::AbstractFloat))).args[2].head == Symbol("function")
             @test (@macroexpand TF.@require_interface(some(a::AbstractFloat, b::Int))).args[2].head == Symbol("function")
