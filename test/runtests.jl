@@ -18,7 +18,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
                     # ambiguities=VERSION >= v"1.1" ? (; broken=true) : false
                 )
             else
-                @info "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
+                @warn "Skipping Aqua.jl quality tests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
             end
         end
         @testset "Ambiguities" begin
@@ -36,7 +36,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
     @testset "DocTests" begin
         # FIX: When running locally, do not ask for SSH key password <10-12-23> 
         # NOTE: Show for `Unitful.jl` does nm⁻¹ on macOS and nm^-1 on Linux. This is necessary, since the `jldoctest` is only one
-        if !haskey(ENV, "GITHUB_ACTIONS") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux"
+        if haskey(ENV, "RUNTESTS_FULL") || haskey(ENV, "RUNNER_OS") && ENV["RUNNER_OS"] == "Linux"
             # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
             # NOTE: When updating, must update also in `docs/make.jl` & `test/fix_doctests.jl` <18-12-24> 
             DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
@@ -50,11 +50,13 @@ using Aqua, Test, Documenter, CompatHelperLocal
                 ); recursive=true)
             !haskey(ENV, "FIX_DOCTESTS") && @info "You can fix doctests by setting `ENV[\"FIX_DOCTESTS\"] = true`."
             doctest(TransferFunctions; fix=ifelse(haskey(ENV, "FIX_DOCTESTS"), true, false))
+        else
+            @warn "Skipping DocTests. For a full run set `ENV[\"RUNTESTS_FULL\"]=true`."
         end
     end
 
     @testset "utils.jl" begin
-        using TransferFunctions: fillsize, roundupcenter, exactcenter, fftfreqs, posgrid, contained
+        using TransferFunctions: fillsize, roundupcenter, exactcenter, fftfreqs, posgrid, contained, interior
         using TransferFunctions: PixelSize, Coordinate, Frequency, Length, OriginAt
         using Base: CartesianIndex as CI
 
@@ -130,8 +132,11 @@ using Aqua, Test, Documenter, CompatHelperLocal
         @test_throws DimensionMismatch SpatialArray(Ones(40, 40), (20u"nm", 20u"nm", 20u"nm"))
         @test_throws DimensionMismatch SpatialArray(Ones(40, 40), (20u"nm",))
 
-        @testset "circulant" begin
+        @testset "circulant arrays" begin
             using Base: OneTo
+
+            ## Constructors ##
+
             O = Ones(100, 100, 100)
 
             # Mismatch in `innerdims` length and inner array size.
@@ -169,6 +174,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
             @test TF.CirculantTensor(img, (10, 10)) isa TF.CirculantTensor{eltype(img),4}
             @test TF.CirculantTensor(img, (-5:5, -5:5)) isa TF.CirculantTensor{eltype(img),4}
+            @test TF.CirculantTensor(img, (-5:5, -5:3)) isa TF.CirculantTensor{eltype(img),4} # Non-square kernel indices
             @test TF.CirculantTensor(img, K) isa TF.CirculantTensor{eltype(img),4}
 
             # Different eltypes
@@ -184,6 +190,28 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @tensor B[a, b] := OAs.no_offset_view(A)[a, b, c, d] * OAs.no_offset_view(K)[c, d]
             @test B isa AbstractMatrix
             @test size(B) == length.(A.interior)
+
+            @test TF.FilteringMatrix(img, K) isa TF.FilteringMatrix
+            @test TF.FilteringMatrix(A) isa TF.FilteringMatrix
+
+            ## Correctness ##
+            
+            A_1D = Vector(1:4)
+            CT_1D_1D = TF.CirculantTensor(A_1D, (-1:1,))
+            @test OAs.no_offset_view(CT_1D_1D) == [1 2 3; 2 3 4]
+            @test axes(CT_1D_1D, 1) == 2:3
+
+            A_2D = reshape(1:12, 4, 3)
+            CT_2D_2D = TF.CirculantTensor(A_2D, (0:1, 0:1))
+            @test OAs.no_offset_view(CT_2D_2D[1, 1, :, :]) == [1 5; 2 6]
+            @test OAs.no_offset_view(CT_2D_2D[1, 2, :, :]) == [5 9; 6 10]
+            @test CT_2D_2D[2, 2, 1, 1] == 11 # NOTE: There is an offsetted kernel with indices 0:1×0:1 <05-05-25> 
+            @test axes(CT_2D_2D) == (1:3, 1:2, 0:1, 0:1)
+
+            K = OA([1 0; 0 0], 0:1, 0:1)
+            FM_2D_2D = TF.FilteringMatrix(A_2D,K)
+
+            @test OAs.no_offset_view(reshape(FM_2D_2D' * K[:], TF.filtered_inds(FM_2D_2D))) == A_2D[TF.filtered_inds(FM_2D_2D)...]
         end
     end
 

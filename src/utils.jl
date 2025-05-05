@@ -145,6 +145,14 @@ end
 
 contained(arr::AbstractArray{T,N}, loc::Coordinate{N}) where {T,N} = all(loc .∈ axes(arr))
 
+"""
+    interior(inds::Indices{N}, kern::Indices{N})
+Return 'valid' indices for convolution of an array with indices `inds` with a kernel having the indices `kern`.
+"""
+interior(inds::Indices{N}, kern::Indices{N}) where {N} = map(interior, inds, kern)
+interior(ind::AbstractUnitRange, kern::AbstractUnitRange) = typeof(ind)(intersect(first(ind)-first(kern):last(ind)-last(kern), ind))
+interior(ind::Base.OneTo, kern::AbstractUnitRange) = interior(UnitRange(ind), kern)
+
 fftfreqs(sz::Dims{2}, Δ::PixelSize{2}) = ndgrid(fftfreq.(sz, 1 ./ Δ)...)
 fftfreqs(sz::Dims{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, Val(2)))
 
