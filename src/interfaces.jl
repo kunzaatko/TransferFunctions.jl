@@ -9,13 +9,13 @@ macro require_interface(ex)
         signature = ex
     end
 
-    @assert signature.head == :call "`@require_interface` may be used only on a function or a `:call` expression"
+    (typeof(signature) == Expr && signature.head == :call) || throw(ArgumentError("`@require_interface` may be used only on a function or a `:call` expression."))
     interface_name = signature.args[1]
-    @assert length(signature.args) > 1 "An interface must have atleast one argument"
+    length(signature.args) > 1 || throw(ArgumentError("In `@require_interface`, an interface must have atleast one argument."))
     interface_params = signature.args[2:end]
-    @assert first(interface_params).head == :(::) "First argument of the interface must have a known type otherwise the interfacing type is unknown"
+    (typeof(first(interface_params)) == Expr && first(interface_params).head == :(::)) || throw(ArgumentError("In `@require_interface`, the first argument of the interface must have a known type otherwise the interfacing type is unknown."))
     interfacing_type = interface_params[1].args[2]
-    @assert isabstracttype(eval(interfacing_type)) "The interfacing type must be abstract"
+    isabstracttype(eval(interfacing_type)) || throw(ArgumentError("In `@require_interface`, the interfacing type must be abstract."))
     rest_params = length(signature.args) > 1 ? interface_params[2:end] : nothing
 
     return esc(quote
