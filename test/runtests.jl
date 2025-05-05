@@ -170,32 +170,37 @@ using Aqua, Test, Documenter, CompatHelperLocal
             K[0, 0] = 0.5
             K[-1, -1] = K[-1, 1] = K[1, -1] = K[1, 1] = 0.5 / 4
 
-            img = Ones(30, 30)
+            A = Ones(30, 30)
 
-            @test TF.CirculantTensor(img, (10, 10)) isa TF.CirculantTensor{eltype(img),4}
-            @test TF.CirculantTensor(img, (-5:5, -5:5)) isa TF.CirculantTensor{eltype(img),4}
-            @test TF.CirculantTensor(img, (-5:5, -5:3)) isa TF.CirculantTensor{eltype(img),4} # Non-square kernel indices
-            @test TF.CirculantTensor(img, K) isa TF.CirculantTensor{eltype(img),4}
+            @test TF.CirculantTensor(A, (10, 10)) isa TF.CirculantTensor{eltype(A),4}
+            @test TF.CirculantTensor(A, (-5:5, -5:5)) isa TF.CirculantTensor{eltype(A),4}
+            @test TF.CirculantTensor(A, (-5:5, -5:3)) isa TF.CirculantTensor{eltype(A),4} # Non-square kernel indices
+            @test TF.CirculantTensor(A, K) isa TF.CirculantTensor{eltype(A),4}
 
             # Different eltypes
             @test TF.CirculantTensor(Ones{Int}(30, 30), K) isa TF.CirculantTensor{Int,4}
 
-            A = TF.CirculantTensor(img, K)
+            circulant = TF.CirculantTensor(A, K)
 
             # Correct output indices
-            @test ndims(TF.CirculantTensor(img, K)) == 4
-            @test axes(A)[3:4] == axes(K) == A.kern
-            @test axes(A)[1:2] == A.interior
+            @test ndims(TF.CirculantTensor(A, K)) == 4
+            @test axes(circulant)[3:4] == axes(K) == circulant.kern
+            @test axes(circulant)[1:2] == circulant.interior
 
-            @tensor B[a, b] := OAs.no_offset_view(A)[a, b, c, d] * OAs.no_offset_view(K)[c, d]
+            @tensor B[a, b] := OAs.no_offset_view(circulant)[a, b, c, d] * OAs.no_offset_view(K)[c, d]
             @test B isa AbstractMatrix
-            @test size(B) == length.(A.interior)
+            @test size(B) == length.(circulant.interior)
 
-            @test TF.FilteringMatrix(img, K) isa TF.FilteringMatrix
-            @test TF.FilteringMatrix(A) isa TF.FilteringMatrix
+            @test TF.FilteringMatrix(A, K) isa TF.FilteringMatrix
+            @test TF.FilteringMatrix(circulant) isa TF.FilteringMatrix
+
+
+            filtering_matrix = TF.FilteringMatrix(A, K)
+            @test filtering_matrix.Kaxes == circulant.kern
+            @test filtering_matrix.Aaxes == circulant.interior
 
             ## Correctness ##
-            
+
             A_1D = Vector(1:4)
             CT_1D_1D = TF.CirculantTensor(A_1D, (-1:1,))
             @test OAs.no_offset_view(CT_1D_1D) == [1 2 3; 2 3 4]
@@ -209,24 +214,24 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @test axes(CT_2D_2D) == (1:3, 1:2, 0:1, 0:1)
 
             K = OA([1 0; 0 0], 0:1, 0:1)
-            FM_2D_2D = TF.FilteringMatrix(A_2D,K)
+            FM_2D_2D = TF.FilteringMatrix(A_2D, K)
 
-            @test OAs.no_offset_view(reshape(FM_2D_2D' * K[:], TF.filtered_inds(FM_2D_2D))) == A_2D[TF.filtered_inds(FM_2D_2D)...]
+            @test OAs.no_offset_view(reshape(FM_2D_2D' * K[:], FM_2D_2D.Aaxes)) == A_2D[FM_2D_2D.Aaxes...]
         end
     end
 
     @testset "interfaces" begin
-        A = TF.SpatialArray(Ones(40, 40), 20u"nm")
+        circulant = TF.SpatialArray(Ones(40, 40), 20u"nm")
 
         struct TF_1 <: TF.TransferFunction end
         tf_1 = TF_1()
-        @test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialArray.*)"] transfer(tf_1, A)
-        @test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialArray.*)"] restore(tf_1, A)
+        @test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialArray.*)"] transfer(tf_1, circulant)
+        @test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialArray.*)"] restore(tf_1, circulant)
 
         struct LTF_1 <: TF.LinearTransferFunction end
         ltf_1 = LTF_1()
-        @test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.conv(ltf_1, A)
-        @test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.deconv(ltf_1, A)
+        @test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.conv(ltf_1, circulant)
+        @test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.deconv(ltf_1, circulant)
 
         struct PSF_1 <: TF.PointSpreadFunction end
         psf_1 = PSF_1()
@@ -357,7 +362,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
     end
 
     @testset "Optical transfer functions" begin
-        img = Ones(1024, 1024)
+        A = Ones(1024, 1024)
 
         @testset "OTFArray" begin
             # FIX: @test_throws DomainError OTFArray(ones(3, 3, 3), 32u"nm", (4, 1, 1))
@@ -417,7 +422,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
         @testset "Sampled OTF" begin
             tf = CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3)
-            s_img = SpatialArray(img, 32u"nm")
+            s_img = SpatialArray(A, 32u"nm")
 
             ## Methods - Array generation
             @test otf(tf, 60u"nm", (512, 512)) isa Matrix
@@ -452,7 +457,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
     end
 
     @testset "Point Spread Function" begin
-        img = Ones(1024, 1024)
+        A = Ones(1024, 1024)
 
         @testset "MeasuredPSF" begin
             # FIX: @test_throws DomainError PSFArray(ones(3, 3, 3), 32u"nm", (4, 1, 1))
@@ -471,7 +476,7 @@ using Aqua, Test, Documenter, CompatHelperLocal
         end
 
         @testset "Sampled PSF" begin
-            s_img = SpatialArray(img, 32u"nm")
+            s_img = SpatialArray(A, 32u"nm")
             tf = BornWolf(488u"nm", 1.4, 1.7)
 
             ## Method Availability - Construction

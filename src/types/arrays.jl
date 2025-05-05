@@ -221,12 +221,16 @@ Base.getindex(A::FilteringMatrix, ind...) = (@inline; getindex(parent(A), ind...
 
 CirculantTensor(A::FilteringMatrix) = A.circulant
 
-# FIX: Should actually return `Indices` <05-05-25> 
-# TODO: Change these to accessor functions (interface in base) <05-05-25> 
-filtered_inds(A::FilteringMatrix) = A.circulant.interior
-filtered_size(A::FilteringMatrix) = length.(filtered_inds(A))
-kernel_inds(A::FilteringMatrix) = A.circulant.kern
-kernel_size(A::FilteringMatrix) = length.(kernel_inds(A))
+Base.propertynames(::FilteringMatrix) = (:circulant, :parent, :Aaxes, :Kaxes)
+function Base.getproperty(A::FilteringMatrix, s::Symbol)
+    if s === :Aaxes
+        return getfield(A, :circulant).interior
+    elseif s === :Kaxes
+        return getfield(A, :circulant).kern
+    else
+        return getfield(A, s)
+    end
+end
 
 # FIX: It is not always a block matrix... It has blocks only if the sizes check out. The last block is not guaranteed to
 # be a Toeplitz matrix <05-05-25> 
