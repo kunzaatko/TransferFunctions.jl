@@ -88,14 +88,17 @@ SpatialVector(A::AbstractVector, Δ::Length) = SpatialArray(A, (Δ,))
 # TODO: If `innerdims` are not sorted, it should permute the dims of the inner arrays. <16-04-25> 
 """
     OuterInnerArray{T,N,M,K,IA,OA} <: AbstractArray{T,N}
-`N`-dimensional array that consists of an `M` dimensional 'outer' array `OA<:AbstractArray{IA,M}` of `K` dimensional `T`
-valued 'inner' arrays `IA{T,K}`. The constructor ensures that `M+K==N` and that the inner arrays have the same axes.
+`N`-dimensional array that consists of an `M` dimensional 'outer' array of type `OA<:AbstractArray{IA,M}` of `K`
+dimensional `T` valued 'inner' arrays of type `IA{T,K}`. The constructor ensures that `M+K==N` and that the inner arrays
+have the same axes.
 
 See also [`Slices`](@extref Julia :jl:type:`Base.Slices`)
 
 # Fields
-- `outer::OA` -- Array containing 
+- `outer::OA`
 - `isinnerdim::SVector{N,Bool}`
+- `size::Size{N}`
+- `axes::Indices{N}`
 """
 struct OuterInnerArray{T,N,M,K,IA<:AbstractArray{<:T,K},OA<:AbstractArray{IA,M}} <: AbstractArray{T,N}
     outer::OA
@@ -112,17 +115,17 @@ struct OuterInnerArray{T,N,M,K,IA<:AbstractArray{<:T,K},OA<:AbstractArray{IA,M}}
 
         isinnerdim = SVector(ntuple(n -> ifelse(n ∈ innerdims, true, false), Val(N)))
 
-        array_size = Vector{Int}(undef, N)
-        array_size[isinnerdim.==false] .= Base.size(OA)
-        array_size[isinnerdim] .= Base.size(first(OA))
-        array_size = Tuple(array_size)
+        OIA_size = Vector{Int}(undef, N)
+        OIA_size[isinnerdim.==false] .= Base.size(OA)
+        OIA_size[isinnerdim] .= Base.size(first(OA))
+        OIA_size = Tuple(OIA_size)
 
-        array_axes = Vector{AbstractUnitRange}(undef, N)
-        array_axes[isinnerdim.==false] .= Base.axes(OA)
-        array_axes[isinnerdim] .= Base.axes(first(OA))
-        array_axes = Indices{N}(array_axes)
+        OIA_axes = Vector{AbstractUnitRange}(undef, N)
+        OIA_axes[isinnerdim.==false] .= Base.axes(OA)
+        OIA_axes[isinnerdim] .= Base.axes(first(OA))
+        OIA_axes = Indices{N}(OIA_axes)
 
-        return new{T,N,M,K,IA,typeof(OA)}(OA, isinnerdim, array_size, array_axes)
+        return new{T,N,M,K,IA,typeof(OA)}(OA, isinnerdim, OIA_size, OIA_axes)
     end
 end
 OuterInnerArray(OA::AbstractArray{<:IA,M}) where {M,K,IA<:AbstractArray{<:Any,K}} = OuterInnerArray(OA, Dims((M+1):(M+K)))
@@ -141,16 +144,16 @@ outerlength(A::OuterInnerArray{<:Any,N}) where {N} = prod(outersize(A))
 Base.size(A::OuterInnerArray) = A.size
 Base.axes(A::OuterInnerArray) = A.axes
 @inline @propagate_inbounds function Base.getindex(A::OuterInnerArray{T,N}, I::Vararg{Int,N}) where {T,N}
-    outer_index = CartesianIndex(I[A.isinnerdim.==false])
-    inner_index = CartesianIndex(I[A.isinnerdim])
-    return A.outer[outer_index][inner_index]
+    outer_index = I[A.isinnerdim.==false]
+    inner_index = I[A.isinnerdim]
+    return A.outer[outer_index...][inner_index...]
 end
 
 """
     CirculantTensor{T,N,M,AA} <: AbstractArray{T,N}
-`N`-dimensional circulant tensor of the `M` dimensional array `A::AA`. The dimensionality `N` is equal to `2M`, where
-the first `M` dimensions have interior filtering coordinates `interior` given by the kernel axes `kern` and the axes of
-`A` and the tail `M` dimensions have the kernel coordinates `kern`.
+`N`-dimensional circulant tensor of an `M` dimensional array `A` or type `AA<:AbstractArray{T,M}`. The dimensionality
+`N` is equal to `2M`, where the first `M` dimensions have interior filtering coordinates `ct.interior` given by the
+kernel axes `ct.kern` and the axes of `A` and the tail `M` dimensions have the kernel coordinates `ct.kern`.
 
 A correlation filtering result of `A` with a kernel array `K`can be obtained by outer tensor contraction over the tail
 `M` dimensions of the `CirculantTensor(A,K)`.
@@ -163,16 +166,15 @@ struct CirculantTensor{T,N,M,AA<:AbstractArray{T,M}} <: AbstractArray{T,N}
     kern::Indices{M}
     parent::OuterInnerArray{T,N,M,M}
     CirculantTensor(A::AbstractArray{T,M}, kern::Indices{M}) where {T,M} = CirculantTensor{T,2M}(A, kern)
-    function CirculantTensor{T,N}(A::AA, kern::Indices{M}) where {T,N,M,AA<:AbstractArray{T,M}}
+    function CirculantTensor{T,N}(A::AA, KI::Indices{M}) where {T,N,M,AA<:AbstractArray{T,M}}
         N == 2M || throw(DimensionMismatch("In constructor `CirculantTensor{T,N}(<:AbstractArray{T,M}, ::Indices{M})`. `N` must be equal to `2M`, but `2M==$(2M)!=$N==N`."))
-        interior_inds = interior(axes(A), shrink(axes(A), kern))
-        any(iszero, length(interior_inds)) && throw(DimensionMismatch()) # TODO
-        views = map(CartesianIndices(interior_inds)) do cind
-            @inbounds view(A, CartesianIndices(kern) .+ cind)
+        AI = interior(axes(A), KI)
+        any(iszero, length(AI)) && throw(DimensionMismatch("In constructor `CirculantTensor(<:AbstractArray, ::Indices)` the array is not large enough for the kernel. Got interior of $AI.")) # TODO: Test
+        views = map(CartesianIndices(AI)) do I
+            @inbounds OffsetArray(view(A, CartesianIndices(KI) .+ I), KI)
         end
-        views = OffsetArray(views, interior_inds...)
-        parent = OuterInnerArray(views)
-        return new{T,N,M,AA}(A, interior_inds, kern, parent)
+        parent = OffsetArray(views, AI) |> OuterInnerArray
+        return new{T,N,M,AA}(A, AI, KI, parent)
     end
 end
 
@@ -188,15 +190,6 @@ Base.getindex(A::CirculantTensor, ind...) = (@inline; getindex(parent(A), ind...
 Base.axes(A::CirculantTensor, ind...) = (@inline; axes(parent(A), ind...))
 Base.similar(A::CirculantTensor{T}, eltype::Type{T}, dims::Dims) where {T} = (@inline; similar(parent(A), eltype, dims))
 
-interior(inds::Indices{N}, others::Vararg{Indices{N}}) where {N} = map(intersect, inds, others...)
-"""
-    shrink(inds::Indices{N}, kernel::Indices{N})
-Return "valid" indices for convolution of array with axes `inds` with kernel having axes `kern`.
-"""
-shrink(inds::Indices{N}, kern::Indices{N}) where {N} = map(shrinkind, inds, kern)
-shrinkind(ind::AbstractUnitRange, kern::AbstractUnitRange) = typeof(ind)(first(ind)-first(kern):last(ind)-last(kern))
-shrinkind(ind::Base.OneTo, kern::AbstractUnitRange) = shrinkind(UnitRange(ind), kern)
-
 # NOTE: K = 2N should be satisfied by the constructor of `CirculantTensor` <26-04-25> 
 # TODO: Decide what to do with the indices of the array. They will not be linearly spaced if it should make sense.
 # Or it could be documented that the indices are not reflecting the actual indices of the reference array. <24-04-25> 
@@ -206,38 +199,37 @@ A matrix that for a given kernel `K`, array size `size(A)` and a padding scheme 
 filtering (correlation or convolution if `reflect(K)` is used as the kernel) output of the kernel `K` and an array as
 `A` can be computed as `F * A[:]`. It is a view into the [`CirculantTensor`](@ref) for the kernel array `K`.
 """
-struct FilteringMatrix{T,K} <: AbstractMatrix{T}
-    parent::OuterInnerArray{T,2,1,1, SubArray{}}
-    array_dims::Size{K}
-    function FilteringMatrix(A::CirculantTensor{<:Any,K}) where {K}
-        @assert iseven(K) "`K` in a `CirculantTensor{<:Any,K}` must always be even"
-        return new{eltype(A),K}(A)
+struct FilteringMatrix{T,K,CT<:CirculantTensor{T}} <: AbstractMatrix{T}
+    circulant::CT
+    parent::OuterInnerArray{T,2,1,1}
+    function FilteringMatrix(circulant::CirculantTensor{<:Any,N}) where {N}
+        @assert iseven(N) "`K` in a `CirculantTensor{<:Any,K}` must always be even" # NOTE: Never should happen if the inner constructor is used for the CirculantTensor <05-05-25> 
+        K = N ÷ 2
+        rows = map(eachslice(circulant, dims=Tuple((K+1):N))) do s
+            view(s, :)
+        end
+        parent = OuterInnerArray(view(rows, :))
+        return new{eltype(circulant),K,typeof(circulant)}(circulant, parent)
     end
 end
+FilteringMatrix(args...) = FilteringMatrix(CirculantTensor(args...))
 
 Base.parent(A::FilteringMatrix) = A.parent
-function Base.size(A::FilteringMatrix)
-    array_length = prod(A.array_dims)
-    kern_length = length(parent(A))
-    return (array_length, kern_length)
-end
+Base.size(A::FilteringMatrix) = size(parent(A))
+Base.axes(A::FilteringMatrix) = axes(parent(A))
+Base.getindex(A::FilteringMatrix, ind...) = (@inline; getindex(parent(A), ind...))
 
-function Base.axes(A::FilteringMatrix)
-    tensor_size = size(A.circulant)
-    return (Base.OneTo(tensor_size[1] * tensor_size[3]), Base.OneTo(tensor_size[2] * tensor_size[4]))
-end
+CirculantTensor(A::FilteringMatrix) = A.circulant
+
+# FIX: Should actually return `Indices` <05-05-25> 
+# TODO: Change these to accessor functions (interface in base) <05-05-25> 
+filtered_inds(A::FilteringMatrix) = A.circulant.interior
+filtered_size(A::FilteringMatrix) = length.(filtered_inds(A))
+kernel_inds(A::FilteringMatrix) = A.circulant.kern
+kernel_size(A::FilteringMatrix) = length.(kernel_inds(A))
+
+# FIX: It is not always a block matrix... It has blocks only if the sizes check out. The last block is not guaranteed to
+# be a Toeplitz matrix <05-05-25> 
 BlockArrays.blockaxes(A::FilteringMatrix) = (BlockRange(axes(A.circulant, 1)), BlockRange(axes(A.circulant, 2)))
 Base.getindex(A::FilteringMatrix, I::Block{1}) = error("TODO")
 
-function conv_kern(A::AbstractMatrix{T}, s::NTuple{2,Int}) where {T}
-    A_axs = axes(A)
-    rows = Vector{SubArray}()
-    for y in A_axs[2][begin:(end-s[2])]
-        for x in A_axs[1][begin:(end-s[1])]
-            push!(rows, view(view(A, x:(x+s[1]), y:(y+s[2])), :))
-        end
-    end
-    return rows
-end
-
-public CirculantTensor, FilteringMatrix, OuterInnerArray
