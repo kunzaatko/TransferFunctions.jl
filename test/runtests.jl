@@ -99,6 +99,12 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @test contained(OA(Ones(3, 3, 3), -2, -2, -2), (-1, 1, 0))
             @test !contained(OA(Ones(3, 3, 3), -2, -2, -2), (-2, 1, 0))
 
+            # TODO: Test other types of axes that may occur in an array that I use (OffsetAxes) <05-05-25> 
+            @test interior(1:9, -1:5) == 2:4
+            @test interior(Base.OneTo(9), -1:5) == 2:4
+            @test interior((0:3, -1:3, -3:1), (-1:1, -1:1, -1:1)) == (1:2, 0:2, -2:0)
+            @test interior((Base.OneTo(3), -1:3, -3:1), (0:1, -1:1, -1:1)) == (1:2, 0:2, -2:0)
+
             @test OriginAt(CI(2, 2, 2))(Ones(3, 3, 3)) == OA(Ones(3, 3, 3), -2, -2, -2)
         end
 
