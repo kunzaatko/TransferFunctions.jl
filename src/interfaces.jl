@@ -1,3 +1,5 @@
+# TODO: Add support for defining interfaces on types that are not from the `TransferFunctions` base module. See the
+# `Estimation` module <05-05-25> 
 # TODO: Add support for adding documentation to the interface <25-04-25> 
 # TODO: Support giving an output type to the interface function i.e. f(a::Abstract, b::ConcreteIn)::ConcreteOut should work <24-04-25> 
 # TODO: Support only indicating the interface type i.e. f(::Abstract, b::ConcreteIn) should work <24-04-25> 

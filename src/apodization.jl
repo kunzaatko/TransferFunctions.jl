@@ -20,7 +20,6 @@ apodization(apo::ApodizationFunction, x::Real, halfwidth::Int) = apodization(apo
 
 # FIX: The call stack must be rewritten to construct the arguments of the function from the beginning <02-09-24> 
 
-# FIX: docs: [`Fill(v)`](@extref Julia :jl:type:`ImageFiltering.Fill`), [`BorderType`](@extref Julia :jl:type:`ImageFiltering.BorderType`)), [`ImageFiltering.jl`](@extref).
 # TODO: There should be a mutating method and a non-mutating method that allocates the output array <26-08-24> 
 # TODO: Should allow padding with some scheme from `ImageFiltering.jl` before the tapering for an unobscured data
 # behaviour  <26-08-24> 
@@ -38,9 +37,9 @@ Taper edges of width `w` of `A` using [`apo::ApodizationFunction`](@ref Apodizat
 Width can be the same `w::Int` for each dimension, specified separately for `n` dimensions `(w1,w2...,wn)`,  or
 specified separately for the _start_ and _end_ of `n` dimensions `((w1a,...,wna), (w1b,...,wnb))`. In the latter two
 cases, the dimensions are specified by `dims` and by default taken as the first `n` dimensions. Border can be
-`:replicate`, `:circular`, `:symmetric`, `:reflect` or `Fill(v)` from `ImageFiltering.jl`.
+`:replicate`, `:circular`, `:symmetric`, `:reflect` or [`Fill(v)`](@extref ImageFiltering :jl:type:`ImageFiltering.Fill`).
 
-See also `BorderType`, [`ApodizationFunction`](@ref)
+See also [`BorderArray`](@extref ImageFiltering :std:label:`BorderArray`), [`ApodizationFunction`](@ref)
 """
 function taperedges( # STEP 1A: Fill the apodization type
     A::AbstractArray{<:Number,N},
@@ -294,7 +293,7 @@ struct SineSum{N,T<:Real,Cs} <: ApodizationFunction
         new{N,T,Ts}()
     end
 end
-function SineSum(Cs::NTuple{N, T}) where {N,T<:Real}
+function SineSum(Cs::NTuple{N,T}) where {N,T<:Real}
     return SineSum{N,T,Cs}()
 end
 apodization(::SineSum{N,T,Cs}, r::Real) where {N,T,Cs} =

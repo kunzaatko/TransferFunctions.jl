@@ -10,10 +10,10 @@ using Unitful: Length
 const PixelSize{N} = NTuple{N,Length}
 
 """
-    Coordinate{N}
-`N`-dimensional coordinate. Alias for `NTuple{N,<:Real}`
+    Coordinate{N,T}
+`N`-dimensional coordinate. Alias for `NTuple{N,T<:Real}`
 """
-const Coordinate{N} = NTuple{N,Real}
+const Coordinate{N,T} = NTuple{N,T} where {T<:Real}
 
 """
     SBitVector{N}
@@ -23,8 +23,8 @@ const SBitVector{N} = SVector{N,Bool}
 
 """
     Size{N}
-`N`-dimensional size of an array. Alias for `NTuple{N, Int}`
+`N`-dimensional size of an array. Alias for `NTuple{N,Int}`
 """
-const Size{N} = NTuple{N, Int}
+const Size{N} = NTuple{N,Int}
 
 include("types/arrays.jl")

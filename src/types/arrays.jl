@@ -56,7 +56,7 @@ Construct a `SpatialArray` with values `A` and sampling `(Δx, Δy, ...)`. For a
 distance `Δ` in every direction.
 """
 SpatialArray(A::AbstractArray, Δ) = SampledArray(A, Δ)
-SpatialArray(A::AbstractArray{<:Any,N}, Δ::Length) where {N} = SampledArray(A, fillsize(Δ, Val(N)))
+SpatialArray(A::AbstractArray{<:Any,N}, Δ::Length) where {N} = SampledArray(A, fillsize(Δ, N))
 
 """
     SpatialMatrix{T} <: AbstractMatrix{T}
@@ -182,7 +182,7 @@ end
 
 # TODO: Same constructors as for `imfilter!` <19-04-25>
 CirculantTensor(A::AbstractArray{<:Any,N}, kern::AbstractArray{<:Any,N}) where {N} = CirculantTensor(A, axes(kern))
-CirculantTensor(A::AbstractArray{<:Any,N}, size::NTuple{N,Int}) where {N} = CirculantTensor(A, map(Base.OneTo, size))
+CirculantTensor(A::AbstractArray{<:Any,N}, size::Size{N}) where {N} = CirculantTensor(A, map(Base.OneTo, size))
 Base.parent(A::CirculantTensor) = (@inline; A.parent)
 Base.size(A::CirculantTensor) = (@inline; size(parent(A)))
 Base.size(A::CirculantTensor, dim) = (@inline; size(parent(A), dim))
@@ -206,6 +206,7 @@ struct FilteringMatrix{T,K,CT<:CirculantTensor{T}} <: AbstractMatrix{T}
         @assert iseven(N) "`K` in a `CirculantTensor{<:Any,K}` must always be even" # NOTE: Never should happen if the inner constructor is used for the CirculantTensor <05-05-25> 
         K = N ÷ 2
         rows = map(eachslice(circulant, dims=Tuple((K+1):N))) do s
+            # TODO: Test whether this works better or worse than using reshaped array <07-05-25> 
             view(s, :)
         end
         parent = OuterInnerArray(view(rows, :))
