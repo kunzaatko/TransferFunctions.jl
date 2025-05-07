@@ -4,7 +4,7 @@ using Documenter, DocumenterCitations, DocumenterInterLinks
 links = InterLinks(
     "Julia" => "https://docs.julialang.org/en/v1/",
     "Unitful" => "https://painterqubits.github.io/Unitful.jl/stable/",
-    # "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/"
+    "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/"
 )
 
 DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(

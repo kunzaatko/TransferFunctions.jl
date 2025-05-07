@@ -110,9 +110,5 @@ exactcenter
 @__FUNCTION__
 ```
 
-# Deprecations
-```@docs
-padtosize
-```
 
 <!-- TODO: <24-04-25> -->
