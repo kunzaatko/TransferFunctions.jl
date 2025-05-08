@@ -276,36 +276,38 @@ const Hann = PowerCosine{2}
 # instrument(apo::Hann, k::Real) = sinc(2π *  k) / (1 - 4*k^2)
 
 """
-    SineSum{N,T,Cs::NTuple{N,T}} <: ApodizationFunction
+    SineSum{N,Cs,T} <: ApodizationFunction
+Sum of `N` sines apodization function with output type of `T`
 
 + zero-phase function: ``w₀(r) = ∑ᴺₖ₌₀ (-1)ᵏ Cs[k] cos(πk(r + 1))``
 
 Instances: [`Hamming`](@ref), [`Nuttall`](@ref), [`BlackmanNuttall`](@ref), [`BlackmanHarris`](@ref), [`FlatTop`](@ref), [`Blackman`](@ref) and [`ExactBlackman`](@ref)
 """
-struct SineSum{N,T<:Real,Cs} <: ApodizationFunction
-    function SineSum{N,T,Cs}() where {N,T,Cs}
+struct SineSum{N,Cs,T<:Real} <: ApodizationFunction
+    coefs::NTuple{N,T}
+    SineSum{N,Cs}() where {N,Cs} = SineSum{N,Cs,Float64}()
+    function SineSum{N,Cs,T}() where {N,T,Cs}
         N isa Int && N > 0 || throw(ArgumentError("N must be a positive integer"))
-        # FIX: This does not work. It does not throw the error if the type of `Cs` is not convertible to `NTuple{N, T}` <30-04-25> 
-        Ts = convert(NTuple{N,T}, Cs)
-        # throw(ArgumentError("In constructor of `SineSum{N, T, Cs}`, `Cs` must be convertible to `NTuple{N, T}`"))
-        # rethrow(e)
-        Ts isa NTuple{N,T} || throw(ArgumentError("Cs must be $N real coefficients"))
-        new{N,T,Ts}()
+        coefs = try
+            convert(NTuple{N,T}, Cs)
+        catch
+            throw(ArgumentError("In constructor of `SineSum{N, T, Cs}`, `Cs` must be convertible to `NTuple{N, T}`."))
+        end
+        return new{N,Cs,T}(coefs)
     end
 end
 function SineSum(Cs::NTuple{N,T}) where {N,T<:Real}
-    return SineSum{N,T,Cs}()
+    return SineSum{N,Cs,T}()
 end
-apodization(::SineSum{N,T,Cs}, r::Real) where {N,T,Cs} =
-    sum(zip(0:(N-1), Cs)) do (k, C)
+apodization(ss::SineSum{N,Cs,T}, r::Real) where {N,T,Cs} =
+    sum(zip(0:(N-1), ss.coefs)) do (k, C)
         (-1)^k * C * cospi(k * (r + 1))
     end
 
 """
-    Hamming{T} == SineSum{2,T,(25//46, 21//46)} <: ApodizationFunction
+    Hamming == SineSum{2,(25//46, 21//46)} <: ApodizationFunction
 """
-const Hamming{T} = SineSum{2,T,(25 // 46, 21 // 46)}
-const Hamming = Hamming{Float64}
+const Hamming = SineSum{2,(25 // 46, 21 // 46)}
 
 function instrument(apo::Hamming, k::Real)
     # FIX: Check whether this is correct. <10-09-24> 
@@ -313,57 +315,56 @@ function instrument(apo::Hamming, k::Real)
 end
 
 """
-    Nuttall{T} == SineSum{4,T,(0.355768, 0.487396, 0.144232, 0.012604) } <: ApodizationFunction
+    Nuttall} == SineSum{4,(0.355768, 0.487396, 0.144232, 0.012604)} <: ApodizationFunction
 """
-const Nuttall{T} = SineSum{4,T,(0.355768, 0.487396, 0.144232, 0.012604)}
-const Nuttall = Nuttall{Float64}
+const Nuttall = SineSum{4,(0.355768, 0.487396, 0.144232, 0.012604)}
 
 """
-    BlackmanNuttall{T} == SineSum{4,T,(0.3635819, 0.4891775, 0.1365995, 0.0106411) } <: ApodizationFunction
+    BlackmanNuttall == SineSum{4,(0.3635819, 0.4891775, 0.1365995, 0.0106411) } <: ApodizationFunction
 """
-const BlackmanNuttall{T} = SineSum{4,T,(0.3635819, 0.4891775, 0.1365995, 0.0106411)}
-const BlackmanNuttall = BlackmanNuttall{Float64}
+const BlackmanNuttall = SineSum{4,(0.3635819, 0.4891775, 0.1365995, 0.0106411)}
 
 """
-    BlackmanHarris{T} == SineSum{4,T,(0.35875, 0.48829, 0.14128, 0.01168) } <: ApodizationFunction
+    BlackmanHarris == SineSum{4,(0.35875, 0.48829, 0.14128, 0.01168)} <: ApodizationFunction
 """
-const BlackmanHarris{T} = SineSum{4,T,(0.35875, 0.48829, 0.14128, 0.01168)}
-const BlackmanHarris = BlackmanHarris{Float64}
+const BlackmanHarris = SineSum{4,(0.35875, 0.48829, 0.14128, 0.01168)}
 
 """
-    FlatTop{T} == SineSum{5,T,(0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947365) } <: ApodizationFunction
+    FlatTop == SineSum{5,(0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947365)} <: ApodizationFunction
 
 MATLAB variant of the flat-top filter
 """
-const FlatTop{T} = SineSum{5,T,(0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947365)}
-const FlatTop = FlatTop{Float64}
+const FlatTop = SineSum{5,(0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947365)}
 
 """
-    Blackman{T, α::T} == SineSum{3,T,((1 - α) / 2, 1 / 2, α / 2) } <: ApodizationFunction
+    Blackman{α,T} == SineSum{3,((1 - α) / 2, 1 / 2, α / 2),T} <: ApodizationFunction
 
 Default is `α = 0.16`.
 
 See also [`ExactBlackman`](@ref)
 """
-struct Blackman{T<:Real,α} <: ApodizationFunction
-    parent::SineSum{3,T}
-    Blackman() = Blackman{Float64}()
-    Blackman{T}() where {T} = Blackman{T,0.16}()
-    function Blackman{T,α}() where {T,α}
-        αT = convert(T, α)
+struct Blackman{α,T<:Real} <: ApodizationFunction
+    parent::SineSum{3,Cs,T} where {Cs}
+    Blackman{α}() where {α} = Blackman{α,Float64}()
+    Blackman() = Blackman{0.16}()
+    function Blackman{α,T}() where {α,T}
+        αT = try
+            convert(T, α)
+        catch
+            throw(ArgumentError("In constructor of `Blackman{T, α}`, `α` must be convertible to `T`."))
+        end
         0 < αT < 1 / 2 || throw(ArgumentError("`α` must be in `(0, 1/2)"))
-        return new{T,αT}(SineSum{3,T,((1 - αT) / 2, 1 / 2, αT / 2)}())
+        return new{αT,T}(SineSum{3,((1 - αT) / 2, 1 / 2, αT / 2),T}())
     end
 end
-Blackman(v::T) where {T<:Real} = Blackman{T,v}()
+Blackman(v::T) where {T<:Real} = Blackman{v,T}()
 
 """
-    ExactBlackman{T<:Real} == Blackman{T,683 // 4652}
+    ExactBlackman == Blackman{683 // 4652}
 """
-const ExactBlackman{T} = Blackman{T,683 // 4652}
-const ExactBlackman = ExactBlackman{Float64}
+const ExactBlackman = Blackman{683 // 4652}
 
-apodization(apo::Blackman{α}, r::Real) where {α} = apodization(apo.parent, r)
+apodization(apo::Blackman, r::Real) = apodization(apo.parent, r)
 
 # FIX: Is there a way to do this properly? <10-09-24> 
 # Core.isa(::Blackman{α}, ::Type{SineSum{3,Cs}}) where {α,Cs} = Cs == ((1 - α) / 2, 1 / 2, α / 2)
