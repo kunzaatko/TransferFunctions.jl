@@ -203,7 +203,8 @@ struct FilteringMatrix{T,K,CT<:CirculantTensor{T}} <: AbstractMatrix{T}
     circulant::CT
     parent::OuterInnerArray{T,2,1,1}
     function FilteringMatrix(circulant::CirculantTensor{<:Any,N}) where {N}
-        @assert iseven(N) "`K` in a `CirculantTensor{<:Any,K}` must always be even" # NOTE: Never should happen if the inner constructor is used for the CirculantTensor <05-05-25> 
+        # NOTE: Never should happen if the inner constructor is used for the CirculantTensor <05-05-25> 
+        @assert iseven(N) "`K` in a `CirculantTensor{<:Any,K}` must always be even"
         K = N ÷ 2
         rows = map(eachslice(circulant, dims=Tuple((K+1):N))) do s
             # TODO: Test whether this works better or worse than using reshaped array <07-05-25> 
@@ -238,3 +239,5 @@ end
 BlockArrays.blockaxes(A::FilteringMatrix) = (BlockRange(axes(A.circulant, 1)), BlockRange(axes(A.circulant, 2)))
 Base.getindex(A::FilteringMatrix, I::Block{1}) = error("TODO")
 
+# WARN: Do not commit!!! Due to LanguageServer.jl error. <05-05-25> 
+public CirculantTensor, FilteringMatrix, OuterInnerArray
