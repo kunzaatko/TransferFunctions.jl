@@ -1,5 +1,6 @@
 using Base: @propagate_inbounds, Indices
 using BlockArrays, ImageFiltering
+using TensorOperations, LinearAlgebra
 
 """
     SampledArray{T,ST,N,AA<:AbstractArray} <: AbstractArray{T,N}
@@ -149,6 +150,7 @@ Base.axes(A::OuterInnerArray) = A.axes
     return A.outer[outer_index...][inner_index...]
 end
 
+# TODO: CirculantTensor should store the border type. We could optimize for "reflect" using fft <10-05-25> 
 """
     CirculantTensor{T,N,M,AA} <: AbstractArray{T,N}
 `N`-dimensional circulant tensor of an `M` dimensional array `A` or type `AA<:AbstractArray{T,M}`. The dimensionality
@@ -160,29 +162,66 @@ A correlation filtering result of `A` with a kernel array `K`can be obtained by 
 
 See also [`FilteringMatrix`](@ref), `imfilter`
 """
-struct CirculantTensor{T,N,M,AA<:AbstractArray{T,M}} <: AbstractArray{T,N}
+struct CirculantTensor{T,M,N,AA<:AbstractArray{T,M}} <: AbstractArray{T,N}
     A::AA
     interior::Indices{M}
     kern::Indices{M}
     parent::OuterInnerArray{T,N,M,M}
-    CirculantTensor(A::AbstractArray{T,M}, kern::Indices{M}) where {T,M} = CirculantTensor{T,2M}(A, kern)
-    function CirculantTensor{T,N}(A::AA, KI::Indices{M}) where {T,N,M,AA<:AbstractArray{T,M}}
-        N == 2M || throw(DimensionMismatch("In constructor `CirculantTensor{T,N}(<:AbstractArray{T,M}, ::Indices{M})`. `N` must be equal to `2M`, but `2M==$(2M)!=$N==N`."))
+    CirculantTensor(A::AbstractArray{T,M}, kern::Indices{M}) where {T,M} = CirculantTensor{T,M}(A, kern)
+    function CirculantTensor{T,M}(A::AA, KI::Indices{M}) where {T,M,AA<:AbstractArray{T,M}}
+        # N == 2M || throw(DimensionMismatch("In constructor `CirculantTensor{T,N}(<:AbstractArray{T,M}, ::Indices{M})`. `N` must be equal to `2M`, but `2M==$(2M)!=$N==N`."))
         AI = interior(axes(A), KI)
         any(iszero, length(AI)) && throw(DimensionMismatch("In constructor `CirculantTensor(<:AbstractArray, ::Indices)` the array is not large enough for the kernel. Got interior of $AI.")) # TODO: Test
         views = map(CartesianIndices(AI)) do I
             @inbounds OffsetArray(view(A, CartesianIndices(KI) .+ I), KI)
         end
         parent = OffsetArray(views, AI) |> OuterInnerArray
-        return new{T,N,M,AA}(A, AI, KI, parent)
+        return new{T,M,2M,AA}(A, AI, KI, parent)
     end
 end
 
 @reexport using ImageFiltering: reflect # NOTE: For convolution instead of correlation <24-04-25> 
 
-# TODO: Same constructors as for `imfilter!` <19-04-25>
-CirculantTensor(A::AbstractArray{<:Any,N}, kern::AbstractArray{<:Any,N}) where {N} = CirculantTensor(A, axes(kern))
-CirculantTensor(A::AbstractArray{<:Any,N}, size::Size{N}) where {N} = CirculantTensor(A, map(Base.OneTo, size))
+# Step 1: Determine kernel indices
+@inline CirculantTensor(A::AbstractArray{<:Any,N}, kern::AbstractArray{<:Any,N}, args...) where {N} = CirculantTensor(A, axes(kern), args...)
+
+# Step 2: Determine border and Initialize it if it is not fully specified. (Default Inner() doesn't need action)
+@inline function CirculantTensor(A::AbstractArray{<:Any,N}, kern::Indices{N}, border::AbstractString, args...) where {N}
+    return CirculantTensor(A, kern, ImageFiltering.borderinstance(border), args...)
+end
+@inline function CirculantTensor(A::AbstractArray{<:Any,N}, kern::Indices{N}, border::Pad{0}, args...) where {N}
+    border = Pad(border.style, kern)
+    return CirculantTensor(A, kern, border, args...)
+end
+@inline function CirculantTensor(A::AbstractArray{<:Any,N}, kern::Indices{N}, border::Fill{T,0}, args...) where {N,T}
+    border = Fill(border.value, kern)
+    return CirculantTensor(A, kern, border, args...)
+end
+
+# Step 3: Apply the border and call the inner constructor
+function CirculantTensor(A::AbstractArray{T,N}, kern::Indices{N}, border::AbstractBorder, args...) where {T,N}
+    A = padarray(T, A, border)
+    return CirculantTensor(A, kern) # TODO: What should happen with the args... ? <10-05-25> 
+end
+
+function conv(T::CirculantTensor, K::AbstractArray)
+    @assert T.kern == axes(K)
+    return _conv(T, K)
+end
+
+# PERF!: FFT should be used for a much faster implementation using the CirculantTensor structure <13-05-25> 
+function _conv(T::CirculantTensor{<:Any,1}, K::AbstractVector)
+    return OffsetVector(no_offset_view(T) * no_offset_view(K), T.interior)
+end
+function _conv(T::CirculantTensor{<:Any,2}, K::AbstractMatrix)
+    @tensor A[a, b] := no_offset_view(T)[a, b, c, d] * no_offset_view(K)[c, d]
+    return OffsetMatrix(A, T.interior)
+end
+function _conv(T::CirculantTensor{<:Any,3}, K::AbstractArray{<:Any,3})
+    @tensor A[a, b, c] := no_offset_view(T)[a, b, c, d, e, f] * no_offset_view(K)[d, e, f]
+    return OffsetArray(A, T.interior)
+end
+
 Base.parent(A::CirculantTensor) = (@inline; A.parent)
 Base.size(A::CirculantTensor) = (@inline; size(parent(A)))
 Base.size(A::CirculantTensor, dim) = (@inline; size(parent(A), dim))
@@ -194,24 +233,22 @@ Base.similar(A::CirculantTensor{T}, eltype::Type{T}, dims::Dims) where {T} = (@i
 # TODO: Decide what to do with the indices of the array. They will not be linearly spaced if it should make sense.
 # Or it could be documented that the indices are not reflecting the actual indices of the reference array. <24-04-25> 
 """
-    FilteringMatrix{T,K,P} <: AbstractMatrix{T}
-A matrix that for a given kernel `K`, array size `size(A)` and a padding scheme `P` gives an array `F` such that
-filtering (correlation or convolution if `reflect(K)` is used as the kernel) output of the kernel `K` and an array as
-`A` can be computed as `F * A[:]`. It is a view into the [`CirculantTensor`](@ref) for the kernel array `K`.
+    FilteringMatrix{T,M,P} <: AbstractMatrix{T}
+A matrix that for a given kernel `K`, array `A` of size `size(A)==size(K)` equal to `M` and a padding scheme `P` gives
+an array `F` such that filtering (correlation or convolution if `reflect(K)` is used as the kernel) output of the kernel
+`K` and an array as `A` can be computed as `F * A[:]`. It is a view into the [`CirculantTensor`](@ref) for the kernel array `K`.
 """
 struct FilteringMatrix{T,K,CT<:CirculantTensor{T}} <: AbstractMatrix{T}
     circulant::CT
     parent::OuterInnerArray{T,2,1,1}
-    function FilteringMatrix(circulant::CirculantTensor{<:Any,N}) where {N}
+    function FilteringMatrix(circulant::CirculantTensor{<:Any,M,K}) where {M,K}
         # NOTE: Never should happen if the inner constructor is used for the CirculantTensor <05-05-25> 
-        @assert iseven(N) "`K` in a `CirculantTensor{<:Any,K}` must always be even"
-        K = N ÷ 2
-        rows = map(eachslice(circulant, dims=Tuple((K+1):N))) do s
-            # TODO: Test whether this works better or worse than using reshaped array <07-05-25> 
-            view(s, :)
+        @assert iseven(K) "`K` in a `CirculantTensor{<:Any,M,K}` must always be even"
+        rows = map(eachslice(circulant, dims=Tuple((M+1):K))) do s
+            reshape(s, :)  # PERF: `reshape` benchmarks better than `view` for 2D matrices <11-05-25> 
         end
-        parent = OuterInnerArray(view(rows, :))
-        return new{eltype(circulant),K,typeof(circulant)}(circulant, parent)
+        parent = OuterInnerArray(view(rows, :), (1,))
+        return new{eltype(circulant),M,typeof(circulant)}(circulant, parent)
     end
 end
 FilteringMatrix(args...) = FilteringMatrix(CirculantTensor(args...))
@@ -231,6 +268,155 @@ function Base.getproperty(A::FilteringMatrix, s::Symbol)
         return getfield(A, :circulant).kern
     else
         return getfield(A, s)
+    end
+end
+
+# NOTE: Unlike `stdlib` we want matmul to return the offset vectors or matrices based on the input
+LinearAlgebra.matprod_dest(A::FilteringMatrix, ::AbstractVector, T::Type) = OffsetVector(Vector{T}(undef, size(A, 1)), axes(A, 2))
+LinearAlgebra.matprod_dest(A::FilteringMatrix, B::AbstractMatrix, T::Type) = OffsetMatrix(Matrix{T}(undef, size(A, 1), size(B, 2)), axes(A, 1), axes(B, 2))
+# NOTE: Filtering matrices other than from a vector signal source should not have an offset in the first dimension <15-05-25> 
+LinearAlgebra.matprod_dest(A::Adjoint{<:Any,<:FilteringMatrix{<:Any,1}}, ::AbstractVector, T::Type) = OffsetVector(Vector{T}(undef, size(A, 1)), axes(A, 2))
+LinearAlgebra.matprod_dest(A::Adjoint{<:Any,<:FilteringMatrix{<:Any,1}}, B::AbstractMatrix, T::Type) = OffsetMatrix(Matrix{T}(undef, size(A, 1), size(B, 2)), axes(A, 1), axes(B, 2))
+
+offset_mismatch_error(ax1, ax2) = DimensionMismatch("Offsets of the axes do not match in `mul!`. Axes of the arrays must match their offsets but got `$(UnitRange(ax1)) != $(UnitRange(ax2))`.")
+
+function check_offsets(C::AbstractVector, A::AbstractArray, B::AbstractVector)
+    axes(A, 2) == axes(B, 1) || throw(offset_mismatch_error(axes(A, 2), axes(B, 1)))
+    axes(A, 1) == axes(C, 1) || throw(offset_mismatch_error(axes(A, 1), axes(C, 1)))
+end
+function check_offsets(C::AbstractArray, A::AbstractArray, B::AbstractArray)
+    axes(C, 2) == axes(B, 2) || throw(offset_mismatch_error(axes(C, 2), axes(B, 2)))
+    @views check_offsets(C[:, first(axes(C, 2))], A, B[:, first(axes(B, 2))])
+end
+
+# NOTE: It is necessary to have two functions for vectors and matrices to avoid ambiguity <15-05-25> 
+
+# STEP 1a: check and remove the offsets -> We are working further on with OffsetArray{<:Any,1 or 2,ParentArray}
+function LinearAlgebra.mul!(C::AbstractVector, A::Union{Adjoint{<:Any,<:FilteringMatrix},<:FilteringMatrix}, B::AbstractVector, α::Number, β::Number)
+    check_offsets(C, A, B)
+    _contract!(no_offset_view(C), no_offset_view(A), no_offset_view(B), α, β)
+    return OA.Origin(C)(C)
+end
+
+# STEP 1b:  check and remove the offsets -> We are working further on with OffsetMatrix{<:Any, ParentArray}
+function LinearAlgebra.mul!(C::AbstractMatrix, A::Union{Adjoint{<:Any,<:FilteringMatrix},<:FilteringMatrix}, B::AbstractMatrix, α::Number, β::Number)
+    check_offsets(C, A, B)
+    _contract!(no_offset_view(C), no_offset_view(A), no_offset_view(B), α, β)
+    return OA.Origin(C)(C)
+end
+
+@inline circulant(A::OffsetMatrix{<:Any,<:Adjoint{<:Any,<:FilteringMatrix}}) = circulant(parent(A))
+@inline circulant(A::OffsetMatrix{<:Any,<:FilteringMatrix}) = circulant(parent(A))
+@inline circulant(A::Adjoint{<:Any,<:FilteringMatrix}) = circulant(parent(A))
+@inline circulant(A::FilteringMatrix) = A.circulant
+
+@inline outaxes(A::OffsetMatrix{<:Any,<:Adjoint{<:Any,<:FilteringMatrix}}) = outaxes(parent(A))
+@inline outaxes(A::OffsetMatrix{<:Any,<:FilteringMatrix}) = outaxes(parent(A))
+@inline outaxes(A::Adjoint{<:Any,<:FilteringMatrix}) = outaxes(parent(A))
+@inline outaxes(A::FilteringMatrix) = A.Aaxes
+
+@inline kernaxes(A::OffsetMatrix{<:Any,<:Adjoint{<:Any,<:FilteringMatrix}}) = kernaxes(parent(A))
+@inline kernaxes(A::OffsetMatrix{<:Any,<:FilteringMatrix}) = parent(A).Kaxes
+@inline kernaxes(A::Adjoint{<:Any,<:FilteringMatrix}) = parent(A).Kaxes
+@inline kernaxes(A::FilteringMatrix) = A.Kaxes
+
+const OffsetFilteringMatrix{N} = Union{FM,OffsetMatrix{T,FM}} where {T,FM<:FilteringMatrix{T,N}}
+function _contract!(C, A::OffsetFilteringMatrix{1}, B::AbstractMatrix, α, β)
+    @tensor begin
+        @notensor AC = no_offset_view(circulant(A))
+        C[a, b] = α * AC[a, i] * B[i, b] + β * C[a, b]
+    end
+end
+function _contract!(C, A::OffsetFilteringMatrix{1}, B::AbstractVector, α, β)
+    @tensor begin
+        @notensor AC = no_offset_view(circulant(A))
+        C[a] = α * AC[a, i] * B[i] + β * C[a]
+    end
+end
+function _contract!(C, A::OffsetFilteringMatrix{2}, B::AbstractMatrix, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, :, kernaxes(A)...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b, c] := α * AC[a, b, i, j] * BT[c, i, j]
+        @notensor CM = no_offset_view(reshape(CM, axes(C)))
+        C[a, b] = CM[a, b] + β * C[a, b]
+    end
+end
+function _contract!(C, A::OffsetFilteringMatrix{2}, B::AbstractVector, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, kernaxes(A)...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b] := α * AC[a, b, i, j] * BT[i, j]
+        @notensor CM = reshape(CM, :)
+        C[a] = CM[a] + β * C[a]
+    end
+end
+function _contract!(C, A::OffsetFilteringMatrix{3}, B::AbstractMatrix, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, :, A.Kaxes...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b, c, d] := α * AC[a, b, c, i, j, k] * BT[d, i, j, k]
+        @notensor CM = no_offset_view(reshape(CM, axes(C)))
+        C[a, b] = CM[a, b] + β * C[a, b]
+    end
+end
+function _contract!(C, A::OffsetFilteringMatrix{3}, B::AbstractVector, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, kernaxes(A)...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b, c] := α * AC[a, b, c, i, j, k] * BT[i, j, k]
+        @notensor CM = reshape(CM, :)
+        C[a] = CM[a] + β * C[a]
+    end
+end
+
+const OffsetAdjointFilteringMatrix{N} = Union{Adjoint{T,FM},OffsetMatrix{T,Adjoint{T,FM}}} where {T,FM<:FilteringMatrix{T,N}}
+function _contract!(C, A::OffsetAdjointFilteringMatrix{1}, B::AbstractMatrix, α, β)
+    @tensor begin
+        @notensor AC = no_offset_view(circulant(A))
+        C[a, b] = α * AC[i, a] * B[i, b] + β * C[a, b]
+    end
+end
+function _contract!(C, A::OffsetAdjointFilteringMatrix{1}, B::AbstractVector, α, β)
+    @tensor begin
+        @notensor AC = no_offset_view(circulant(A))
+        C[a] = α * AC[i, a] * B[i] + β * C[a]
+    end
+end
+function _contract!(C, A::OffsetAdjointFilteringMatrix{2}, B::AbstractMatrix, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, :, outaxes(A)...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b, c] := α * AC[j, i, b, a] * BT[c, i, j]
+        @notensor CM = no_offset_view(reshape(CM, axes(C)))
+        C[a, b] = CM[a, b] + β * C[a, b]
+    end
+end
+function _contract!(C, A::OffsetAdjointFilteringMatrix{2}, B::AbstractVector, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, outaxes(A)...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b] := α * AC[i, j, a, b] * BT[i, j]
+        @notensor CM = reshape(CM, :)
+        C[a] = CM[a] + β * C[a]
+    end
+end
+function _contract!(C, A::OffsetAdjointFilteringMatrix{3}, B::AbstractMatrix, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, :, outaxes(A)...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b, c, d] := α * AC[i, j, k, a, b, c] * BT[d, i, j, k]
+        @notensor CM = no_offset_view(reshape(CM, axes(C)))
+        C[a, b] = CM[a, b] + β * C[a, b]
+    end
+end
+function _contract!(C, A::OffsetAdjointFilteringMatrix{3}, B::AbstractVector, α, β)
+    @tensor begin
+        @notensor BT = no_offset_view(reshape(B, outaxes(A)...))
+        @notensor AC = no_offset_view(circulant(A))
+        CM[a, b, c] := α * AC[i, j, k, a, b, c] * BT[i, j, k]
+        @notensor CM = reshape(CM, :)
+        C[a] = CM[a] + β * C[a]
     end
 end
 

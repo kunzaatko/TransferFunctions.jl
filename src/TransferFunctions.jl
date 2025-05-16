@@ -5,7 +5,7 @@ module TransferFunctions
 using SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets, ColorTypes,
     ImageFiltering, OffsetArrays
 using ImageCore, StaticArraysCore
-using OffsetArrays: centered, center
+using OffsetArrays: centered, center, no_offset_view
 using OffsetArrays: OffsetArrays as OA
 
 using Reexport
