@@ -25,3 +25,17 @@ src/models/Meijer's G-Function 4.png
 adam_vs_measured.png
 measured_psf
 src/models/Fourier_transform_Born_Wolf.png
+Manifest*.toml
+conv2matrix.m
+benchmark/archive/
+benchmark/benchmarks.json
+benchmark/params.json
+src/psf/resources/
+fftconv2matrix.m
+data/
+minHstep.m
+.tasks
+TODO.md
+data
+init-repl.jl
+src/otf/sampled-otf.jl
