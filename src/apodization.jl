@@ -2,13 +2,13 @@
 `TransferFunctions.Apodization` module defines apodization functions of various formats and utility methods that are
 related to apodization such as [`taperedges`](@ref) and [`apodize`](@ref).
 
-Apodization types [`Blackman`](@ref `Apodization.Blackman`), [`ExactBlackman`](@ref `Apodization.ExactBlackman`),
-[`Connes`](@ref `Apodization.Connes`), [`Cosine`](@ref `Apodization.Cosine`), [`Gaussian`](@ref `Apodization.Gaussian`),
-[`Hamming`](@ref `Apodization.Hamming`), [`Welch`](@ref `Apodization.Welch`), [`BlackmanNuttall`](@ref
-`Apodization.BlackmanNuttall`), [`PowerCosine`](@ref `Apodization.PowerCosine`), [`Triangular`](@ref
-`Apodization.Triangular`), [`Nuttall`](@ref `Apodization.Nuttall`), [`SineSum`](@ref `Apodization.SineSum`),
-[`BlackmanHarris`](@ref `Apodization.BlackmanHarris`), [`FlatTop`](@ref `Apodization.FlatTop`) and [`Hann`](@ref
-`Apodization.Hann`)
+Apodization types [`Blackman`](@ref Apodization.Blackman), [`ExactBlackman`](@ref Apodization.ExactBlackman),
+[`Connes`](@ref Apodization.Connes), [`Cosine`](@ref Apodization.Cosine), [`Gaussian`](@ref Apodization.Gaussian),
+[`Hamming`](@ref Apodization.Hamming), [`Welch`](@ref Apodization.Welch), [`BlackmanNuttall`](@ref
+Apodization.BlackmanNuttall), [`PowerCosine`](@ref Apodization.PowerCosine), [`Triangular`](@ref
+Apodization.Triangular), [`Nuttall`](@ref Apodization.Nuttall), [`SineSum`](@ref Apodization.SineSum),
+[`BlackmanHarris`](@ref Apodization.BlackmanHarris), [`FlatTop`](@ref Apodization.FlatTop) and [`Hann`](@ref
+Apodization.Hann)
 
 Exports [`taperedges`](@ref), [`apodize`](@ref)
 """
@@ -202,12 +202,12 @@ end
 # FIX: There are multiple Triangular types of apodization that are based on where the zero is... See
 # https://en.wikipedia.org/w/index.php?title=Window_function&oldid=1237444898#Triangular_window <10-09-24>. These could
 # be implemented as constants of the Triangular window similar to how PowerCosine and SineSum are defined.
-raw"""
+"""
     Triangular <: ApodizationFunction
 
 Formulas:
 + zero-phase function: ``w₀(r) = 1-|r|``
-+ instrument function: ``I(k) = \\mathop{sinc}²(π k)``
++ instrument function: ``I(k) = sinc²(π k)``
 """
 struct Triangular <: ApodizationFunction end
 apodization(::Triangular, r::Real) = 1 - abs(r)
