@@ -319,8 +319,16 @@ using Aqua, Test, Documenter, CompatHelperLocal
             @test Apo.apodization.(equivs[1], -1:0.01:1) ≈ Apo.apodization.(equivs[2], -1:0.01:1)
         end
 
+        @testset "internals" begin
+            O = Ones(30, 30, 30)
+            @test Apo.specify_border(O, IF.Fill(5.0), ((5, 5, 5), (2, 2, 2)), (1, 2, 3)) == IF.Fill(5.0, (5, 5, 5), (2, 2, 2))
+            @test Apo.specify_border(O, IF.Fill(5.0), ((5, 5), (2, 2)), (1, 3)) == IF.Fill(5.0, (5, 0, 5), (2, 0, 2))
+            @test Apo.specify_border(O, IF.Pad(:replicate), ((5,), (2,)), (1,)) == IF.Pad(:replicate, (5, 0, 0), (2, 0, 0))
+            @test Apo.specify_border(O, IF.Inner(), ((5,), (2,)), (1,)) == IF.Inner((5, 0, 0), (2, 0, 0))
+            @test_throws ArgumentError Apo.specify_border(O, IF.NoPad(), ((5,), (2,)), (1,)) == IF.Pad(:replicate, (5, 0, 0), (2, 0, 0))
+        end
+
         @testset "methods" begin
-            using ImageFiltering: Pad
             apo = Apo.Cosine()
             @test taperedges(
                       apo, ones(100, 100, 9), ((10, 10), (10, 10)); dims=(1, 2) # All the supplied arguments 
@@ -337,19 +345,17 @@ using Aqua, Test, Documenter, CompatHelperLocal
                   ) == taperedges(
                       ones(100, 100, 9), (10, 10), "replicate"; dims=(1, 2) # default border 
                   ) == taperedges(
-                      ones(100, 100, 9), (10, 10), Pad{0}(:replicate, (), ())  # instantiate border
+                      ones(100, 100, 9), (10, 10), IF.Pad{0}(:replicate, (), ())  # instantiate border
                   ) == taperedges(
-                      ones(100, 100, 9), (10, 10), Pad{3}(:replicate, (10, 10, 0), (10, 10, 0))  # Correct border size
+                      ones(100, 100, 9), (10, 10), IF.Pad{3}(:replicate, (10, 10, 0), (10, 10, 0))  # Correct border size
                   )
 
-            # TODO: Test with various padding edges... Does the arrays size match? <09-09-24> 
-
-            @test_throws ArgumentError taperedges(apo, ones(100, 100), 10; dims=(1, 2, 3))
-            @test_throws ArgumentError taperedges(apo, ones(100, 100), 10; dims=(1, 3))
+            @test_throws DimensionMismatch taperedges(apo, ones(100, 100), 10; dims=(1, 2, 3))
+            @test_throws DimensionMismatch taperedges(apo, ones(100, 100), 10; dims=(1, 3))
 
             # `dims`
-            @test_broken taperedges(ones(30, 30), 10; dims=:) isa AbstractArray
-            @test_broken taperedges(ones(30, 30), 10; dims=2) isa AbstractArray
+            @test taperedges(ones(30, 30), 10; dims=:) isa AbstractArray
+            @test taperedges(ones(30, 30), 10; dims=2) isa AbstractArray
             @test taperedges(ones(30, 30), 10; dims=Dims((1, 2))) isa AbstractArray
 
             @test size(taperedges(ones(30, 30), (10, 20))) == (50, 70)
