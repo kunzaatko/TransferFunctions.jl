@@ -1,7 +1,7 @@
 module Apodization
 using TransferFunctions: Size
 # TODO: Use reinterpret instead of `T.` for the changes of type in the places that it is used. <09-09-24> 
-using ImageFiltering: AbstractBorder, borderinstance, BorderSpecAny
+using ImageFiltering: AbstractBorder, borderinstance, BorderSpecAny, Pad, Fill, Inner
 using ImageFiltering: ImageFiltering as IF
 using TransferFunctions: padarray
 
@@ -18,128 +18,111 @@ abstract type ApodizationFunction end
 Broadcast.broadcastable(a::ApodizationFunction) = Ref(a)
 apodization(apo::ApodizationFunction, x::Real, halfwidth::Int) = apodization(apo, x / halfwidth)
 
-# FIX: The call stack must be rewritten to construct the arguments of the function from the beginning <02-09-24> 
+check_dims_unique(dims::Dims) = allunique(dims) || throw(ArgumentError("Dimensions in `dims` must be unique. Got `dims=$dims`."))
+check_dims_bounded(A::AbstractArray{<:Any,N}, dims::Dims{M}) where {N,M} = M <= N && all(i -> i <= N, dims) || throw(DimensionMismatch("Dimensions in `dims` must be bounded `ndims(A)=$(ndims(A))`. Got `dims=$dims`."))
+
+const Width{M} = Tuple{Size{M},Size{M}}
+const SizedWidthSpec{M} = Union{Width{M},Size{M}}
 
 # TODO: There should be a mutating method and a non-mutating method that allocates the output array <26-08-24> 
-# TODO: Should allow padding with some scheme from `ImageFiltering.jl` before the tapering for an unobscured data
-# behaviour  <26-08-24> 
-# FIX: This API should be slightly different. Right now it requires to specify the apodization. Usually the user can be
-# satisfied with the default `TransferFunctions.Cosine`. The `width` parameter should be part of the `apo` instance.
-# When only the width is set, the default apodization should be instantiated. The tendency should be for lower
-# parameter methods be easier and just call the general methods, which are the more flexible ones. <17-07-24> 
-# TODO: Document: how the widths arguments work <02-09-24> 
 """
     taperedges([apo=Cosine()], A, w, [border=:replicate]; dims=:)
     taperedges([apo], A, (w1,w2...,wn), [border]; dims =1:n)
     taperedges([apo], A, ((w1a,...,wna), (w1b,...,wnb)), [border]; dims=1:n)
 
-Taper edges of width `w` of `A` using [`apo::ApodizationFunction`](@ref ApodizationFunction).
-Width can be the same `w::Int` for each dimension, specified separately for `n` dimensions `(w1,w2...,wn)`,  or
-specified separately for the _start_ and _end_ of `n` dimensions `((w1a,...,wna), (w1b,...,wnb))`. In the latter two
-cases, the dimensions are specified by `dims` and by default taken as the first `n` dimensions. Border can be
-`:replicate`, `:circular`, `:symmetric`, `:reflect` or [`Fill(v)`](@extref ImageFiltering :jl:type:`ImageFiltering.Fill`).
+Taper edges of width `w` of array `A` using [`apo::ApodizationFunction`](@ref ApodizationFunction). 
+
+Widths can be same for all dimensions and directions using `w::Int`, specified separately for each of the `n` dimensions
+`(w1,w2...,wn)` which means that the '_start_' and '_end_' padding will be the same. The third option is to specify the
+padding fully separately for the '_start_' and '_end_' of `n` dimensions `((w1a,...,wna), (w1b,...,wnb))`. In the last
+two cases, the dimensions are specified by `dims` and by default are taken as the first `n` dimensions. Border can be
+`:replicate`, `:circular`, `:symmetric`, `:reflect` or [`Fill(v)`](@extref ImageFiltering
+:jl:type:`ImageFiltering.Fill`).
 
 See also [`BorderArray`](@extref ImageFiltering :std:label:`BorderArray`), [`ApodizationFunction`](@ref)
 """
-function taperedges( # STEP 1A: Fill the apodization type
-    A::AbstractArray{<:Number,N},
-    args...;
-    kwargs...
-) where {N}
-    return taperedges(Cosine(), A, args...; kwargs...)
-end
-function taperedges( # STEP 2A: Fill from `width` single width
+taperedges(A::AbstractArray, args...; kwargs...) = taperedges(Cosine(), A, args...; kwargs...)
+taperedges(apo::ApodizationFunction, A::AbstractArray, w::SizedWidthSpec{M}, border="replicate"; dims=Dims(1:M), kwargs...) where {M} = _taperedges(apo, A, w, border, dims; check_bounded=false, check_unique=false, kwargs...)
+taperedges(apo::ApodizationFunction, A::AbstractArray, w, border="replicate"; dims=:, kwargs...) = _taperedges(apo, A, w, border, dims; kwargs...)
+
+const WidthSpec = Union{<:Integer,<:Size,Tuple{Size{N},Size{N}}} where {N}
+
+_taperedges( # STEP 1a: Fill single dim
+    apo::ApodizationFunction,
+    A::AbstractArray,
+    w::WidthSpec,
+    border::Any,
+    dims::Integer; kwargs...) = _taperedges(apo, A, w, border, Dims(dims); check_unique=false, kwargs...)
+
+_taperedges( # STEP 1b: Fill in dims for `Colon`
     apo::ApodizationFunction,
     A::AbstractArray{<:Number,N},
+    w::WidthSpec,
+    border::Any,
+    dims::Colon; kwargs...) where {N} = _taperedges(apo, A, w, border, Dims(1:N); check_bounded=false, check_unique=false, kwargs...)
+
+function _taperedges( # STEP 2a: Fill same `width` for all dimensions
+    apo::ApodizationFunction,
+    A::AbstractArray,
     w::Int,
-    args...;
-    # FIX: Instead of this, should be default `Colon()` <02-09-24> 
-    dims::Dims{M}=Tuple(1:N), # TODO: Document by default taper along all the dimensions <03-09-24> 
-    kwargs...
-) where {N,M}
-    # TODO: Use `Val` for the `fill` <30-04-25> 
-    # TODO: Test whether this works for permuted order of kwargs... I.e. whether dims must be supplied as the first
-    # argument or not. Otherwise, it must be done by testing if kwargs has dims in it... <02-09-24> 
+    border::Any,
+    dims::Dims{M}; kwargs...
+) where {M}
     ws = ntuple(_ -> w, Val(M))
-    return taperedges(apo, A, (ws, ws), args...; dims, kwargs...)
+    return _taperedges(apo, A, (ws, ws), border, dims; kwargs...)
 end
-function taperedges( # STEP 2B: Fill from `width`s for each dimension
+
+function _taperedges( # STEP 2b: Fill same left and right `width`s
     apo::ApodizationFunction,
-    A::AbstractArray{<:Number,N},
-    ws::Size{M},
-    args...;
-    kwargs...
-) where {N,M}
-    return taperedges(apo, A, (ws, ws), args...; kwargs...)
+    A::AbstractArray,
+    w::Size{M},
+    border::Any,
+    dims::Dims{M}; kwargs...
+) where {M}
+    return _taperedges(apo, A, (w, w), border, dims; kwargs...)
 end
-function taperedges( # STEP 3: Fill in the default `border`
+
+function _taperedges( # STEP 3: Create a border instance
     apo::ApodizationFunction,
-    A::AbstractArray{<:Number,N},
-    ws::Tuple{Size{M},Size{M}},
-    args...;
-    kwargs...
-) where {N,M}
-    return taperedges(apo, A, ws, "replicate", args...; kwargs...)
-end
-function taperedges( # STEP 4: Create a border instance
-    apo::ApodizationFunction,
-    A::AbstractArray{<:Number,N},
-    ws::Tuple{Size{M},Size{M}},
+    A::AbstractArray,
+    w::Width{M},
     border::AbstractString,
-    args...;
-    kwargs...
-) where {N,M}
-    return taperedges(apo, A, ws, borderinstance(border), args...; kwargs...)
+    dims::Dims{M}; kwargs...
+) where {M}
+    return _taperedges(apo, A, w, borderinstance(border), dims; kwargs...)
 end
-function taperedges( # STEP 5: Set the border sizes
+
+function _taperedges( # STEP 4: Set the border sizes
     apo::ApodizationFunction,
-    A::AbstractArray{<:Number,N},
-    ws::Tuple{Size{M},Size{M}},
+    A::AbstractArray,
+    w::Width{M},
     border::BorderSpecAny,
-    args...;
-    dims=Tuple(1:M),
-    kwargs...
-) where {N,M}
-    # FIX: Must be tested here and in the final because otherwise we would index out of bounds <09-09-24> 
-    (M > N || maximum(dims) > N) && throw(ArgumentError("The number of dimensions must be less than or equal to the number of axes."))
-
-    concrete_border = full_padding_border(border, ws, dims, N)
-    return taperedges(apo, A, ws, concrete_border, args...; kwargs...)
+    dims::Dims{M}; kwargs...
+) where {M}
+    return _taperedges(apo, A, w, specify_border(A, border, w, dims), dims; kwargs...)
 end
 
-# TODO: Test this <09-09-24> 
-function full_padding_border(border::BorderSpecAny, ws::Tuple{Size{M},Size{M}}, dims::Dims{M}, ndims::Int) where {M}
-    all_left_widths, all_right_widths = zeros(Int, ndims), zeros(Int, ndims)
-    foreach(dims, ws[1], ws[2]) do dim, w_left, w_right
-        all_left_widths[dim] = w_left
-        all_right_widths[dim] = w_right
-    end
-    all_left_widths, all_right_widths = Tuple(all_left_widths), Tuple(all_right_widths)
-    if border isa IF.Pad
-        return IF.Pad(border.style, all_left_widths, all_right_widths)
-    elseif border isa IF.Fill
-        return IF.Fill(border.value, all_left_widths, all_right_widths)
-    elseif border isa IF.Inner
-        return IF.Inner(all_left_widths, all_right_widths)
-    else
-        throw(ErrorException("`NA` and `NoPad` borders should not occur here. Type is $(typeof(border))."))
-    end
+function specify_border(::AbstractArray{<:Any,N}, border::BorderSpecAny, w::Width{M}, dims::Dims{M}) where {M,N}
+    lw, rw = (ntuple(i -> i in dims ? w[lr][findfirst(j -> j == i, dims)] : 0, Val(N)) for lr in 1:2)
+    return _specify_border(border, lw, rw)
 end
+_specify_border(border::Pad, lw::Size{N}, rw::Size{N}) where {N} = Pad(border.style, lw, rw)
+_specify_border(border::Fill, lw::Size{N}, rw::Size{N}) where {N} = Fill(border.value, lw, rw)
+_specify_border(::Inner, lw::Size{N}, rw::Size{N}) where {N} = Inner(lw, rw)
+_specify_border(border::Union{IF.NA,IF.NoPad}, args...) = throw(ArgumentError("Border must be one of `Pad`, `Fill` and `Inner`. Got `$border`."))
 
 # TODO: Perhaps there could be an argument to make the array odd sized for the Fourier transform. Since we do not have
 # to have 0 at both edges. For the signal to be periodic, only one edge to be 0 is sufficient. An odd size is beneficial
 # for a Fourier transform. <10-09-24> 
-function taperedges( # FINAL # TODO: Instead of this should be something like `_taperedges` function <02-09-24> 
+function _taperedges( # FINAL
     apo::ApodizationFunction,
-    A::AbstractArray{<:Number,N},
-    ws::Tuple{Size{M},Size{M}},
-    border::AbstractBorder;
-    dims::Dims{M}=Tuple(1:M) # TODO: Document that the number of dimensions is by default taken as the first M 
-    # dimensions where M is the number of widths supplied <kunzaatko> 
-) where {N,M}
-    # TODO: How can one handle the dimensions and the various types that can define them (such as Colon())... Ask on
-    # discourse and implement. <02-09-24> 
-    (M > N || maximum(dims) > N) && throw(ArgumentError("The number of dimensions must be less than or equal to the number of axes."))
+    A::AbstractArray,
+    ws::Width{M},
+    border::AbstractBorder,
+    dims::Dims{M}; check_unique=true, check_bounded=true
+) where {M}
+    check_unique && check_dims_unique(dims)
+    check_bounded && check_dims_bounded(A, dims)
 
     A = padarray(A, border)
 
