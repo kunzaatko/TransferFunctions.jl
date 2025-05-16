@@ -1,5 +1,7 @@
 using Base: Indices
 using Unitful: Length
+using ImageFiltering: AbstractBorder, BorderSpecAny
+using ImageFiltering: Inner, Pad, Fill
 
 @derived_dimension Frequency Unitful.𝐋^-1 true
 
