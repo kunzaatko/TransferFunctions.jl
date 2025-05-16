@@ -1,3 +1,17 @@
+"""
+`TransferFunctions.Apodization` module defines apodization functions of various formats and utility methods that are
+related to apodization such as [`taperedges`](@ref) and [`apodize`](@ref).
+
+Apodization types [`Blackman`](@ref `Apodization.Blackman`), [`ExactBlackman`](@ref `Apodization.ExactBlackman`),
+[`Connes`](@ref `Apodization.Connes`), [`Cosine`](@ref `Apodization.Cosine`), [`Gaussian`](@ref `Apodization.Gaussian`),
+[`Hamming`](@ref `Apodization.Hamming`), [`Welch`](@ref `Apodization.Welch`), [`BlackmanNuttall`](@ref
+`Apodization.BlackmanNuttall`), [`PowerCosine`](@ref `Apodization.PowerCosine`), [`Triangular`](@ref
+`Apodization.Triangular`), [`Nuttall`](@ref `Apodization.Nuttall`), [`SineSum`](@ref `Apodization.SineSum`),
+[`BlackmanHarris`](@ref `Apodization.BlackmanHarris`), [`FlatTop`](@ref `Apodization.FlatTop`) and [`Hann`](@ref
+`Apodization.Hann`)
+
+Exports [`taperedges`](@ref), [`apodize`](@ref)
+"""
 module Apodization
 using TransferFunctions: Size
 # TODO: Use reinterpret instead of `T.` for the changes of type in the places that it is used. <09-09-24> 
@@ -279,7 +293,8 @@ struct SineSum{N,Cs,T<:Real} <: ApodizationFunction
         return new{N,Cs,T}(coefs)
     end
 end
-function SineSum(Cs::NTuple{N,T}) where {N,T<:Real}
+function SineSum(Cs::Tuple{T,Vararg{T}}) where {T<:Real}
+    N = length(Cs)
     return SineSum{N,Cs,T}()
 end
 apodization(ss::SineSum{N,Cs,T}, r::Real) where {N,T,Cs} =

@@ -14,7 +14,6 @@ FrequencyFreeUnits
 OuterInnerArray
 CirculantTensor
 
-shrink
 FilteringMatrix
 SampledArray
 SampledMatrix
@@ -77,38 +76,46 @@ Estimation.bead
 # Apodization
 
 ```@docs
-apodize
-taperedges
-```
-
-```@docs
 Apodization
+
+Apodization.apodize
+Apodization.taperedges
+
+Apodization.ApodizationFunction
+
+Apodization.Blackman
+Apodization.ExactBlackman
+Apodization.Connes
+Apodization.Cosine
+Apodization.Gaussian
+Apodization.Hamming
+Apodization.Welch
+Apodization.BlackmanNuttall
+Apodization.PowerCosine
+Apodization.Triangular
+Apodization.Nuttall
+Apodization.SineSum
+Apodization.BlackmanHarris
+Apodization.FlatTop
+Apodization.Hann
 ```
 
+# Internals
+## Functions
 ```@docs
-Blackman
-ExactBlackman
-Connes
-Cosine
-Gaussian
-Hamming
-Welch
-BlackmanNuttall
-PowerCosine
-Triangular
-Nuttall
-SineSum
-BlackmanHarris
-FlatTop
-Hann
+TransferFunctions.roundupcenter
+TransferFunctions.rounddowncenter
+TransferFunctions.exactcenter
+TransferFunctions.aroundorigin
+TransferFunctions.contained
+TransferFunctions.interior
+TransferFunctions.@__FUNCTION__
 ```
 
-# Util Functions
+## Type Aliases
 ```@docs
-roundupcenter
-exactcenter
-@__FUNCTION__
+TransferFunctions.Size
+TransferFunctions.Coordinate
+TransferFunctions.PixelSize
+TransferFunctions.SBitVector
 ```
-
-
-<!-- TODO: <24-04-25> -->

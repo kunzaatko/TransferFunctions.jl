@@ -34,7 +34,7 @@ Calculate center index of `A` rounded-down (i.e. `ifft` center).
 # Examples
 ```jldoctest; setup = :(using TransferFunctions: rounddowncenter)
 julia> rounddowncenter(ones(15,15))
-CartesianIndex(7, 7)
+CartesianIndex(8, 8)
 
 julia> rounddowncenter((16,16))
 CartesianIndex(8, 8)
