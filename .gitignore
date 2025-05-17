@@ -34,8 +34,7 @@ src/psf/resources/
 fftconv2matrix.m
 data/
 minHstep.m
-.tasks
-TODO.md
 data
+TODO.md
 init-repl.jl
 src/otf/sampled-otf.jl
