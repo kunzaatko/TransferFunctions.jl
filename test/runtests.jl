@@ -1,7 +1,7 @@
 using TransferFunctions
 using TransferFunctions: TransferFunctions as TF
 using TransferFunctions: Frequency
-using IntervalSets, FourierTools, FFTViews, Distributions, FillArrays, TensorOperations, OffsetArrays, ImageFiltering, ImageCore, TestImages
+using IntervalSets, FourierTools, FFTViews, Distributions, FillArrays, TensorOperations, OffsetArrays, ImageFiltering, ImageCore, TestImages, DataStructures
 using OffsetArrays: OffsetArray as OA
 using OffsetArrays: OffsetArrays as OAs
 using ImageFiltering: ImageFiltering as IF
@@ -150,46 +150,59 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
             ## Constructors ##
 
-            O = Ones(100, 100, 100)
+            O = ones(100, 100, 100)
 
-            @testset "OuterInnerArray" begin
+            @testset "Flattened" begin
+                flatten_parent_4d = [view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)]
+                ## Throws ##
 
-                # Mismatch in `innerdims` length and inner array size.
-                @test_throws MethodError TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3))
-
-                # Total dimensionality does not match partial dimensionalities
-                @test_throws DimensionMismatch TF.OuterInnerArray{Any,3}([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4))
+                # Mismatch in inner `ndims`
+                @test_throws MethodError TF.flatten(flatten_parent_4d, inner=(2, 3))
 
                 # inner axes mismatch
-                @test_throws DimensionMismatch TF.OuterInnerArray([view(O, 30:39, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4))
+                @test_throws DimensionMismatch TF.flatten([view(O, 30:39, 50:60, :), view(O, 20:30, 40:50, :)], inner=(2, 3, 4))
 
                 # Non existent dimension
-                @test_throws DimensionMismatch TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 5))
+                @test_throws DimensionMismatch TF.flatten(flatten_parent_4d, inner=(2, 3, 5))
 
-                @test TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4)) isa AbstractArray{<:Any,4}
-                @test TF.OuterInnerArray{Float64,4}([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4)) isa AbstractArray{Float64,4}
 
-                # Explicit recasting
-                @test !(TF.OuterInnerArray{Any,4}([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4)) isa TF.OuterInnerArray{Float64})
+                ## Construction ##
+                @test TF.flatten(flatten_parent_4d, inner=(2, 3, 4)) isa AbstractArray{<:Any,4}
+                @test TF.flatten(flatten_parent_4d, outer=(3,), inner=(1, 2, 4)) isa AbstractArray{<:Any,4}
 
-                oia = TF.OuterInnerArray([view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)], (2, 3, 4))
-                @test size(oia) == (2, 11, 11, 100)
-                @test axes(oia) == (OneTo(2), OneTo(11), OneTo(11), OneTo(100))
+                # Other dim specializations
+                @test_broken TF.flatten(flatten_parent_4d, outer=3)
 
-                @test TF.innerdims(oia) == (2, 3, 4)
-                @test TF.outerdims(oia) == (1,)
+                # infer non-default inner, outer from single argument
+                @test_broken TF.flatten(flatten_parent_4d, inner=(1, 2, 4)) == TF.flatten(flatten_parent_4d, outer=(3,))
+
+                flatten_parent_3d = [ones(10, 10), zeros(10, 10)]
+
+                ## Methods ##
+                F = TF.flatten(flatten_parent_3d)
+                @test size(F) == (2, 10, 10)
+                @test length(F) == 200
+                @test axes(F) == (OneTo(2), OneTo(10), OneTo(10))
+
+                ## Field correctness ##
+                @test intersect(Set(F.innermap), Set(F.outermap)) |> isempty
+                @test setdiff(Set((F.innermap..., F.outermap...)), Set(1:ndims(F))) |> isempty
+
+                ## Array correctness ##
+
+                @test stack(flatten_parent_3d; dims=1) == F
             end
 
-            K = OAs.centered(zeros(21, 21))
+            K = OA(zeros(21, 21), -10:10, -10:10)
             K[0, 0] = 0.5
             K[-1, -1] = K[-1, 1] = K[1, -1] = K[1, 1] = 0.5 / 4
 
             A = rand(30, 30)
 
             @testset "CirculantTensor" begin
-                @test TF.CirculantTensor(A, (-5:5, -5:5)) isa TF.CirculantTensor{eltype(A),2,4}
-                @test TF.CirculantTensor(A, (-5:5, -5:3)) isa TF.CirculantTensor{eltype(A),2,4} # Non-square kernel indices
-                @test TF.CirculantTensor(A, K) isa TF.CirculantTensor{eltype(A),2,4}
+                @test circulant(A, (-5:5, -5:5)) isa TF.CirculantTensor{<:Any,2,typeof(A)}
+                @test circulant(A, (-5:5, -5:3)) isa TF.CirculantTensor{<:Any,2,typeof(A)} # Non-square kernel indices
+                @test circulant(A, K) isa TF.CirculantTensor{<:Any,2,typeof(A)}
 
                 @testset "IF.Padded constructors" begin
                     local A = reshape(1:(9*9), 9, 9)
@@ -251,57 +264,58 @@ using Aqua, Test, Documenter, CompatHelperLocal
                         )
                     ]
                     for (bord, out, a) in borders
-                        ct = TF.CirculantTensor(A, Kinds, bord)
+                        ct = circulant(A, Kinds, bord)
                         @test ct.interior == a
                         @test OAs.no_offset_view(ct[1, 1, :, :]) == out
                     end
                 end
 
                 # Different eltypes
-                @test TF.CirculantTensor(Ones{Int}(30, 30), K) isa TF.CirculantTensor{Int,2,4}
+                @test eltype(circulant(ones(Int, 30, 30), K)) == Int
 
-                circulant = TF.CirculantTensor(A, K)
+                C_4D = circulant(A, K)
 
                 # Correct output indices
-                @test ndims(TF.CirculantTensor(A, K)) == 4
-                @test axes(circulant)[3:4] == axes(K) == circulant.kern
-                @test axes(circulant)[1:2] == circulant.interior
+                @test ndims(circulant(A, K)) == 4
+                @test axes(C_4D)[3:4] == axes(K) == C_4D.kern
+                @test axes(C_4D)[1:2] == C_4D.interior
 
 
-                @tensor B[a, b] := OAs.no_offset_view(circulant)[a, b, c, d] * OAs.no_offset_view(K)[c, d]
+                @tensor B[a, b] := OAs.no_offset_view(C_4D)[a, b, c, d] * OAs.no_offset_view(K)[c, d]
                 @test B isa AbstractMatrix
-                @test size(B) == length.(circulant.interior)
+                @test size(B) == length.(C_4D.interior)
             end
 
             @testset "FilteringMatrix" begin
-                local kern = K[-4:4, -4:4]
-                local circulant = TF.CirculantTensor(A, kern)
+                K_small = OA(K[-4:4, -4:4], -4:4, -4:4)
+                C_4D = circulant(A, K_small)
 
                 ## Constructors ##
-                @test TF.FilteringMatrix(A, K) isa TF.FilteringMatrix
-                @test TF.FilteringMatrix(circulant) isa TF.FilteringMatrix
+                @test TF.FilteringMatrix(A, K_small) isa TF.FilteringMatrix
+                @test TF.FilteringMatrix(C_4D) isa TF.FilteringMatrix
                 @test TF.FilteringMatrix(A, (-4:4, -4:4)) isa TF.FilteringMatrix
 
-                filtering_matrix = TF.FilteringMatrix(A, kern)
-                filtering_matrix_small = TF.FilteringMatrix(A[1:10, 1:10], (-1:1, -1:1))
-                @test filtering_matrix.Kaxes == circulant.kern
-                @test filtering_matrix.Aaxes == circulant.interior
+                FM_2D = TF.FilteringMatrix(A, K_small)
+                FM_2D_small = TF.FilteringMatrix(A[1:10, 1:10], (-1:1, -1:1))
+                @test FM_2D.Kaxes == C_4D.kern
+                @test FM_2D.Aaxes == C_4D.interior
 
                 # matmul sizes
-                @test (filtering_matrix * kern[:]) isa AbstractVector
-                @test length(filtering_matrix * kern[:]) == prod(length.(filtering_matrix.Aaxes))
-                @test size(filtering_matrix_small' * filtering_matrix_small) == (9, 9)
-                @test size(filtering_matrix_small * filtering_matrix_small') == ntuple(_ -> prod(length.(filtering_matrix_small.Aaxes)), 2)
-                @test length(filtering_matrix * kern[:]) == prod(length.(filtering_matrix.Aaxes))
+                @test (FM_2D * K_small[:]) isa AbstractVector
+                @test size(FM_2D_small' * FM_2D_small) == (9, 9)
+                @test size(FM_2D_small * FM_2D_small') == (8 * 8, 8 * 8)
+                @test length(FM_2D_small * K[-1:1, -1:1][:]) == 8 * 8
 
-                filtering_matrix_padded = TF.FilteringMatrix(A, kern, "replicate")
-                @test (filtering_matrix_padded * kern[:]) isa AbstractVector
-                @test length((filtering_matrix_padded * kern[:])) == length(A)
+                FM_2D_pad = TF.FilteringMatrix(A, K_small, "replicate")
+                @test (FM_2D_pad * K_small[:]) isa AbstractVector
+                @test length((FM_2D_pad * K_small[:])) == length(A)
 
-                oneD_filtering_matrix = TF.FilteringMatrix(1:90, (-1:1,))
-                @test axes(oneD_filtering_matrix, 2) == -1:1
-                @test (oneD_filtering_matrix * OA(ones(3), -1:1)) isa AbstractVector
-                @test size(oneD_filtering_matrix * OA(ones(3), -1:1)) == length.(oneD_filtering_matrix.Aaxes)
+                FM_1D = TF.FilteringMatrix(1:90, (-1:1,))
+                @test axes(FM_1D, 2) == -1:1
+                @test_throws ArgumentError (FM_1D * OA(ones(3), -1:1)) # offsets are not supported
+                @test_throws ArgumentError (FM_1D * ones(3)) # offsets are not supported
+                @test OAs.no_offset_view(FM_1D) * ones(3) isa AbstractVector
+                @test length(OAs.no_offset_view(FM_1D) * ones(3)) == 88
             end
 
             @testset "Dimensions" begin
@@ -316,17 +330,21 @@ using Aqua, Test, Documenter, CompatHelperLocal
                 end
                 for (Asize, Ksize) in [((10,), (3,)), ((50, 50), (5, 5)), ((12, 12, 4), (3, 3, 3))]
                     for p in [(x, A, K) -> x(A, K), (x, A, K) -> x(A, K, "replicate")]
-                        for t in [TF.CirculantTensor, TF.FilteringMatrix]
+                        for (t, c) in [(TF.CirculantTensor, circulant), (TF.FilteringMatrix, TF.FilteringMatrix)]
                             A = rand(Asize...)
                             K = centered_monotone_kernel(Ksize...)
-                            @test p(t, A, K) isa t
-                            CT = p(TF.CirculantTensor, A, K)
-                            CT_conv_K = TF.conv(CT, K)
-                            @test ndims(CT_conv_K) == ndims(A)
-                            FM = p(TF.FilteringMatrix, A, K)
-                            @test FM * K[:] isa AbstractVector
-                            @test FM' * FM isa AbstractMatrix
+                            @test p(c, A, K) isa t
                         end
+                        CT = p(circulant, A, K)
+                        CT_conv_K = TF.conv(CT, K)
+                        @test ndims(CT_conv_K) == ndims(A)
+                        FM = p(TF.FilteringMatrix, A, K)
+                        if length(Asize) == 1 # offset of 1D filtering matrix makes it incompatible with matrix multiplication
+                            FM = OAs.no_offset_view(FM)
+                        end
+                        K = OAs.no_offset_view(K)
+                        @test FM * K[:] isa AbstractVector
+                        @test FM' * FM isa AbstractMatrix
                     end
                 end
             end
@@ -334,12 +352,12 @@ using Aqua, Test, Documenter, CompatHelperLocal
             ## Filtering and Correctness ##
 
             A_1D = Vector(1:4)
-            CT_1D_1D = TF.CirculantTensor(A_1D, (-1:1,))
+            CT_1D_1D = circulant(A_1D, (-1:1,))
             @test OAs.no_offset_view(CT_1D_1D) == [1 2 3; 2 3 4]
             @test axes(CT_1D_1D, 1) == 2:3
 
             A_2D = reshape(1:12, 4, 3)
-            CT_2D_2D = TF.CirculantTensor(A_2D, (0:1, 0:1))
+            CT_2D_2D = circulant(A_2D, (0:1, 0:1))
             @test OAs.no_offset_view(CT_2D_2D[1, 1, :, :]) == [1 5; 2 6]
             @test OAs.no_offset_view(CT_2D_2D[1, 2, :, :]) == [5 9; 6 10]
             @test CT_2D_2D[2, 2, 1, 1] == 11 # NOTE: There is an offsetted kernel with indices 0:1×0:1 <05-05-25> 
@@ -360,24 +378,22 @@ using Aqua, Test, Documenter, CompatHelperLocal
 
             fft_filt = imfilter(img, K_rand)
 
-            # FIX: There are some NaNs appearing. Possibly from `@tensor`? <14-05-25> 
-            @test_broken fm_filt == fft_filt
-            @test fm_filt[isnan.(fm_filt).==false] ≈ fft_filt[isnan.(fm_filt).==false]
+            @test fm_filt == fft_filt
         end
     end
 
     @testset "interfaces" begin
-        circulant = TF.SpatialArray(Ones(40, 40), 20u"nm")
+        C_4D = TF.SpatialArray(Ones(40, 40), 20u"nm")
 
         struct TF_1 <: TF.TransferFunction end
         tf_1 = TF_1()
-        @test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialArray.*)"] transfer(tf_1, circulant)
-        @test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialArray.*)"] restore(tf_1, circulant)
+        @test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialArray.*)"] transfer(tf_1, C_4D)
+        @test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialArray.*)"] restore(tf_1, C_4D)
 
         struct LTF_1 <: TF.LinearTransferFunction end
         ltf_1 = LTF_1()
-        @test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.conv(ltf_1, circulant)
-        @test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.deconv(ltf_1, circulant)
+        @test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.conv(ltf_1, C_4D)
+        @test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.deconv(ltf_1, C_4D)
 
         struct PSF_1 <: TF.PointSpreadFunction end
         psf_1 = PSF_1()

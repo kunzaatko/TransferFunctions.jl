@@ -7,7 +7,7 @@ CurrentModule = TransferFunctions
 ## General Storage Arrays
 
 ```@docs; canonical=false
-OuterInnerArray
+Flattened
 ```
 
 A container array that is used in the implementation of other array types that holds some dimensions in an inner array

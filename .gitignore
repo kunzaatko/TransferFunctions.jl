@@ -28,8 +28,6 @@ src/models/Fourier_transform_Born_Wolf.png
 Manifest*.toml
 conv2matrix.m
 benchmark/archive/
-benchmark/benchmarks.json
-benchmark/params.json
 src/psf/resources/
 fftconv2matrix.m
 data/

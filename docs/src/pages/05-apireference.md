@@ -11,7 +11,7 @@ FrequencyFreeUnits
 
 # Array Types
 ```@docs
-OuterInnerArray
+Flattened
 CirculantTensor
 
 FilteringMatrix
