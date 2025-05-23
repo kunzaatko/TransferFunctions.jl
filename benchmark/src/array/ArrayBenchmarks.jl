@@ -1,6 +1,6 @@
 module ArrayBenchmarks
 using TransferFunctions
-using TransferFunctions: FilteringMatrix, CirculantTensor, OuterInnerArray
+using TransferFunctions: FilteringMatrix, CirculantTensor
 
 using ImageFiltering: ImageFiltering as IF
 
@@ -38,8 +38,8 @@ for d in (1, 2, 3)
     for Asize in dim_sizes[d][:Asize]
         for Ksize in dim_sizes[d][:Ksize]
             for (ptag, p) in [("inner", (x, A, K) -> :($x($A, $K))), ("padded", (x, A, K) -> :($x($A, $K, "replicate")))]
-                for t in [CirculantTensor, FilteringMatrix]
-                    g[string(t), "construction", "$(d)D", "K_$(size_str(Ksize)):A_$(size_str(Asize))", ptag] = @benchmarkable $p($t, A, K) setup = begin
+                for (t, tn) in [(circulant, "CirculantTensor"), (FilteringMatrix, "FilteringMatrix")]
+                    g[tn, "construction", "$(d)D", "K_$(size_str(Ksize)):A_$(size_str(Asize))", ptag] = @benchmarkable $p($t, A, K) setup = begin
                         A = $samerand($(Asize)...)
                         K = $centered_monotone_kernel($(Ksize)...)
                     end
@@ -51,10 +51,10 @@ for d in (1, 2, 3)
                     end setup = begin
                         A = $samerand($(Asize)...)
                         K = $centered_monotone_kernel($(Ksize)...)
-                        CT = eval($p($CirculantTensor, A, K))
+                        CT = eval($p($circulant, A, K))
                     end
                     g["FilteringMatrix", "operations", "$(d)D", "matmul", "FM*K", "K_$(size_str(Ksize)):A_$(size_str(Asize))", ptag] = @benchmarkable begin
-                        FM * K[:]
+                        OAs.no_offset_view(FM) * OAs.no_offset_view(K)[:]
                     end setup = begin
                         A = $samerand($(Asize)...)
                         K = $centered_monotone_kernel($(Ksize)...)
@@ -63,7 +63,7 @@ for d in (1, 2, 3)
                 end
                 if (prod(Ksize) * prod(Asize))^2 <= 1e10
                     g["FilteringMatrix", "operations", "$(d)D", "matmul", "FM'*FM", "K_$(size_str(Ksize)):A_$(size_str(Asize))", ptag] = @benchmarkable begin
-                        FM' * FM
+                        OAs.no_offset_view(FM)' * OAs.no_offset_view(FM)
                     end setup = begin
                         A = $samerand($(Asize)...)
                         K = $centered_monotone_kernel($(Ksize)...)

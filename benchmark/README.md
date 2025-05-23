@@ -48,7 +48,8 @@ TransferFunctionsBenchmarks.loadall!()
 TransferFunctionsBenchmarks.run!(TransferFunctionsBenchmarks.SUITE[@tagged "matmul"])
 ```
 
-If you already have benchmarks saved from previous runs, you can analyse the results and compare them with the current.
+If you already have benchmarks saved from previous runs, you can analyse the results and compare them with the current
+run.
 
 ### Archiving and Managing Benchmark Results
 
@@ -88,7 +89,7 @@ TransferFunctionsBenchmarks.run!()
 
 ### Running with Tag Filters
 
-You can use BenchmarkTools tag filtering to run specific benchmarks:
+You can use the `BenchmarkTools` tag filtering to run specific benchmarks:
 
 ```julia
 using BenchmarkTools
@@ -109,16 +110,19 @@ TransferFunctionsBenchmarks.run!(TransferFunctionsBenchmarks.SUITE[@tagged "2D"]
 After running benchmarks, you can compare them to previously saved results:
 
 ```julia
+using BenchmarkTools
+
 # Compare new benchmarks to previously saved ones
 judgement = TransferFunctionsBenchmarks.compare()
 
 regs = regressions(judgement)
-pairs = leaves(regs) # an array of (ID, `TrialJudgement`) pairs
+pairs = BenchmarkTools.leaves(regs) # an array of (ID, `TrialJudgement`) pairs
 
 imps = improvements(judgement)
 ```
 
-The `compare` function accepts a heuristic function that's applied to benchmark results (default is `minimum`). You can also use `median` or other BenchmarkTools statistics:
+The `compare` function accepts a heuristic function that's applied to benchmark results (default is `minimum`). You can
+also use `median` or other BenchmarkTools statistics:
 
 ```julia
 # Compare using median instead of minimum
