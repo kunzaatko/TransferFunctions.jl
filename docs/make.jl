@@ -14,7 +14,6 @@ DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
 
 bib = CitationBibliography(
     joinpath(@__DIR__, "src", "refs.bib");
-    # style=:authoryear
 )
 
 makedocs(;
@@ -44,8 +43,7 @@ makedocs(;
             "Bibliography" => "pages/06-bibliography.md"
         ]],
     plugins=[bib, links],
-    # NOTE: doctesting is done in the `runtests.jl` so it is not necessary to do here
-    doctest=false
+    doctest=false # tests run in `test/runtests.jl`
 )
 
 deploydocs(;
