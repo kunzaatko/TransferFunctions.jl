@@ -4,3 +4,6 @@ DocumenterCitations = "daee34ce-89f3-4625-b898-19384cb65244"
 DocumenterInterLinks = "d12716ef-a0f6-4df4-a9f1-a5a34e75c656"
 TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
 TransferFunctions = "ea859a41-d6bf-4726-8e40-524191381158"
+
+[sources]
+TransferFunctions = {path = ".."}
