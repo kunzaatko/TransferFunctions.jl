@@ -32,6 +32,10 @@ abstract type ApodizationFunction end
 Broadcast.broadcastable(a::ApodizationFunction) = Ref(a)
 apodization(apo::ApodizationFunction, x::Real, halfwidth::Int) = apodization(apo, x / halfwidth)
 
+
+# NOTE:  <17-05-25> 
+# TODO: Same thing is done in the `slicearray.jl` `eachslice` function definition in https://github.com/JuliaLang/julia/blob/de090a92b3d564179d1fdeed7455d91c356accfb/base/slicearray.jl?plain=1#L48-L53. Use the same method. <17-05-25>
+
 check_dims_unique(dims::Dims) = allunique(dims) || throw(ArgumentError("Dimensions in `dims` must be unique. Got `dims=$dims`."))
 check_dims_bounded(A::AbstractArray{<:Any,N}, dims::Dims{M}) where {N,M} = M <= N && all(i -> i <= N, dims) || throw(DimensionMismatch("Dimensions in `dims` must be bounded `ndims(A)=$(ndims(A))`. Got `dims=$dims`."))
 

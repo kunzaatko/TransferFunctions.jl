@@ -96,6 +96,10 @@ Base.axes(A::CirculantTensor, ind...) = axes(parent(A), ind...)
 Base.similar(A::CirculantTensor, eltype::Type, dims::Dims) = similar(parent(A), eltype, dims)
 
 # TODO: Create a BlockMatrix interface in for the FilteringMatrix <22-05-25> 
+# IDEA!: An implementation of the BlockArray interface is only when the array has a certain structure size and a border.
+# But there could be a type that envelopes the array of any size in the size desired for the full block structure which
+# can use the numerical optimizations that lead from use of FFT in the matrix multiplication. A function could be used
+# to convert the enveloped and the normal simple Array interface version.
 # TODO: Decide what to do with the indices of the array. They will not be linearly spaced if it should make sense.
 # Or it could be documented that the indices are not reflecting the actual indices of the reference array. <24-04-25> 
 """
