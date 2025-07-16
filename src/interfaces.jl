@@ -3,7 +3,9 @@
 # TODO: Add support for adding documentation to the interface <25-04-25> 
 # TODO: Support giving an output type to the interface function i.e. f(a::Abstract, b::ConcreteIn)::ConcreteOut should work <24-04-25> 
 # TODO: Support only indicating the interface type i.e. f(::Abstract, b::ConcreteIn) should work <24-04-25> 
-# TODO: Support parametric types i.e. f(::Abstract{A}, b::ConcreteIn{B}) should work <24-04-25> 
+# TODO: Add an error when the user does not supply the identifier of the first argument is f(::Abstract, ::Concrete) gives  a LoadError 
+# │    LoadError: BoundsError: attempt to access 1-element Vector{Any} at index [2] 
+# instead of some useful error message <10-06-25> 
 macro require_interface(ex)
     if ex.head == :(=) || ex.head == Symbol("function")
         signature = ex.args[1]
