@@ -8,8 +8,7 @@ links = InterLinks(
 )
 
 DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
-        using TransferFunctions;
-        using TestImages
+        include(joinpath(@__DIR__, "../test", "doctestsetup.jl"))
     ); recursive=true)
 
 bib = CitationBibliography(
