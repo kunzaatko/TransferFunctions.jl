@@ -12,7 +12,9 @@ FrequencyFreeUnits
 # Array Types
 ```@docs
 Flattened
+flatten
 CirculantTensor
+circulant
 
 FilteringMatrix
 SampledArray
@@ -70,8 +72,8 @@ fit
 # Estimation
 ```@docs
 Estimation.bead
+Estimation.LeastSquares
 ```
-
 
 # Apodization
 

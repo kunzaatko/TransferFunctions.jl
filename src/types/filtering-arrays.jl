@@ -18,9 +18,9 @@ coordinates `ct.kern`.
 A correlation of array `A` with the kernel `K`can be obtained by outer tensor contraction over the tail `M` dimensions
 of the `circulant(A,K)` with `K`.
 
-[`parent(ct::CirculantTensor)`](@ref) will return the [`Flattened`](@ref) array of views inside of `A`.
+[`parent(ct::CirculantTensor)`](@ref CirculantTensor) will return the [`Flattened`](@ref) array of views inside of `A`.
 
-See also [`FilteringMatrix`](@ref), [`imfilter`](@extref), [`circulant`](@ref)
+See also [`FilteringMatrix`](@ref), [`imfilter`](@extref `ImageFiltering.imfilter`), [`circulant`](@ref)
 """
 struct CirculantTensor{P,M,AA,T,N} <: AbstractArray{T,N}
     parent::P 
@@ -39,6 +39,10 @@ end
 
 @reexport using ImageFiltering: reflect # NOTE: For convolution instead of correlation <24-04-25> 
 
+# TODO: Complete the docs <16-07-25> 
+"""
+    circulant(A, kern, border)
+"""
 function circulant(A::AbstractArray{<:Any, M}, KI::Indices{M}) where {M}
     AI = interior(axes(A), KI)
     any(iszero, length(AI)) && throw(DimensionMismatch("In constructor `CirculantTensor(<:AbstractArray, ::Indices)` the array is not large enough for the kernel. Got interior of $AI.")) # TODO: Test

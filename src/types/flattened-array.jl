@@ -11,12 +11,12 @@ An `N`-dimensional `AbstractArray` stored as an `M`-dimensional 'outer' parent a
 It should be constructed by [`flatten`](@ref).
 
 The constructor ensures the inner arrays have the same axes. In a sense, this can be thought as the inverse of
-[`Slices`](@extref) from `Base`, which allows you to view a single array as multiple arrays. `Flattened` lets you see
+[`Slices`](@extref `Base.Slices`) from `Base`, which allows you to view a single array as multiple arrays. `Flattened` lets you see
 multiple arrays that are nested in one container array as a single flat array.
 
-[`parent(f::Flattened)`](@ref) will return the nested parent array.
+[`parent(f::Flattened)`](@ref Flattened) will return the nested parent array.
 
-See also [`Slices`](@extref Julia :jl:type:`Base.Slices`)
+See also [`Slices`](@extref `Base.Slices`)
 
 # Fields
 `outermap::OM` and `innermap::IM` are `M` and `K` integer long tuples respectively of the dimensions that the outer and
@@ -74,7 +74,7 @@ Create a [`Flattened`](@ref) object that is a flat array of view of the nested a
 spanning `outer` dimensions of the resulting array and the dimensions of the elements of `A` spanning `inner` dimensions
 of the resulting array.
 
-See also [`eachslice`](@extref)
+See also [`eachslice`](@extref Base.eachslice)
 
 # Examples
 ```jldoctest
