@@ -28,12 +28,10 @@ ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-MakieMaestro = "c922e6f1-a74a-406e-9215-09b2647b2648"
 
 [extensions]
 DimensionalDataExt = "DimensionalData"
 MakieExt = "Makie"
-MakieMaestroExt = ["MakieMaestro", "ColorSchemes"]
 
 [compat]
 BlockArrays = "1.5.0"
@@ -50,7 +48,6 @@ IntervalSets = "^0.7"
 LazyGrids = "0.4, 0.5, 1"
 LinearAlgebra = "^1"
 Makie = "^0.22, ^0.23, ^0.24"
-MakieMaestro = "^0.2,^0.3"
 OffsetArrays = "^1"
 Reexport = "^1"
 Roots = "^2"
