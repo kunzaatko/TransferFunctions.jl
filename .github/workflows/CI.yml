@@ -83,9 +83,9 @@ jobs:
       statuses: write
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
-        with:
-          version: '1'
+      - name: Setup docs julia project
+        run: >
+            DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' -- julia --project=docs --color=yes --eval "using Pkg; Pkg.develop(PackageSpec(path=abspath(\".\"))); Pkg.instantiate()"; # NOTE: compilation of Makie also needs a screen 
       - uses: julia-actions/cache@v2
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
@@ -94,7 +94,9 @@ jobs:
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - uses: julia-actions/julia-buildpkg@latest
-      - uses: julia-actions/julia-docdeploy@v1
+      - name: Build and deploy docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+        run: >
+            cd docs;
+            DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' -- julia --project --color=yes make.jl # NOTE: showing figures needs a screen
