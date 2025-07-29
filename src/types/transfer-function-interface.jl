@@ -1,9 +1,11 @@
+using InterfaceFunctions
+
 """
     TransferFunction
 """ # TODO: Docs <24-04-25> 
 abstract type TransferFunction end
-@require_interface transfer(t::TransferFunction, ::SpatialArray{<:Real,2})
-@require_interface restore(t::TransferFunction, ::SpatialArray{<:Real,2})
+@interface transfer(t::TransferFunction, ::SpatialArray{<:Real,2})
+@interface restore(t::TransferFunction, ::SpatialArray{<:Real,2})
 
 # NOTE: Taken from Distributions.jl <kunzaatko> 
 for func in (:(==), :isequal, :isapprox)

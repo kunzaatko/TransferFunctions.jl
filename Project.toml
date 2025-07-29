@@ -10,6 +10,7 @@ FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
+InterfaceFunctions = "9f9138d1-22ea-4a5b-8917-3b6286796293"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
 LazyGrids = "7031d0ef-c40d-4431-b2f8-61a8d2f650db"
@@ -28,6 +29,9 @@ ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+
+[sources]
+InterfaceFunctions = {path = "/home/kunzaatko/Dev/julia/InterfaceFunctions.jl/"}
 
 [extensions]
 DimensionalDataExt = "DimensionalData"

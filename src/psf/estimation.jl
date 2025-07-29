@@ -1,12 +1,13 @@
 module Estimation
-using TransferFunctions: @require_interface, Size, FilteringMatrix, aroundorigin, ModelPSF, TransferFunction, PSFArray
+using InterfaceFunctions
+using TransferFunctions: Size, FilteringMatrix, aroundorigin, ModelPSF, TransferFunction, PSFArray
 include("estimation/beads-acquisition.jl")
 
 abstract type EstimationAlgorithm{H<:TransferFunction} end
 abstract type FromGroundTruth{H<:TransferFunction} <: EstimationAlgorithm{H} end
 
 # TODO: Add subtypes and output type from estimation to the required interface <06-05-25> 
-@require_interface estimate(model::Estimation.FromGroundTruth, raw::AbstractArray, gt::AbstractArray)
+@interface estimate(model::Estimation.FromGroundTruth, raw::AbstractArray, gt::AbstractArray)
 
 # TODO: Should not hold the size but instead the indices that are used for the construction of the `FilteringMatrix` <05-05-25> 
 """

@@ -1,3 +1,5 @@
+using InterfaceFunctions
+
 """
     LinearTransferFunction <: TransferFunction
 """ # TODO: Docs <24-04-25> 
@@ -5,11 +7,11 @@ abstract type LinearTransferFunction <: TransferFunction end
 """
     conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 """ # TODO: Docs <24-04-25> 
-@require_interface conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
+@interface conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 """
     deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 """ # TODO: Docs <24-04-25> 
-@require_interface deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
+@interface deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
 transfer(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = conv(t, img)
 restore(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = deconv(t, img)
 

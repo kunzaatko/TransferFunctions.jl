@@ -1,8 +1,10 @@
+using InterfaceFunctions
+
 abstract type ExtensionMethod end
-@require_interface extend(m::ExtensionMethod, ::Coordinate{2})
+@interface extend(m::ExtensionMethod, ::Coordinate{2})
 
 abstract type InterpolateExtrapolate end
-@require_interface extend(m::InterpolateExtrapolate, ::Coordinate{2})
-@require_interface inconvexhull(m::InterpolateExtrapolate, ::Coordinate{2})
-@require_interface interpolate(m::InterpolateExtrapolate, ::Coordinate{2})
-@require_interface extrapolate(m::InterpolateExtrapolate, ::Coordinate{2})
+@interface extend(m::InterpolateExtrapolate, ::Coordinate{2})
+@interface inconvexhull(m::InterpolateExtrapolate, ::Coordinate{2})
+@interface interpolate(m::InterpolateExtrapolate, ::Coordinate{2})
+@interface extrapolate(m::InterpolateExtrapolate, ::Coordinate{2})

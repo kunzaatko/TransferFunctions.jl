@@ -13,6 +13,7 @@ Apodization.Hann)
 Exports [`taperedges`](@ref), [`apodize`](@ref)
 """
 module Apodization
+using InterfaceFunctions
 using TransferFunctions: Size
 # TODO: Use reinterpret instead of `T.` for the changes of type in the places that it is used. <09-09-24> 
 using ImageFiltering: AbstractBorder, borderinstance, BorderSpecAny, Pad, Fill, Inner
@@ -30,7 +31,7 @@ Abstract type for apodization functions.
 """
 abstract type ApodizationFunction end
 Broadcast.broadcastable(a::ApodizationFunction) = Ref(a)
-apodization(apo::ApodizationFunction, x::Real, halfwidth::Int) = apodization(apo, x / halfwidth)
+@interface apodization(apo::ApodizationFunction, x::Real, halfwidth::Int) = apodization(apo, x / halfwidth)
 
 
 # NOTE:  <17-05-25> 

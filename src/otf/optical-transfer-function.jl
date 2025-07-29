@@ -1,3 +1,5 @@
+using InterfaceFunctions
+
 """
     OpticalTransferFunction <: LinearTransferFunction
 
@@ -13,7 +15,7 @@ deconv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _wiener_decon
 """
     attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency)
 """ # TODO: Docs <24-04-25> 
-@require_interface attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency)
+@interface attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency)
 """
     insupport(otf::OpticalTransferFunction, fx::Frequency, fy::Frequency)
 """ # TODO: Docs <24-04-25> 
@@ -44,7 +46,7 @@ If the pupil function of the system is symmetric, the OTF as well as the PSF are
 `attenuation(model, f) > 0` if `a = 0`.
 """
 abstract type RadialOTF <: OpticalTransferFunction end
-@require_interface attenuation(otf::RadialOTF, ::Frequency)
+@interface attenuation(otf::RadialOTF, ::Frequency)
 attenuation(otf::RadialOTF, fx::Frequency, fy::Frequency) = (@inline; attenuation(otf, hypot(fx, fy)))
 """
     cutoff(::RadialOTF, a=0.0)

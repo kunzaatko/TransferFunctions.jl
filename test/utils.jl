@@ -63,17 +63,3 @@ end
 
     @test OriginAt(CI(2, 2, 2))(Ones(3, 3, 3)) == OA(Ones(3, 3, 3), -2, -2, -2)
 end
-
-@testset "macros" begin
-    @test_throws ["atleast one argument"] @macroexpand TF.@require_interface(function some() end) # No arguments
-    @test_throws ["atleast one argument"] @macroexpand TF.@require_interface(some())              # No arguments
-    @test_throws ["function or a `:call`"] @macroexpand TF.@require_interface(some = 5)           # Not a call
-    @test_throws ["known type"] @macroexpand TF.@require_interface(some(a))                       # No type
-    @test_throws ["must be abstract"] @macroexpand TF.@require_interface(some(a::Float64))        # Concrete type
-
-    @test (@macroexpand TF.@require_interface(some(a::AbstractFloat))).args[2].head == Symbol("function")
-    @test (@macroexpand TF.@require_interface(some(a::AbstractFloat, b::Int))).args[2].head == Symbol("function")
-    @test_broken (@macroexpand TF.@require_interface(some(a::AbstractFloat, b::Int)::Float64)).args[2].head == Symbol("function")
-    @test_broken (@macroexpand TF.@require_interface(some(::AbstractFloat, b::Int))).args[2].head == Symbol("function")
-    @test_broken (@macroexpand TF.@require_interface(some(::AbstractFloat{A}, b::Int) where {A})).args[2].head == Symbol("function")
-end
