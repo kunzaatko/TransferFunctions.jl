@@ -18,7 +18,7 @@ end
 Base.size(a::SampledArray) = (@inline; size(a.parent))
 Base.axes(a::SampledArray) = (@inline; axes(a.parent))
 Base.parent(a::SampledArray) = a.parent
-Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S} = typeof(a)(similar(parent(a), S, dims), a.sampling)
+Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S}  = SampledArray(similar(parent(a), S, dims), a.sampling)
 Base.getindex(a::SampledArray, i) = (@inline; getindex(parent(a), i))
 Base.setindex!(A::SampledArray, v, i::Int) = (@inline; setindex!(parent(A), v, i))
 Base.IndexStyle(::Type{<:SampledArray{T,ST,N,AA}}) where {T,ST,N,AA} = IndexStyle(AA)
