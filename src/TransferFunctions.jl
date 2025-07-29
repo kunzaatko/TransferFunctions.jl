@@ -13,11 +13,12 @@ using Reexport
 
 include("types.jl")
 include("utils.jl")
-include("interfaces.jl")
-include("linear-transfer-functions.jl")
 
 # utils
 include("apodization.jl")
+
+include("interfaces.jl")
+include("linear-transfer-functions.jl")
 
 export restore, transfer
 export SpatialArray, SampledArray

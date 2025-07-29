@@ -1,5 +1,7 @@
 using TransferFunctions
-using Documenter, DocumenterCitations, DocumenterInterLinks
+using Documenter, DocumenterCitations, DocumenterInterLinks, MakieMaestro
+
+MakieMaestro.Themes.width!(20u"cm")
 
 links = InterLinks(
     "Julia" => "https://docs.julialang.org/en/v1/",

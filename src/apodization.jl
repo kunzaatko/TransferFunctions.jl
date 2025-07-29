@@ -57,7 +57,7 @@ two cases, the dimensions are specified by `dims` and by default are taken as th
 `:replicate`, `:circular`, `:symmetric`, `:reflect` or [`Fill(v)`](@extref ImageFiltering
 :jl:type:`ImageFiltering.Fill`).
 
-See also [`BorderArray`](@extref ImageFiltering :std:label:`BorderArray`), [`ApodizationFunction`](@ref)
+See also [`BorderArray`](@extref), [`ApodizationFunction`](@ref)
 """
 taperedges(A::AbstractArray, args...; kwargs...) = taperedges(Cosine(), A, args...; kwargs...)
 taperedges(apo::ApodizationFunction, A::AbstractArray, w::SizedWidthSpec{M}, border="replicate"; dims=Dims(1:M), kwargs...) where {M} = _taperedges(apo, A, w, border, dims; check_bounded=false, check_unique=false, kwargs...)
@@ -317,7 +317,7 @@ function instrument(apo::Hamming, k::Real)
 end
 
 """
-    Nuttall} == SineSum{4,(0.355768, 0.487396, 0.144232, 0.012604)} <: ApodizationFunction
+    Nuttall == SineSum{4,(0.355768, 0.487396, 0.144232, 0.012604)} <: ApodizationFunction
 """
 const Nuttall = SineSum{4,(0.355768, 0.487396, 0.144232, 0.012604)}
 

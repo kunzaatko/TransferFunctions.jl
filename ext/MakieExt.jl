@@ -1,5 +1,8 @@
 module MakieExt
+using TransferFunctions
+using TransferFunctions: Apodization as Apo
 using Makie
-# TODO: Plotting functions for TransferFunction types <01-04-25> 
+
+Makie.convert_arguments(::PointBased, fn::Apo.ApodizationFunction)  = (-1..1,x -> Apo.apodization(fn, x))
 
 end # end module
