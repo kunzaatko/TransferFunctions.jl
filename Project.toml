@@ -1,7 +1,7 @@
 name = "TransferFunctions"
 uuid = "ea859a41-d6bf-4726-8e40-524191381158"
-version = "0.7.0"
 authors = ["Martin Kunz <martinkunz@email.cz> and contributors"]
+version = "0.7.1"
 
 [deps]
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
@@ -50,7 +50,7 @@ IntervalSets = "^0.7"
 LazyGrids = "0.4, 0.5, 1"
 LinearAlgebra = "^1"
 Makie = "^0.22, ^0.23, ^0.24"
-MakieMaestro = "^0.2,^0.3"
+MakieMaestro = "^0.2,^0.3, 0.4"
 OffsetArrays = "^1"
 Reexport = "^1"
 Roots = "^2"
