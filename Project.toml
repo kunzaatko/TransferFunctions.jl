@@ -26,6 +26,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [weakdeps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
+ComputePipeline = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
@@ -35,7 +36,7 @@ InterfaceFunctions = {path = "/home/kunzaatko/Dev/julia/InterfaceFunctions.jl/"}
 
 [extensions]
 DimensionalDataExt = "DimensionalData"
-MakieExt = "Makie"
+MakieExt = ["Makie", "ComputePipeline"]
 
 [compat]
 BlockArrays = "1.5.0"

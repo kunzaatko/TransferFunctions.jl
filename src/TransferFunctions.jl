@@ -20,6 +20,8 @@ include("apodization.jl")
 include("interfaces.jl")
 include("linear-transfer-functions.jl")
 
+include("extensions.jl")
+
 export restore, transfer
 export SpatialArray, SampledArray
 
