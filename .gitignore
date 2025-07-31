@@ -36,3 +36,5 @@ data
 TODO.md
 init-repl.jl
 src/otf/sampled-otf.jl
+logo.xcf
+logo-dark.xcf
