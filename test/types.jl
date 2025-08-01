@@ -1,58 +1,62 @@
-@test TF.SampledArray(Ones(40, 40), (20u"m^-1", 20u"m^-1")) isa TF.SampledArray
-@test SpatialArray(Ones(40, 40), (20u"nm", 20u"nm")) isa SpatialArray
-@test SpatialArray(Ones(40, 40), 20u"nm") isa SpatialArray
-@test_throws DimensionMismatch SpatialArray(Ones(40, 40), (20u"nm", 20u"nm", 20u"nm"))
-@test_throws DimensionMismatch SpatialArray(Ones(40, 40), (20u"nm",))
+@test TF.SampledArray(Ones(10, 10), (20u"m^-1", 20u"m^-1")) isa TF.SampledArray
+@test let s = SpatialArray(Ones(), ())
+    s isa SampledArray && ndims(s) == 0
+end
+@test let sa = TF.SampledArray(Ones(10, 10), 20u"m^-1")
+    sa isa TF.SampledArray && TF.sampling(sa) == (20u"m^-1", 20u"m^-1")
+end
+@test SpatialArray(Ones(10, 10), (20u"nm", 20u"nm")) isa SpatialArray
+@test SpatialArray(Ones(10, 10), (20.0u"nm", 20u"nm")) isa SampledArray{<:Any,typeof(20.0u"nm")} # Mixed types in sampling are promoted
+@test SpatialArray(Ones(10, 10), (20u"nm", 2e-3u"m")) isa SpatialArray # Mixed units are promoted
+@test let s = SpatialArray(Ones(10, 10), 20u"nm")
+    s isa SpatialArray && allequal(TransferFunctions.sampling(s))  # Single sampling is inferred for all dimensions
+end
+@test TransferFunctions.sampling(similar(SpatialArray(Ones(10, 10), (50u"nm", 50u"nm")))) == (50u"nm", 50u"nm") # `similar` preserves sampling
+@test_throws MethodError SpatialArray(Ones(10, 10), (20u"nm", 20u"nm", 20u"nm"))
+@test_throws MethodError SpatialArray(Ones(10, 10), (20u"nm",))
 
 @testset "circulant arrays" begin
     using Base: OneTo
 
     ## Constructors ##
 
-    O = ones(100, 100, 100)
+    O = Ones(100, 100, 100)
 
     @testset "Flattened" begin
         flatten_parent_4d = [view(O, 30:40, 50:60, :), view(O, 20:30, 40:50, :)]
         ## Throws ##
 
-        # Mismatch in inner `ndims`
-        @test_throws MethodError TF.flatten(flatten_parent_4d, inner=(2, 3))
-
-        # inner axes mismatch
-        @test_throws DimensionMismatch TF.flatten([view(O, 30:39, 50:60, :), view(O, 20:30, 40:50, :)], inner=(2, 3, 4))
-
-        # Non existent dimension
-        @test_throws DimensionMismatch TF.flatten(flatten_parent_4d, inner=(2, 3, 5))
+        @test_throws MethodError TF.flatten(flatten_parent_4d, inner=(2, 3)) # Mismatch in inner `ndims`
+        @test_throws DimensionMismatch TF.flatten([view(O, 30:39, 50:60, :), view(O, 20:30, 40:50, :)], inner=(2, 3, 4)) # inner axes length mismatch
+        @test_throws DimensionMismatch TF.flatten(flatten_parent_4d, inner=(2, 3, 5)) # Non existent dimension
 
 
-        ## Construction ##
         @test TF.flatten(flatten_parent_4d, inner=(2, 3, 4)) isa AbstractArray{<:Any,4}
         @test TF.flatten(flatten_parent_4d, outer=(3,), inner=(1, 2, 4)) isa AbstractArray{<:Any,4}
 
-        # Other dim specializations
         @test_broken TF.flatten(flatten_parent_4d, outer=3)
+        @test_broken TF.flatten(flatten_parent_4d, inner=(1, 2, 4)) == TF.flatten(flatten_parent_4d, outer=(3,)) # infer non-default inner, outer from single argument
 
-        # infer non-default inner, outer from single argument
-        @test_broken TF.flatten(flatten_parent_4d, inner=(1, 2, 4)) == TF.flatten(flatten_parent_4d, outer=(3,))
-
-        flatten_parent_3d = [ones(10, 10), zeros(10, 10)]
+        flatten_parent_3d = [Ones(10, 10), Zeros(10, 10)]
 
         ## Methods ##
-        F = TF.flatten(flatten_parent_3d)
-        @test size(F) == (2, 10, 10)
-        @test length(F) == 200
-        @test axes(F) == (OneTo(2), OneTo(10), OneTo(10))
+        @testset let F = TF.flatten(flatten_parent_3d)
+            @test size(F) == (2, 10, 10)
+            @test length(F) == 200
+            @test axes(F) == (OneTo(2), OneTo(10), OneTo(10))
 
-        ## Field correctness ##
-        @test intersect(Set(F.innermap), Set(F.outermap)) |> isempty
-        @test setdiff(Set((F.innermap..., F.outermap...)), Set(1:ndims(F))) |> isempty
+            ## Field correctness ##
+            @test intersect(Set(F.innermap), Set(F.outermap)) |> isempty
+            @test setdiff(Set((F.innermap..., F.outermap...)), Set(1:ndims(F))) |> isempty
 
-        ## Array correctness ##
+            ## Array correctness ##
+            @test stack(flatten_parent_3d; dims=1) == F
+        end
 
-        @test stack(flatten_parent_3d; dims=1) == F
+
     end
 
-    K = OA(zeros(21, 21), -10:10, -10:10)
+    K = OA(zeros(9, 9), -4:4, -4:4)
     K[0, 0] = 0.5
     K[-1, -1] = K[-1, 1] = K[1, -1] = K[1, 1] = 0.5 / 4
 
@@ -63,74 +67,71 @@
         @test circulant(A, (-5:5, -5:3)) isa TF.CirculantTensor{<:Any,2,typeof(A)} # Non-square kernel indices
         @test circulant(A, K) isa TF.CirculantTensor{<:Any,2,typeof(A)}
 
-        @testset "IF.Padded constructors" begin
-            local A = reshape(1:(9*9), 9, 9)
-            local Kinds = (-2:2, -2:2)
-            borders = [
-                ("replicate",
-                    [
-                        1 1 1 10 19;
-                        1 1 1 10 19;
-                        1 1 1 10 19;
-                        2 2 2 11 20;
-                        3 3 3 12 21
-                    ], axes(A)
-                ),
-                ("symmetric",
-                    [
-                        11 2 2 11 20;
-                        10 1 1 10 19;
-                        10 1 1 10 19;
-                        11 2 2 11 20;
-                        12 3 3 12 21
-                    ], axes(A)
-                ),
-                ("circular",
-                    [
-                        71 80 8 17 26;
-                        72 81 9 18 27;
-                        64 73 1 10 19;
-                        65 74 2 11 20;
-                        66 75 3 12 21
-                    ], axes(A)
-                ),
-                ("reflect",
-                    [
-                        21 12 3 12 21;
-                        20 11 2 11 20;
-                        19 10 1 10 19;
-                        20 11 2 11 20;
-                        21 12 3 12 21
-                    ], axes(A)
-                ),
-                (IF.Fill(0.0, (2, 2), (2, 2)),
-                    [
-                        0 0 0 0 0;
-                        0 0 0 0 0;
-                        0 0 1 10 19;
-                        0 0 2 11 20;
-                        0 0 3 12 21
-                    ], axes(A)
-                ),
-                (IF.Fill(0.0),
-                    [
-                        0 0 0 0 0;
-                        0 0 0 0 0;
-                        0 0 1 10 19;
-                        0 0 2 11 20;
-                        0 0 3 12 21
-                    ], axes(A)
-                )
-            ]
-            for (bord, out, a) in borders
-                ct = circulant(A, Kinds, bord)
-                @test ct.interior == a
-                @test OAs.no_offset_view(ct[1, 1, :, :]) == out
-            end
+        local A_9_9 = reshape(1:(9*9), 9, 9)
+        local Kinds = (-2:2, -2:2)
+        @testset "Padded constructors - $bord" for (bord, out) in [
+            ("replicate",
+                [
+                    1 1 1 10 19;
+                    1 1 1 10 19;
+                    1 1 1 10 19;
+                    2 2 2 11 20;
+                    3 3 3 12 21
+                ]
+            ),
+            ("symmetric",
+                [
+                    11 2 2 11 20;
+                    10 1 1 10 19;
+                    10 1 1 10 19;
+                    11 2 2 11 20;
+                    12 3 3 12 21
+                ]
+            ),
+            ("circular",
+                [
+                    71 80 8 17 26;
+                    72 81 9 18 27;
+                    64 73 1 10 19;
+                    65 74 2 11 20;
+                    66 75 3 12 21
+                ]
+            ),
+            ("reflect",
+                [
+                    21 12 3 12 21;
+                    20 11 2 11 20;
+                    19 10 1 10 19;
+                    20 11 2 11 20;
+                    21 12 3 12 21
+                ]
+            ),
+            (IF.Fill(0.0, (2, 2), (2, 2)),
+                [
+                    0 0 0 0 0;
+                    0 0 0 0 0;
+                    0 0 1 10 19;
+                    0 0 2 11 20;
+                    0 0 3 12 21
+                ]
+            ),
+            (IF.Fill(0.0),
+                [
+                    0 0 0 0 0;
+                    0 0 0 0 0;
+                    0 0 1 10 19;
+                    0 0 2 11 20;
+                    0 0 3 12 21
+                ]
+            )
+        ]
+            ct = circulant(A_9_9, Kinds, bord)
+            @test ct.interior == axes(A_9_9)
+            @test OAs.no_offset_view(ct[1, 1, :, :]) == out
         end
 
         # Different eltypes
-        @test eltype(circulant(ones(Int, 30, 30), K)) == Int
+        @test eltype(circulant(Ones(Int, 30, 30), K)) == Int
 
         C_4D = circulant(A, K)
 
@@ -169,12 +170,12 @@
         @test (FM_2D_pad * K_small[:]) isa AbstractVector
         @test length((FM_2D_pad * K_small[:])) == length(A)
 
-        FM_1D = TF.FilteringMatrix(1:90, (-1:1,))
+        FM_1D = TF.FilteringMatrix(1:10, (-1:1,))
         @test axes(FM_1D, 2) == -1:1
         @test_throws ArgumentError (FM_1D * OA(ones(3), -1:1)) # offsets are not supported
         @test_throws ArgumentError (FM_1D * ones(3)) # offsets are not supported
         @test OAs.no_offset_view(FM_1D) * ones(3) isa AbstractVector
-        @test length(OAs.no_offset_view(FM_1D) * ones(3)) == 88
+        @test length(OAs.no_offset_view(FM_1D) * ones(3)) == 8
     end
 
     @testset "Dimensions" begin
@@ -227,15 +228,34 @@
 
     @test OAs.no_offset_view(reshape(FM_2D_2D * K[:], FM_2D_2D.Aaxes)) == A_2D[FM_2D_2D.Aaxes...]
 
-    K_rand = OAs.centered(rand(3, 3))
-    K_rand ./= sum(K_rand)
+    @testset "ImageCore" begin
+        using ImageCore
 
-    img = float.(gray.(TestImages.testimage("mandril_gray")))
+        @testset "Array types compatibility" begin
+            K_rand = OAs.centered(rand(3, 3))
+            K_rand ./= sum(K_rand)
 
-    fm_img = TF.FilteringMatrix(img, K_rand, "replicate")
-    fm_filt = reshape(fm_img * K_rand[:], fm_img.Aaxes)
+            @test begin # Gray image
+                img_gray = TestImages.testimage("mandril_gray")[1:10, 1:10]
 
-    fft_filt = imfilter(img, K_rand)
+                fm_img = TF.FilteringMatrix(img_gray, K_rand, "replicate")
+                fm_filt = reshape(fm_img * K_rand[:], fm_img.Aaxes)
 
-    @test fm_filt == fft_filt
+                fft_filt = imfilter(img_gray, K_rand)
+
+                fm_filt == fft_filt
+            end
+
+            @test begin # RGB image
+                img_rgb = TestImages.testimage("mandril_color")[1:10, 1:10]
+
+                fm_img = TF.FilteringMatrix(img_rgb, K_rand, "replicate")
+                fm_filt = reshape(fm_img * K_rand[:], fm_img.Aaxes)
+
+                fft_filt = imfilter(img_rgb, K_rand)
+
+                fm_filt == fft_filt
+            end
+        end
+    end
 end

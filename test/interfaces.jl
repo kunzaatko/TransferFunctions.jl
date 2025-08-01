@@ -4,13 +4,13 @@ C_4D = TF.SpatialArray(Ones(40, 40), 20u"nm")
 
 struct TF_1 <: TF.TransferFunction end
 tf_1 = TF_1()
-@test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialArray.*)"] transfer(tf_1, C_4D)
-@test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialArray.*)"] restore(tf_1, C_4D)
+@test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialMatrix.*)"] transfer(tf_1, C_4D)
+@test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialMatrix.*)"] restore(tf_1, C_4D)
 
 struct LTF_1 <: TF.LinearTransferFunction end
 ltf_1 = LTF_1()
-@test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.conv(ltf_1, C_4D)
-@test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialArray.*)"] TF.deconv(ltf_1, C_4D)
+@test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialMatrix.*)"] TF.conv(ltf_1, C_4D)
+@test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialMatrix.*)"] TF.deconv(ltf_1, C_4D)
 
 struct PSF_1 <: TF.PointSpreadFunction end
 psf_1 = PSF_1()
