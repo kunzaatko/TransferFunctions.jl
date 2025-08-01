@@ -8,9 +8,10 @@ To create a new Optical transfer function (OTF) `A <: OpticalTransferFunction`, 
 """
 abstract type OpticalTransferFunction <: LinearTransferFunction end
 Broadcast.broadcastable(tf::OpticalTransferFunction) = Ref(tf)
+
 _fft_conv(otf_arr::AbstractArray, img::AbstractArray) = ifft(otf_arr .* fft(img))
+
 conv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _fft_conv(otf(tf, img), img)
-conv(tf::OpticalTransferFunction, img::SpatialArray{<:Gray,2}) = conv(tf, channelview(img))
 deconv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _wiener_deconv(otf(tf, img), img)
 """
     attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency)

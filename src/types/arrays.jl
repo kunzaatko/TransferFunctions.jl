@@ -1,6 +1,5 @@
 using Base: @propagate_inbounds, Indices
-using BlockArrays, ImageFiltering
-using TensorOperations, LinearAlgebra
+using ImageFiltering, TensorOperations, LinearAlgebra
 
 include("sampled-array.jl")
 include("flattened-array.jl")

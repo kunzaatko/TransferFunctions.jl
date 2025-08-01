@@ -172,7 +172,7 @@ end
 
 # FIX: It is not always a block matrix... It has blocks only if the sizes check out. The last block is not guaranteed to
 # be a Toeplitz matrix <05-05-25> 
-BlockArrays.blockaxes(A::FilteringMatrix) = (BlockRange(axes(A.circulant, 1)), BlockRange(axes(A.circulant, 2)))
-Base.getindex(A::FilteringMatrix, I::Block{1}) = error("TODO")
+# BlockArrays.blockaxes(A::FilteringMatrix) = (BlockRange(axes(A.circulant, 1)), BlockRange(axes(A.circulant, 2)))
+# Base.getindex(A::FilteringMatrix, I::Block{1}) = error("TODO")
 
 export circulant

@@ -4,9 +4,7 @@ version = "0.7.0"
 authors = ["Martin Kunz <martinkunz@email.cz> and contributors"]
 
 [deps]
-BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
 InterfaceFunctions = "9f9138d1-22ea-4a5b-8917-3b6286796293"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
@@ -24,7 +22,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 [weakdeps]
 ComputePipeline = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
-Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [sources]
@@ -32,17 +30,15 @@ InterfaceFunctions = {path = "/home/kunzaatko/Dev/julia/InterfaceFunctions.jl/"}
 
 [extensions]
 DimensionalDataExt = "DimensionalData"
+ImageCoreExt = "ImageCore"
 MakieExt = ["Makie", "ComputePipeline"]
 
 [compat]
-BlockArrays = "1.5.0"
-ColorSchemes = "^3"
-ColorTypes = "^0.7,^0.8,^0.9,^0.10,^0.11,^0.12"
 DimensionalData = "^0.29"
-Distributions = "0.25.118"
 FFTW = "^1"
 ImageCore = "0.10.5"
 ImageFiltering = "^0.7"
+InterfaceFunctions = "0.2"
 Interpolations = "0.14, 0.15, 0.16"
 IntervalSets = "^0.7"
 LinearAlgebra = "^1"
