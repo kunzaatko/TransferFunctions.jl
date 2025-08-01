@@ -73,7 +73,7 @@ FWHM
 
 # Non-linear Transfer Functions
 ```@docs
-NonlinearTransferFunction
+NonLinearTransferFunction
 ImpulseResponseMapping
 ```
 
