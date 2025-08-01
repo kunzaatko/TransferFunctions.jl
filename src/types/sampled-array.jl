@@ -31,6 +31,12 @@ Base.setindex!(A::SampledArray, v, i::Int) = (@inline; setindex!(parent(A), v, i
 Base.IndexStyle(::Type{<:SampledArray{T,ST,N,AA}}) where {T,ST,N,AA} = IndexStyle(AA)
 @inline sampling(a::SampledArray) = a.sampling
 
+# FIX: Instead should be `location_bins` which give a vector of rectangles that are the bin location corners of the
+# samples <30-07-25> 
+@inline posgrid(a::SampledArray) = posgrid(size(a), sampling(a); center=(1,1))
+@inline sample_vertices(a::SampledArray) = map(posgrid(a)...) do x,y 
+    (x,y)
+end
 
 """
     SampledMatrix{T, ST} <: AbstractMatrix{T}
