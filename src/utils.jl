@@ -1,7 +1,8 @@
 using TransferFunctions: Length, PixelSize, Coordinate
 using ImageFiltering: padarray
+using Base: OneTo
 @reexport using ImageFiltering: Inner, Pad, Fill
-using SpecialFunctions
+using OffsetArrays
 
 """
     fillsize(Δ::Length, N::Integer) => PixelSize{N}
@@ -97,8 +98,6 @@ aroundorigin(s::Integer, o::Integer=0) = aroundorigin(Base.OneTo(s) .- rounddown
 aroundorigin(s::AbstractUnitRange, o::Integer=0) = s .+ o
 
 # TODO: Use the same calling stack as in the previous methods. <05-05-25> 
-# TODO: Instead of using `ndgrid` here, it should be `inlined` multiplication by `ones` in the size of the required <05-05-25> 
-fftfreqs(sz::Size{2}, Δ::PixelSize{2}) = ndgrid(fftfreq.(sz, 1 ./ Δ)...)
 """
     fftfreqs(sz::Size{2}, Δ::PixelSize{2})
     fftfreqs(sz::Size{2}, Δ::Length)
@@ -124,11 +123,9 @@ julia> y_f
  0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
 ```
 """
+@inline fftfreqs(sz::Size{2}, Δ::PixelSize{2}) = (fftfreq(sz[1], 1 / Δ[1]) * ones(sz[2])', ones(sz[1]) * fftfreq(sz[2], 1 / Δ[2])')
 fftfreqs(sz::Size{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, 2))
 
-posgrid(sz::Size{2}, Δ::PixelSize{2}) = ndgrid(map(sz, Tuple(roundupcenter(sz)), Δ) do len, c, samp
-    (range(1, len) .- c) .* samp
-end...)
 """
     posgrid(sz::Size{2}, Δ::PixelSize{2}; center=roundupcenter(sz))
 Generate a position grid for 2D sampled images with the pixel size `Δ`
@@ -153,10 +150,10 @@ julia> y_p
  -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
 ```
 """
+@inline posgrid(sz::Size{2}, Δ::PixelSize{2}; center=roundupcenter(sz)) = (((OneTo(sz[1]) .- center[1]) * Δ[1]) * ones(sz[2])', ones(sz[1]) * ((OneTo(sz[2]) .- center[2]) * Δ[2])')
 posgrid(sz::Size{2}, Δ::Length) = posgrid(sz, fillsize(Δ, 2))
 
 struct OriginAt{N}
     origin::CartesianIndex{N}
 end
-(oat::OriginAt{N})(x::AbstractArray{<:Any,N}) where {N} = OA.Origin(CartesianIndex{N}(ntuple(_ -> 1, Val(N))) - oat.origin)(x)
-
+(oat::OriginAt{N})(x::AbstractArray{<:Any,N}) where {N} = OffsetArrays.Origin(CartesianIndex{N}(ntuple(_ -> 1, Val(N))) - oat.origin)(x)

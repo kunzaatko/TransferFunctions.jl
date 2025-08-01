@@ -2,9 +2,7 @@
 Package for models, estimation, sampling and deconvolution with microscopy transfer functions.
 """
 module TransferFunctions
-using SpecialFunctions, FillArrays, FFTW, LazyGrids, Interpolations, Roots, IntervalSets, ColorTypes,
-    ImageFiltering, OffsetArrays
-using ImageCore, StaticArraysCore
+using SpecialFunctions, FFTW, Interpolations, Roots, IntervalSets, ImageFiltering, OffsetArrays
 using OffsetArrays: centered, center, no_offset_view
 using OffsetArrays: OffsetArrays as OA
 
