@@ -34,6 +34,7 @@ ImageCoreExt = "ImageCore"
 MakieExt = ["Makie", "ComputePipeline"]
 
 [compat]
+ComputePipeline = "0.1.3"
 DimensionalData = "^0.29"
 FFTW = "^1"
 ImageCore = "0.10.5"
