@@ -67,6 +67,14 @@ GibsonLanni
 psf
 intensity
 fit
+FWHM
+```
+
+
+# Non-linear Transfer Functions
+```@docs
+NonlinearTransferFunction
+ImpulseResponseMapping
 ```
 
 # Estimation
@@ -74,7 +82,6 @@ fit
 Estimation.bead
 Estimation.LeastSquares
 ```
-
 # Apodization
 
 ```@docs

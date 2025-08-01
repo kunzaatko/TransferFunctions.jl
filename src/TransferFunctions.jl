@@ -17,6 +17,7 @@ include("apodization.jl")
 
 include("interfaces.jl")
 include("linear-transfer-functions.jl")
+include("nonlinear-transfer-functions.jl")
 
 include("extensions.jl")
 

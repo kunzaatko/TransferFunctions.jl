@@ -4,9 +4,12 @@ using TransferFunctions.Apodization
 
 """
     PointSpreadFunction <: LinearTransferFunction
+A point spread function is a description of a transfer functions specifying the intensity transfer of a single point
+source in the object plane into a region of the image plane.
 
 # Implementation
-To create a new Point spread function (PSF) `A <: PointSpreadFunction`, you must define the __intensity__ at a given [length](@extref Unitful :std:label:`Length`) coordinate `intensity(psf::A, x::Length, y::Length)`.
+To create a new Point spread function (PSF) `A <: PointSpreadFunction`, you must define the __intensity__ at a given
+[length](@extref Unitful `Length`) coordinate `intensity(psf::A, x::Length, y::Length)`.
 """
 abstract type PointSpreadFunction <: LinearTransferFunction end
 Broadcast.broadcastable(tf::PointSpreadFunction) = Ref(tf)
