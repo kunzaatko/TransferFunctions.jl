@@ -105,13 +105,19 @@ Apodization.Hann
 # Internals
 ## Functions
 ```@docs
+TransferFunctions.roundcenter
 TransferFunctions.roundupcenter
 TransferFunctions.rounddowncenter
 TransferFunctions.exactcenter
 TransferFunctions.aroundorigin
+
 TransferFunctions.contained
 TransferFunctions.interior
-TransferFunctions.@__FUNCTION__
+
+TransferFunctions.fftfreqs
+TransferFunctions.posgrid
+
+TransferFunctions.fillsize
 ```
 
 ## Type Aliases
@@ -119,5 +125,4 @@ TransferFunctions.@__FUNCTION__
 TransferFunctions.Size
 TransferFunctions.Coordinate
 TransferFunctions.PixelSize
-TransferFunctions.SBitVector
 ```
