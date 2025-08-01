@@ -6,7 +6,6 @@ using ImageFiltering: ImageFiltering as IF
 
 using OffsetArrays
 using OffsetArrays: OffsetArrays as OAs
-using OffsetArrays: OffsetArray as OA
 
 include(joinpath(dirname(@__FILE__), "..", "utils", "RandUtils.jl"))
 

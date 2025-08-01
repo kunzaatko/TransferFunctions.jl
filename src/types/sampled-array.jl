@@ -1,7 +1,12 @@
+using Base: CartesianIndices
+# TODO: This should instead be defined in some package like MicroscopyCore.jl or similar <30-07-25> 
 """
     SampledArray{T,ST,N,AA<:AbstractArray} <: AbstractArray{T,N}
 
-An `N`-dimensional sampled array with data of type `T` sample spacing of type `ST`.
+An `N`-dimensional sampled array with data of type `T` sample __single__ spacing of type `ST`.
+
+The restriction of `ST` being a single type means that `SampledArray` is not able to represent arrays that have
+different dimensions in each direction.
 
 See also [`SampledMatrix`](@ref), [`SampledVector`](@ref), [`SpatialArray`](@ref)
 """

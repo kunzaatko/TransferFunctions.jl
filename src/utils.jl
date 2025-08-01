@@ -3,8 +3,18 @@ using ImageFiltering: padarray
 @reexport using ImageFiltering: Inner, Pad, Fill
 using SpecialFunctions
 
+"""
+    fillsize(Δ::Length, N::Integer) => PixelSize{N}
+Construct a `PixelSize` with the same sampling `Δ` in every direction.
+"""
 fillsize(Δ::Length, n::Integer)::PixelSize = (@inline; ntuple(_ -> Δ, Val(n)))
 
+"""
+    roundcenter(r::RoundingMode, A)
+Calculate the center index of `A` (`::AbstractArray`/`::Indices`/`::Size`/`::AbstractUnitRange`) rounded with the mode `r::RoundingMode`.
+
+See also [`roundupcenter`](@ref), [`rounddowncenter`](@ref), [`exactcenter`](@ref)
+"""
 roundcenter(r::RoundingMode, A::AbstractArray) = roundcenter(r, axes(A))
 roundcenter(r::RoundingMode, inds::Indices) = CartesianIndex(Tuple(roundcenter.(Ref(r), inds)))
 roundcenter(r::RoundingMode, d::Size) = roundcenter(r, map(Base.OneTo, d))
@@ -65,7 +75,7 @@ exactcenter(ind::AbstractUnitRange) = first(ind) + (last(ind) - first(ind)) / 2
     contained(A, loc::Coordinate{N})
 Return `true` if the coordinate `loc` is contained in the axes of array `A`. 
 """
-contained(A::AbstractArray{<:Any,N}, loc::Coordinate{N}) where {N} = all(loc .∈ axes(A))
+contained(A::AbstractArray{<:Any,N}, loc::Coordinate{N, Int}) where {N} = all(loc .∈ axes(A))
 
 """
     interior(inds::Indices{N}, kern::Indices{N})
@@ -89,11 +99,60 @@ aroundorigin(s::AbstractUnitRange, o::Integer=0) = s .+ o
 # TODO: Use the same calling stack as in the previous methods. <05-05-25> 
 # TODO: Instead of using `ndgrid` here, it should be `inlined` multiplication by `ones` in the size of the required <05-05-25> 
 fftfreqs(sz::Size{2}, Δ::PixelSize{2}) = ndgrid(fftfreq.(sz, 1 ./ Δ)...)
+"""
+    fftfreqs(sz::Size{2}, Δ::PixelSize{2})
+    fftfreqs(sz::Size{2}, Δ::Length)
+Generate a frequency grid for 2D FFTs with the pixel size `Δ`
+
+```jldoctest; setup = :(using TransferFunctions: fftfreqs)
+julia> x_f, y_f = fftfreqs((5,5), 50u"nm");
+
+julia> x_f
+5×5 Matrix{Quantity{Float64, 𝐋^-1, Unitful.FreeUnits{(nm^-1,), 𝐋^-1, nothing}}}:
+  0.0 nm^-1     0.0 nm^-1     0.0 nm^-1     0.0 nm^-1     0.0 nm^-1
+  0.004 nm^-1   0.004 nm^-1   0.004 nm^-1   0.004 nm^-1   0.004 nm^-1
+  0.008 nm^-1   0.008 nm^-1   0.008 nm^-1   0.008 nm^-1   0.008 nm^-1
+ -0.008 nm^-1  -0.008 nm^-1  -0.008 nm^-1  -0.008 nm^-1  -0.008 nm^-1
+ -0.004 nm^-1  -0.004 nm^-1  -0.004 nm^-1  -0.004 nm^-1  -0.004 nm^-1
+
+julia> y_f
+5×5 Matrix{Quantity{Float64, 𝐋^-1, Unitful.FreeUnits{(nm^-1,), 𝐋^-1, nothing}}}:
+ 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
+ 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
+ 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
+ 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
+ 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
+```
+"""
 fftfreqs(sz::Size{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, 2))
 
 posgrid(sz::Size{2}, Δ::PixelSize{2}) = ndgrid(map(sz, Tuple(roundupcenter(sz)), Δ) do len, c, samp
     (range(1, len) .- c) .* samp
 end...)
+"""
+    posgrid(sz::Size{2}, Δ::PixelSize{2}; center=roundupcenter(sz))
+Generate a position grid for 2D sampled images with the pixel size `Δ`
+
+```jldoctest; setup = :(using TransferFunctions: posgrid)
+julia> x_p, y_p = posgrid((5, 5), 50u"nm");
+
+julia> x_p
+5×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ -100.0 nm  -100.0 nm  -100.0 nm  -100.0 nm  -100.0 nm
+  -50.0 nm   -50.0 nm   -50.0 nm   -50.0 nm   -50.0 nm
+    0.0 nm     0.0 nm     0.0 nm     0.0 nm     0.0 nm
+   50.0 nm    50.0 nm    50.0 nm    50.0 nm    50.0 nm
+  100.0 nm   100.0 nm   100.0 nm   100.0 nm   100.0 nm
+
+julia> y_p
+5×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
+ -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
+ -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
+ -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
+ -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
+```
+"""
 posgrid(sz::Size{2}, Δ::Length) = posgrid(sz, fillsize(Δ, 2))
 
 struct OriginAt{N}
@@ -101,11 +160,3 @@ struct OriginAt{N}
 end
 (oat::OriginAt{N})(x::AbstractArray{<:Any,N}) where {N} = OA.Origin(CartesianIndex{N}(ntuple(_ -> 1, Val(N))) - oat.origin)(x)
 
-# NOTE: https://github.com/JuliaLang/julia/issues/6733
-"""
-    @__FUNCTION__
-Return current function name. For debugging and error message purposes.
-"""
-macro __FUNCTION__()
-    return :($(esc(Expr(:isdefined, :var"#self#"))) ? $(esc(:var"#self#")) : nothing)
-end

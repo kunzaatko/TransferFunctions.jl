@@ -2,10 +2,19 @@ using InterfaceFunctions
 
 """
     TransferFunction
-""" # TODO: Docs <24-04-25> 
+Super type for all transfer functions
+
+A transfer function in microscopy is an object specifying the response in the image plane to the light coming from the
+object plane.
+There are several characteristics of a transfer functions which can influence the character of the response. Most
+commonly we are concerned with its spatial variance/invariance, i.e. whether the response is dependent of the objects
+position in the object plane, and linearity (which is almost always satisfied).
+
+See also [`LinearTransferFunction`](@ref), [`ImpulseResponseMapping`](@ref)
+"""
 abstract type TransferFunction end
-@interface transfer(t::TransferFunction, ::SpatialArray{<:Real,2})
-@interface restore(t::TransferFunction, ::SpatialArray{<:Real,2})
+@interface transfer(t::TransferFunction, ::SpatialMatrix{<:Real})
+@interface restore(t::TransferFunction, ::SpatialMatrix{<:Real})
 
 # NOTE: Taken from Distributions.jl <kunzaatko> 
 for func in (:(==), :isequal, :isapprox)

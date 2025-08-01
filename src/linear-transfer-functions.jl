@@ -2,20 +2,32 @@ using InterfaceFunctions
 
 """
     LinearTransferFunction <: TransferFunction
-""" # TODO: Docs <24-04-25> 
+A supertype for all linear transfer functions.
+
+A linear transfer function is that which ensures the system to have a linear response. This means that the system obeys
+the superposition principle, i.e. the response to a superposition of inputs is a superposition of the corresponding
+responses, and shift-invariance principle, i.e. the response to a signal is invariant to translation, which can be
+restated as "The single object in the object plane produces the same output in the image plane irrespective of its
+position within the object plane."
+
+See also [`TransferFunctions`](@ref)
+"""
 abstract type LinearTransferFunction <: TransferFunction end
 """
-    conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
-""" # TODO: Docs <24-04-25> 
-@interface conv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
+    conv(ltf::LinearTransferFunction, img::SpatialArray{<:Real,2})
+Transfer the image `img` using the linear transfer function `ltf`, i.e. convolve the image with the equivalent PSF.
 """
-    deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
-""" # TODO: Docs <24-04-25> 
-@interface deconv(t::LinearTransferFunction, ::SpatialArray{<:Real,2})
-transfer(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = conv(t, img)
-restore(t::LinearTransferFunction, img::SpatialArray{<:Real,2}) = deconv(t, img)
+@interface conv(t::LinearTransferFunction, ::SpatialMatrix{<:Real})
 
-function _wiener_deconv(otf_arr::AbstractArray, img::SpatialArray{<:Real,2}; snr=100.0)
+"""
+    deconv(ltf::LinearTransferFunction, img::SpatialArray{<:Real,2})
+Deconvolve the image `img` that was transferred using the linear transfer function `ltf` using the specified algorithm.
+"""
+@interface deconv(t::LinearTransferFunction, ::SpatialMatrix{<:Real})
+transfer(t::LinearTransferFunction, img::SpatialMatrix{<:Real}) = conv(t, img)
+restore(t::LinearTransferFunction, img::SpatialMatrix{<:Real}) = deconv(t, img)
+
+function _wiener_deconv(otf_arr::AbstractArray, img::SpatialMatrix{<:Real}; snr=100.0)
     # Convert blurred image to frequency domain
     F = fft(img)
 
