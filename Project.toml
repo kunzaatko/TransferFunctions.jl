@@ -25,9 +25,6 @@ DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
-[sources]
-InterfaceFunctions = {path = "/home/kunzaatko/Dev/julia/InterfaceFunctions.jl/"}
-
 [extensions]
 DimensionalDataExt = "DimensionalData"
 ImageCoreExt = "ImageCore"
