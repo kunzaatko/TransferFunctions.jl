@@ -13,12 +13,14 @@ See also [`SampledMatrix`](@ref), [`SampledVector`](@ref), [`SpatialArray`](@ref
 struct SampledArray{T,ST,N,AA<:AbstractArray{T}} <: AbstractArray{T,N}
     parent::AA
     sampling::NTuple{N,ST}
-    function SampledArray(parent::AbstractArray{T}, sampling::Tuple{ST,Vararg{ST}}) where {T,ST}
-        ndims(parent) == length(sampling) || throw(DimensionMismatch("In constructor `SampledArray(parent::AbstractArray{T},sampling::NTuple)`. The length of the sampling rate `sampling` does not match the dimensionality of the parent array `parent`, `length(sampling)==$(length(sampling))!=$(ndims(parent))==ndims(parent)`."))
-        return new{T,ST,ndims(parent),typeof(parent)}(parent, sampling)
+    function SampledArray(parent::AbstractArray{T, N}, sampling::NTuple{N, Number}) where {T,N}
+        # PERF: Method defined on `Number` abstract type but it promotes to a single type for 
+        sampling = promote(sampling...)
+        return new{T,eltype(sampling),ndims(parent),typeof(parent)}(parent, sampling)
     end
-    SampledArray(parent::AbstractArray{<:Any,0}, sampling::NTuple{0,<:Any}) = new{eltype(parent),eltype(sampling),0,typeof(parent)}(parent, sampling)
+    SampledArray(parent::AbstractArray{<:Any,0}, sampling::NTuple{0}) = new{eltype(parent),Any,0,typeof(parent)}(parent, sampling)
 end
+SampledArray(parent::AbstractArray{<:Any, N}, sampling::Number) where {N} = SampledArray(parent, ntuple(_ -> sampling, Val(N)))
 
 Base.size(a::SampledArray) = (@inline; size(a.parent))
 Base.axes(a::SampledArray) = (@inline; axes(a.parent))
@@ -27,7 +29,8 @@ Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S}
 Base.getindex(a::SampledArray, i) = (@inline; getindex(parent(a), i))
 Base.setindex!(A::SampledArray, v, i::Int) = (@inline; setindex!(parent(A), v, i))
 Base.IndexStyle(::Type{<:SampledArray{T,ST,N,AA}}) where {T,ST,N,AA} = IndexStyle(AA)
-sampling(a::SampledArray) = a.sampling
+@inline sampling(a::SampledArray) = a.sampling
+
 
 """
     SampledMatrix{T, ST} <: AbstractMatrix{T}
