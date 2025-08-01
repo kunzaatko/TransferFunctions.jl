@@ -1,3 +1,7 @@
+using InterfaceFunctions
+using Roots
+using TransferFunctions.Apodization
+
 """
     PointSpreadFunction <: LinearTransferFunction
 
@@ -9,9 +13,30 @@ Broadcast.broadcastable(tf::PointSpreadFunction) = Ref(tf)
 
 """
     intensity(psf::PointSpreadFunction, ::Length, ::Length)
-
-""" # TODO: Docs <24-04-25> 
+The intensity of a `PSF` at a given location
+"""
 @interface intensity(psf::PointSpreadFunction, ::Length, ::Length)
+@interface Base.maximum(psf::PointSpreadFunction) = intensity(psf, 0u"nm", 0u"nm")
+
+"""
+    FWHM(psf::PointSpreadFunction)
+Find the FWHM of the PSF `psf` in the x and y directions.
+```jldoctest
+julia> tf = TransferFunctions.BornWolf(λ=488u"nm", NA=1.4)
+BornWolf{Float64}(488.0 nm, 1.4, 1.3333333333333333)
+
+julia> TransferFunctions.FWHM(tf)
+((-119.55929936703521 nm, 119.55929936703521 nm), (-119.55929936703521 nm, 119.55929936703521 nm))
+``` 
+"""
+@interface function FWHM(psf::PointSpreadFunction)
+    max = maximum(psf)
+    x_fwhm_right = find_zero(x -> intensity(psf, x * 1u"nm", 0u"nm") - max/2, (0.0, Inf)) * 1u"nm"
+    x_fwhm_left = find_zero(x -> intensity(psf, x * 1u"nm", 0u"nm") - max/2, (-Inf, 0.0)) * 1u"nm"
+    y_fwhm_right = find_zero(y -> intensity(psf, 0u"nm", y * 1u"nm") - max/2, (0.0, Inf)) * 1u"nm"
+    y_fwhm_left = find_zero(y -> intensity(psf, 0u"nm", y * 1u"nm") - max/2, (-Inf, 0.0)) * 1u"nm"
+    return ((x_fwhm_left,x_fwhm_right), (y_fwhm_left, y_fwhm_right))
+end
 
 """
     psf(tf::PointSpreadFunction, Δ::PixelSize{2}, wh::Dims{2})
@@ -24,8 +49,6 @@ psf(
 ) = OriginAt(roundupcenter(wh))(intensity.(tf, posgrid(wh, Δ)...))
 psf(tf::PointSpreadFunction, Δ::Length, wh::Dims{2}) = psf(tf, fillsize(Δ, 2), wh)
 
-conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}) = imfilter(img, reflect(psf(tf, sampling(img), size(img))))
-deconv(tf::PointSpreadFunction, img::SpatialArray) = _wiener_deconv(fft(psf(tf, sampling(img), size(img))), img)
 
 """
     ModelPSF <: PointSpreadFunction 
@@ -42,6 +65,12 @@ fit(::ModelPSF, ::SpatialArray) = error("TODO")
 abstract type RadialPSF <: ModelPSF end
 @interface intensity(psf::RadialPSF, ::Length)
 intensity(psf::RadialPSF, x::Length, y::Length) = intensity(psf, hypot(x, y))
+
+function FWHM(psf::RadialPSF)
+    max = maximum(psf)
+    r_fwhm = find_zero(x -> intensity(psf, x * 1u"nm") - max/2, (0.0, Inf)) * 1u"nm"
+    return ((-r_fwhm, r_fwhm), (-r_fwhm, r_fwhm))
+end
 
 """
     MeasuredPSF <: PointSpreadFunction
