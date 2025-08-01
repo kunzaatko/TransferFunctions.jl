@@ -49,6 +49,35 @@ psf(
 ) = OriginAt(roundupcenter(wh))(intensity.(tf, posgrid(wh, Δ)...))
 psf(tf::PointSpreadFunction, Δ::Length, wh::Dims{2}) = psf(tf, fillsize(Δ, 2), wh)
 
+"""
+    conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, [args...]; <kwargs>)
+Convolve the image `img` with the PSF `tf`. Additional arguments are passed to `imfilter`.
+
+# Keyword arguments
+- `border=nothing` If the border is a `NamedTuple` with the keys `border` of a type compatible with
+[`BorderArray`](@extref) and `apodization` of type [`Apodization.ApodizationFunction`](@ref), the border is applied to the image
+with the size of the FWHM of the PSF in the corresponding directions with the `border` and `apodization` used for edge
+    tapering ([`taperedges`](@ref))) and the full expanded array is returned.
+"""
+function conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, args...; border=nothing)
+    Δ = sampling(img)
+    if border == true
+        border = (border=Fill(zero(eltype(img))), apodization=Apodization.Cosine())
+    end
+    if border !== nothing
+        @assert border isa NamedTuple && [:border, :apodization] ⊆ keys(border) "`border` must be a NamedTuple with keys `border` and `apodization`."
+        border_widths = map(FWHM(tf), sampling(img)) do fwhm, Δ
+            px_widths = fwhm ./ Δ
+            abs.((floor(Int, px_widths[1]),ceil(Int, px_widths[1])))
+        end
+        img = taperedges(border.apodization, img, border_widths, border.border) 
+    end
+    # FIX: I would like the SpatialArray to the be outer wrapper type <30-07-25> 
+    psf_array = psf(tf, Δ, 2 .* size(img))
+    psf_array ./= sum(psf_array)
+    imfilter!(similar(img), img, reflect(psf_array), args...)
+end
+deconv(tf::PointSpreadFunction, img::SpatialArray) = _wiener_deconv(fft(psf(tf, sampling(img), size(img))), img.parent)
 
 """
     ModelPSF <: PointSpreadFunction 
