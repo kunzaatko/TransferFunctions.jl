@@ -5,7 +5,7 @@ MakieMaestro.Themes.width!(20u"cm")
 
 links = InterLinks(
     "Julia" => "https://docs.julialang.org/en/v1/",
-    "Unitful" => "https://painterqubits.github.io/Unitful.jl/stable/",
+    "Unitful" => "https://juliaphysics.github.io/Unitful.jl/stable/",
     "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/"
 )
 
