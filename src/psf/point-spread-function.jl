@@ -12,8 +12,8 @@ abstract type PointSpreadFunction <: LinearTransferFunction end
 Broadcast.broadcastable(tf::PointSpreadFunction) = Ref(tf)
 
 """
-    intensity(psf::PointSpreadFunction, ::Length, ::Length)
-The intensity of a `PSF` at a given location
+    intensity(psf::PointSpreadFunction, x::Length, y::Length)
+The intensity of a `PSF` at a given location.
 """
 @interface intensity(psf::PointSpreadFunction, ::Length, ::Length)
 @interface Base.maximum(psf::PointSpreadFunction) = intensity(psf, 0u"nm", 0u"nm")
