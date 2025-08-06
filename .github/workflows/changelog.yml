@@ -14,7 +14,7 @@ jobs:
         uses: githubocto/repo-visualizer@main
         with:
           excluded_paths: "ignore,.github"
-          output_file: "docs/assets/codediagram.svg"
+          output_file: "docs/src/assets/codediagram.svg"
   generate-changelog:
     name: Generate Changelog
     needs: generate-diagram
@@ -27,7 +27,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Add diagram
-        run: echo '<img src="docs/assets/codediagram.svg">\n'
+        run: echo '<img src="docs/src/assets/codediagram.svg">\n'
       - name: Generate a changelog
         uses: orhun/git-cliff-action@main
         id: git-cliff
