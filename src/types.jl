@@ -1,7 +1,5 @@
 using Base: Indices
 using Unitful: Length
-using ImageFiltering: AbstractBorder, BorderSpecAny
-using ImageFiltering: Inner, Pad, Fill
 
 @derived_dimension Frequency Unitful.𝐋^-1 true
 
@@ -23,4 +21,4 @@ const Coordinate{N,T} = NTuple{N,T} where {T<:Real}
 """
 const Size{N} = NTuple{N,Int}
 
-include("types/arrays.jl")
+include("types/extension-interface.jl")

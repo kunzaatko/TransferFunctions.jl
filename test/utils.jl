@@ -1,5 +1,6 @@
 using TransferFunctions: fillsize, roundupcenter, exactcenter, fftfreqs, posgrid, contained, interior, rounddowncenter, roundcenter, aroundorigin
 using TransferFunctions: PixelSize, Coordinate, Frequency, Length, OriginAt
+using OffsetArrays: OffsetArray as OA
 using Base: CartesianIndex as CI
 
 @testset "types" begin
@@ -31,24 +32,24 @@ end
     @test fftfreqs((11, 11), 31u"nm") == fftfreqs((11, 11), (31u"nm", 31u"nm"))
     @test_throws MethodError fftfreqs((11, 11, 11), (31u"nm", 31u"nm"))
 
-    @test roundcenter(RoundFromZero, Ones(3, 4, 2)) == CI(2, 3, 2)
+    @test roundcenter(RoundFromZero, ones(3, 4, 2)) == CI(2, 3, 2)
 
-    @test roundupcenter(Ones(3, 4, 2)) == CI(2, 3, 2)
-    @test roundupcenter(OA(Ones(3, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
-    @test roundupcenter(OA(Ones(4, 3, 3), -2, -2, -2)) == CI(1, 0, 0)
+    @test roundupcenter(ones(3, 4, 2)) == CI(2, 3, 2)
+    @test roundupcenter(OA(ones(3, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
+    @test roundupcenter(OA(ones(4, 3, 3), -2, -2, -2)) == CI(1, 0, 0)
 
-    @test rounddowncenter(Ones(3, 4, 2)) == CI(2, 2, 1)
-    @test rounddowncenter(OA(Ones(3, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
-    @test rounddowncenter(OA(Ones(4, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
+    @test rounddowncenter(ones(3, 4, 2)) == CI(2, 2, 1)
+    @test rounddowncenter(OA(ones(3, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
+    @test rounddowncenter(OA(ones(4, 3, 3), -2, -2, -2)) == CI(0, 0, 0)
 
-    @test exactcenter(Ones(3, 4, 2)) == (2.0, 2.5, 1.5)
-    @test exactcenter(OA(Ones(3, 3, 3), -2, -2, -2)) == (0.0, 0.0, 0.0)
-    @test exactcenter(OA(Ones(4, 3, 3), -2, -2, -2)) == (0.5, 0.0, 0.0)
+    @test exactcenter(ones(3, 4, 2)) == (2.0, 2.5, 1.5)
+    @test exactcenter(OA(ones(3, 3, 3), -2, -2, -2)) == (0.0, 0.0, 0.0)
+    @test exactcenter(OA(ones(4, 3, 3), -2, -2, -2)) == (0.5, 0.0, 0.0)
 
-    @test contained(Ones(3, 4, 2), (2, 3, 1))
-    @test !contained(Ones(3, 4, 2), (8, 3, 1))
-    @test contained(OA(Ones(3, 3, 3), -2, -2, -2), (-1, 1, 0))
-    @test !contained(OA(Ones(3, 3, 3), -2, -2, -2), (-2, 1, 0))
+    @test contained(ones(3, 4, 2), (2, 3, 1))
+    @test !contained(ones(3, 4, 2), (8, 3, 1))
+    @test contained(OA(ones(3, 3, 3), -2, -2, -2), (-1, 1, 0))
+    @test !contained(OA(ones(3, 3, 3), -2, -2, -2), (-2, 1, 0))
 
     # TODO: Test other types of axes that may occur in an array that I use (OffsetAxes) <05-05-25> 
     @test interior(1:9, -1:5) == 2:4
@@ -61,5 +62,5 @@ end
     @test aroundorigin(-3:4) == -3:4
     @test aroundorigin((3, 3, 3)) == (-1:1, -1:1, -1:1)
 
-    @test OriginAt(CI(2, 2, 2))(Ones(3, 3, 3)) == OA(Ones(3, 3, 3), -2, -2, -2)
+    @test OriginAt(CI(2, 2, 2))(ones(3, 3, 3)) == OA(ones(3, 3, 3), -2, -2, -2)
 end

@@ -1,5 +1,7 @@
 using InterfaceFunctions
 
+abstract type BoundaryCondition end
+
 """
     LinearTransferFunction <: TransferFunction
 A supertype for all linear transfer functions.

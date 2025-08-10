@@ -1,4 +1,4 @@
-A = Ones(1024, 1024)
+A = ones(1024, 1024)
 
 @testset "MeasuredPSF" begin
     # FIX: @test_throws DomainError PSFArray(ones(3, 3, 3), 32u"nm", (4, 1, 1))

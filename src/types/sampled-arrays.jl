@@ -1,4 +1,5 @@
-using Base: CartesianIndices
+using Base: CartesianIndices, @propagate_inbounds
+
 # TODO: This should instead be defined in some package like MicroscopyCore.jl or similar <30-07-25> 
 """
     SampledArray{T,ST,N,AA<:AbstractArray} <: AbstractArray{T,N}
@@ -13,30 +14,31 @@ See also [`SampledMatrix`](@ref), [`SampledVector`](@ref), [`SpatialArray`](@ref
 struct SampledArray{T,ST,N,AA<:AbstractArray{T}} <: AbstractArray{T,N}
     parent::AA
     sampling::NTuple{N,ST}
-    function SampledArray(parent::AbstractArray{T, N}, sampling::NTuple{N, Number}) where {T,N}
-        # PERF: Method defined on `Number` abstract type but it promotes to a single type for 
+    function SampledArray(parent::AbstractArray{T,N}, sampling::NTuple{N,Number}) where {T,N}
+        # PERF: defined on `Number` but it promotes to a concrete type stored in the field
         sampling = promote(sampling...)
         return new{T,eltype(sampling),ndims(parent),typeof(parent)}(parent, sampling)
     end
     SampledArray(parent::AbstractArray{<:Any,0}, sampling::NTuple{0}) = new{eltype(parent),Any,0,typeof(parent)}(parent, sampling)
 end
-SampledArray(parent::AbstractArray{<:Any, N}, sampling::Number) where {N} = SampledArray(parent, ntuple(_ -> sampling, Val(N)))
+SampledArray(parent::AbstractArray{<:Any,N}, sampling::Number) where {N} = SampledArray(parent, ntuple(_ -> sampling, Val(N)))
 
 Base.size(a::SampledArray) = (@inline; size(a.parent))
 Base.axes(a::SampledArray) = (@inline; axes(a.parent))
 Base.parent(a::SampledArray) = a.parent
-Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S}  = SampledArray(similar(parent(a), S, dims), a.sampling)
-Base.getindex(a::SampledArray, i) = (@inline; getindex(parent(a), i))
-Base.setindex!(A::SampledArray, v, i::Int) = (@inline; setindex!(parent(A), v, i))
-Base.IndexStyle(::Type{<:SampledArray{T,ST,N,AA}}) where {T,ST,N,AA} = IndexStyle(AA)
+Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S} = SampledArray(similar(parent(a), S, dims), a.sampling)
+@propagate_inbounds Base.getindex(a::SampledArray, i) = getindex(parent(a), i)
+@propagate_inbounds Base.setindex!(A::SampledArray, v, i) = setindex!(parent(A), v, i)
+Base.IndexStyle(::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = IndexStyle(AA)
 @inline sampling(a::SampledArray) = a.sampling
 
 # FIX: Instead should be `location_bins` which give a vector of rectangles that are the bin location corners of the
 # samples <30-07-25> 
-@inline posgrid(a::SampledArray) = posgrid(size(a), sampling(a); center=(1,1))
-@inline sample_vertices(a::SampledArray) = map(posgrid(a)...) do x,y 
-    (x,y)
-end
+@inline posgrid(a::SampledArray) = posgrid(size(a), sampling(a); center=(1, 1))
+@inline sample_vertices(a::SampledArray) =
+    map(posgrid(a)...) do x, y
+        (x, y)
+    end
 
 """
     SampledMatrix{T, ST} <: AbstractMatrix{T}
@@ -103,3 +105,5 @@ const SpatialVector{T} = SpatialArray{T,1}
 Construct a `SpatialVector` with values `V` and sampling `Δ`.
 """
 SpatialVector(A::AbstractVector, Δ::Length) = SpatialArray(A, (Δ,))
+
+export SpatialArray, SpatialMatrix, SpatialVector, SampledArray

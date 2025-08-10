@@ -2,26 +2,29 @@
 Package for models, estimation, sampling and deconvolution with microscopy transfer functions.
 """
 module TransferFunctions
-using SpecialFunctions, FFTW, Interpolations, Roots, IntervalSets, ImageFiltering, OffsetArrays
+using SpecialFunctions, FFTW, Roots, IntervalSets, ImageFiltering, OffsetArrays
 using OffsetArrays: centered, center, no_offset_view
-using OffsetArrays: OffsetArrays as OA
 
 using Reexport
 @reexport using Unitful
 
 include("types.jl")
-include("utils.jl")
 
-# utils
+include("types/sampled-arrays.jl")
+include("types/circulant-tensors.jl")
+include("types/filtering-matrices.jl")
+include("types/border-arrays.jl")
+
+include("utils.jl")
 include("apodization.jl")
 
-include("interfaces.jl")
+include("types/tapered-arrays.jl")
+
+include("transfer-function-interface.jl")
+
 include("linear-transfer-functions.jl")
 include("nonlinear-transfer-functions.jl")
 
 include("extensions.jl")
-
-export restore, transfer
-export SpatialArray, SampledArray
 
 end

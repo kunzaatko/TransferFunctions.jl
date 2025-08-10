@@ -10,7 +10,7 @@ Base.@kwdef struct CircularPupilOTF{T<:Real} <: RadialOTF
     nᵢ::T = 4 // 3
     curvature::T
     function CircularPupilOTF(λ::Length{A}, NA::B, nᵢ::C, curvature::D) where {A<:Real,B<:Real,C<:Real,D<:Real}
-        one(curvature) >= curvature > zero(curvature) || throw(DomainError(curvature, "Valid domain for curvature is (0,1]"))
+        oneunit(curvature) >= curvature > zero(curvature) || throw(DomainError(curvature, "Valid domain for curvature is (0,1]"))
         λ > zero(λ) || throw(DomainError(λ, "λ (wavelength) > 0"))
         NA > zero(NA) || throw(DomainError(NA, "NA (numerical aperture) > 0"))
         nᵢ > zero(nᵢ) || throw(DomainError(nᵢ, "nᵢ(refractive index of immersion medium) > 0"))
@@ -20,7 +20,7 @@ Base.@kwdef struct CircularPupilOTF{T<:Real} <: RadialOTF
     end
 end
 
-attenuation_normalized(tf::CircularPupilOTF{T}, ν::Number) where {T} = ν >= one(ν) ? zero(T) : (2 / π) * (acos(ν) - ν * sqrt(1 - ν * ν)) * tf.curvature^ν
+attenuation_normalized(tf::CircularPupilOTF{T}, ν::Number) where {T} = ν >= oneunit(ν) ? zero(T) : (2 / π) * (acos(ν) - ν * sqrt(1 - ν * ν)) * tf.curvature^ν
 # TODO: Is the immersion refractive index necessary? <14-07-23> 
 attenuation(tf::CircularPupilOTF, fᵣ::Frequency) = attenuation_normalized(tf, (fᵣ * tf.λ) / (2 * tf.nᵢ * tf.NA))
 

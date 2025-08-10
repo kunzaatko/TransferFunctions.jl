@@ -65,7 +65,7 @@ with the size of the FWHM of the PSF in the corresponding directions with the `b
 function conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, args...; border=nothing)
     Δ = sampling(img)
     if border == true
-        border = (border=Fill(zero(eltype(img))), apodization=Apodization.Cosine())
+        border = (border=:fill, apodization=Apodization.Cosine())
     end
     if border !== nothing
         @assert border isa NamedTuple && [:border, :apodization] ⊆ keys(border) "`border` must be a NamedTuple with keys `border` and `apodization`."

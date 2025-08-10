@@ -1,12 +1,4 @@
-# TODO: Remove all the import/using statements and add them only to the necessary testing modules <04-06-25> 
-
 using TransferFunctions
-using TransferFunctions: TransferFunctions as TF
-using TransferFunctions: Frequency
-using IntervalSets, FourierTools, FFTViews, Distributions, FillArrays, TensorOperations, OffsetArrays, ImageFiltering, ImageCore, TestImages
-using OffsetArrays: OffsetArray as OA
-using OffsetArrays: OffsetArrays as OAs
-using ImageFiltering: ImageFiltering as IF
 using Aqua, Test, Documenter, CompatHelperLocal
 
 const run_all = isempty(ARGS) ? true : false
@@ -82,6 +74,26 @@ end
 
     @cond_testset "types" begin
         include("types.jl")
+    end
+
+    @cond_testset "sampled-arrays" begin
+        include("sampled-arrays.jl")
+    end
+
+    @cond_testset "circulant-tensors" begin
+        include("circulant-tensors.jl")
+    end
+
+    @cond_testset "filtering-matrices" begin
+        include("filtering-matrices.jl")
+    end
+
+    @cond_testset "border-arrays" begin
+        include("border-arrays.jl")
+    end
+
+    @cond_testset "tapered-arrays" begin
+        include("tapered-arrays.jl")
     end
 
     @cond_testset "interfaces" begin

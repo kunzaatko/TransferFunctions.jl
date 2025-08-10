@@ -1,6 +1,6 @@
 using FFTViews, TransferFunctions
 
-A = Ones(1024, 1024)
+A = ones(1024, 1024)
 
 @testset "OTFArray" begin
     # FIX: @test_throws DomainError OTFArray(ones(3, 3, 3), 32u"nm", (4, 1, 1))
@@ -31,36 +31,36 @@ A = Ones(1024, 1024)
 end
 
 @testset "OTF models" begin
-        @testset "$tf" for tf in [CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3)]
-            @testset "`OpticalTransferFunction` interface" begin
-                @test attenuation(tf, 1 // 250u"nm", 1 // 200u"nm") isa AbstractFloat
-                @test attenuation(tf, 250.0u"nm^-1", 200.0u"nm^-1") isa AbstractFloat
+    @testset "$tf" for tf in [CircularPupilOTF(488u"nm", 1.4, 1.0, 0.3)]
+        @testset "`OpticalTransferFunction` interface" begin
+            @test attenuation(tf, 1 // 250u"nm", 1 // 200u"nm") isa AbstractFloat
+            @test attenuation(tf, 250.0u"nm^-1", 200.0u"nm^-1") isa AbstractFloat
 
-                if tf isa TF.RadialOTF
-                    @testset "`symmetry(otf)=Radial` interface" begin
-                        @test attenuation(tf, 1 // 250u"nm") isa Number
+            if tf isa TF.RadialOTF
+                @testset "`symmetry(otf)=Radial` interface" begin
+                    @test attenuation(tf, 1 // 250u"nm") isa Number
 
-                        c = 1 / 200u"nm"
-                        @test attenuation(tf, c, 0u"nm^-1") == attenuation(tf, c) ≈
-                              attenuation(tf, c / sqrt(10), 3c / sqrt(10)) ≈ attenuation(tf, c / sqrt(2), c / sqrt(2))
+                    c = 1 / 200u"nm"
+                    @test attenuation(tf, c, 0u"nm^-1") == attenuation(tf, c) ≈
+                          attenuation(tf, c / sqrt(10), 3c / sqrt(10)) ≈ attenuation(tf, c / sqrt(2), c / sqrt(2))
 
-                        @test cutoff(tf) isa Frequency
-                        @test cutoff(tf, 0.15) isa Frequency
+                    @test cutoff(tf) isa Frequency
+                    @test cutoff(tf, 0.15) isa Frequency
 
-                        ρ_max = cutoff(tf)
-                        @test TF.insupport(tf, ρ_max / sqrt(2) / 2) == true
-                        @test TF.insupport(tf, ρ_max / 2sqrt(2), ρ_max / 2sqrt(2)) == true
-                        @test TF.insupport(tf, ρ_max / sqrt(10), 3ρ_max / 2sqrt(10)) == true
-                    end
+                    ρ_max = cutoff(tf)
+                    @test TF.insupport(tf, ρ_max / sqrt(2) / 2) == true
+                    @test TF.insupport(tf, ρ_max / 2sqrt(2), ρ_max / 2sqrt(2)) == true
+                    @test TF.insupport(tf, ρ_max / sqrt(10), 3ρ_max / 2sqrt(10)) == true
                 end
             end
-            @testset "`LinearTransferFunction` interface" begin
-                A = SpatialArray(rand(Float64, 10, 10), 60u"nm")
+        end
+        @testset "`LinearTransferFunction` interface" begin
+            A = SpatialArray(rand(Float64, 10, 10), 60u"nm")
 
-                @test_broken TF.conv(tf, A) isa SpatialArray
-                @test_broken TF.deconv(tf, TF.conv(tf, A)) isa SpatialArray
-                # FIX: @test attenuation(Float32, tf, 1 // 250u"nm") isa Float32
-                # FIX: @test attenuation(ComplexF32, tf, 1 // 250u"nm") isa ComplexF32
+            @test_broken TF.conv(tf, A) isa SpatialArray
+            @test_broken TF.deconv(tf, TF.conv(tf, A)) isa SpatialArray
+            # FIX: @test attenuation(Float32, tf, 1 // 250u"nm") isa Float32
+            # FIX: @test attenuation(ComplexF32, tf, 1 // 250u"nm") isa ComplexF32
         end
     end
 end

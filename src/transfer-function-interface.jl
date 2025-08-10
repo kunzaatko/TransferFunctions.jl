@@ -45,3 +45,5 @@ function Base.hash(tf::TransferFunction, h::UInt)
 
     return hashed
 end
+
+export transfer, restore
