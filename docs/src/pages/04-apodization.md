@@ -21,6 +21,7 @@ blackman = Apo.Blackman()
 exact_blackman = Apo.ExactBlackman()
 blackman_harris = Apo.BlackmanHarris()
 blackman_nuttall = Apo.BlackmanNuttall()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(blackman;  label="Blackman")
@@ -34,7 +35,8 @@ f
 Connes
 ```
 ```@example apodization
-connes = Apo.Connes()
+connes = Apo.Connes{Float64}()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(connes; label="Connes")
@@ -45,7 +47,8 @@ f
 Cosine
 ```
 ```@example apodization
-cosine = Apo.Cosine()
+cosine = Apo.Cosine{Float64}()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(cosine; label="Cosine")
@@ -57,6 +60,7 @@ Gaussian
 ```
 ```@example apodization
 gaussian = Apo.Gaussian(0.2)
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(gaussian; label="Gaussian")
@@ -67,7 +71,8 @@ f
 Hamming
 ```
 ```@example apodization
-hamming = Apo.Hamming()
+hamming = Apo.Hamming{Float64}()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(hamming; label="Hamming")
@@ -78,7 +83,8 @@ f
 Welch
 ```
 ```@example apodization
-welch = Apo.Welch()
+welch = Apo.Welch{Float64}()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(welch; label="Welch")
@@ -92,7 +98,8 @@ PowerCosine
 Triangular
 ```
 ```@example apodization
-triangular = Apo.Triangular()
+triangular = Apo.Triangular{Float64}()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(triangular; label="Triangular")
@@ -103,7 +110,8 @@ f
 Nuttall
 ```
 ```@example apodization
-nuttall = Apo.Nuttall()
+nuttall = Apo.Nuttall{Float64}()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(nuttall; label="Nuttall")
@@ -117,7 +125,8 @@ SineSum
 FlatTop
 ```
 ```@example apodization 
-flat_top = Apo.FlatTop()
+flat_top = Apo.FlatTop{Float64}()
+nothing # hide
 ```
 ```@makie apodization
 f,a,_ = lines(flat_top; label="FlatTop")
@@ -128,7 +137,8 @@ f
 Hann
 ```
 ```@example apodization
-hann = Apo.Hann()
+hann = Apo.Hann{Float64}()
+nothing # hide
 ```
 ```@makie apodization 
 f,a,_ = lines(hann; label="Hann")

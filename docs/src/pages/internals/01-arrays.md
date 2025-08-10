@@ -4,15 +4,6 @@ CurrentModule = TransferFunctions
 
 # Abstract Array Subtypes
 
-## General Storage Arrays
-
-```@docs; canonical=false
-Flattened
-```
-
-A container array that is used in the implementation of other array types that holds some dimensions in an inner array
-and these 
-
 ## Filtering Arrays
 
 ```@docs; canonical=false

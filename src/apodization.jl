@@ -1,8 +1,7 @@
 # TODO: Rewrite docs <07-08-25> 
 """
     TransferFunctions.Apodization
-Module defining apodization functions of various formats and utility methods that are related to apodization such as
-[`taperedges`](@ref) and [`apodize`](@ref).
+Module defining apodization functions.
 
 Apodization types [`Blackman`](@ref Apodization.Blackman), [`ExactBlackman`](@ref Apodization.ExactBlackman),
 [`Connes`](@ref Apodization.Connes), [`Cosine`](@ref Apodization.Cosine), [`Gaussian`](@ref Apodization.Gaussian),
@@ -11,8 +10,6 @@ Apodization.BlackmanNuttall), [`PowerCosine`](@ref Apodization.PowerCosine), [`T
 Apodization.Triangular), [`Nuttall`](@ref Apodization.Nuttall), [`SineSum`](@ref Apodization.SineSum),
 [`BlackmanHarris`](@ref Apodization.BlackmanHarris), [`FlatTop`](@ref Apodization.FlatTop) and [`Hann`](@ref
 Apodization.Hann)
-
-Exports [`taperedges`](@ref), [`apodize`](@ref)
 """
 module Apodization
 using InterfaceFunctions

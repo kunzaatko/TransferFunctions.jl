@@ -44,6 +44,7 @@ makedocs(;
             "Bibliography" => "pages/06-bibliography.md"
         ]],
     plugins=[bib, links],
+    warnonly=[:missing_docs],
     doctest=false # tests run in `test/runtests.jl`
 )
 

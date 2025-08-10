@@ -11,8 +11,6 @@ FrequencyFreeUnits
 
 # Array Types
 ```@docs
-Flattened
-flatten
 CirculantTensor
 circulant
 
@@ -87,9 +85,6 @@ Estimation.LeastSquares
 ```@docs
 Apodization
 
-Apodization.apodize
-Apodization.taperedges
-
 Apodization.ApodizationFunction
 
 Apodization.Blackman
@@ -132,4 +127,24 @@ TransferFunctions.fillsize
 TransferFunctions.Size
 TransferFunctions.Coordinate
 TransferFunctions.PixelSize
+```
+
+## To Sort
+```@docs
+TransferFunctions.IndependentIndexMapBorder
+TransferFunctions.filtering_matrix
+TransferFunctions.AbstractBorder
+TransferFunctions.IndexMapBorder
+TransferFunctions.Reflect
+TransferFunctions.kern_padding
+TransferFunctions.TaperedArray
+TransferFunctions.Fill
+TransferFunctions.border_array
+TransferFunctions.taperedges
+TransferFunctions.ind2sub
+TransferFunctions.Circular
+TransferFunctions.InvalidBorderExtent
+TransferFunctions.Replicate
+TransferFunctions.Symmetric
+TransferFunctions.BorderArray
 ```

@@ -60,7 +60,7 @@ Convolve the image `img` with the PSF `tf`. Additional arguments are passed to `
 - `border=nothing` If the border is a `NamedTuple` with the keys `border` of a type compatible with
 [`BorderArray`](@extref) and `apodization` of type [`Apodization.ApodizationFunction`](@ref), the border is applied to the image
 with the size of the FWHM of the PSF in the corresponding directions with the `border` and `apodization` used for edge
-    tapering ([`taperedges`](@ref))) and the full expanded array is returned.
+tapering ([`taperedges`](@ref))) and the full expanded array is returned.
 """
 function conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, args...; border=nothing)
     Δ = sampling(img)
