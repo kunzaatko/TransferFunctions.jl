@@ -38,3 +38,6 @@ init-repl.jl
 src/otf/sampled-otf.jl
 logo.xcf
 logo-dark.xcf
+src/types/flattened-arrays.jl
+src/apodize.jl
+test/flattened-arrays.jl
