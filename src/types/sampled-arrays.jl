@@ -42,7 +42,6 @@ Base.IndexStyle(::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = Index
 
 """
     SampledMatrix{T, ST} <: AbstractMatrix{T}
-
 Two-dimensional array with elements of type `T` with a given sample spacing of type `ST`. Alias for
 `SampledArray{T,ST,2}`.
 """
@@ -51,7 +50,6 @@ const SampledMatrix{T,ST} = SampledArray{T,ST,2}
 
 """
     SampledVector{T, ST} <: AbstractVector{T}
-
 One-dimensional array with elements of type `T` with a given sample spacing of type `ST`. Alias for
 `SampledArray{T,ST,1}`.
 """
@@ -59,7 +57,6 @@ const SampledVector{T,ST} = SampledArray{T,ST,1}
 
 """
     SpatialArray{T,N} <: AbstractArray{T,N}
-
 An `N`-dimensional array representing values sampled uniformly in space. Alias for `SampledArray{T,<:Length,N}`.
 
 See also [`SpatialMatrix`](@ref), [`SpatialVector`](@ref), [`SampledArray`](@ref)
@@ -69,7 +66,6 @@ const SpatialArray{T,N} = SampledArray{T,<:Length,N}
 """
     SpatialArray(A, (Δx, Δy,...))
     SpatialArray(A, Δ::Length)
-
 Construct a `SpatialArray` with values `A` and sampling `(Δx, Δy, ...)`. For a single `Δ` uses uniform sampling with
 distance `Δ` in every direction.
 """
@@ -78,7 +74,6 @@ SpatialArray(A::AbstractArray{<:Any,N}, Δ::Length) where {N} = SampledArray(A, 
 
 """
     SpatialMatrix{T} <: AbstractMatrix{T}
-
 Two-dimensional array with elements of type `T` with a given sampling distance in both directions. Alias for
 `SpatialArray{T,2}`.
 """
@@ -87,7 +82,6 @@ const SpatialMatrix{T} = SpatialArray{T,2}
 """
     SpatialMatrix(M, (Δx, Δy))
     SpatialMatrix(M, Δ::Length)
-
 Construct a `SpatialMatrix` with values `M` and sampling `(Δx, Δy)`. For a single `Δ` uses uniform sampling with the
 distance `Δ` in both directions.
 """
@@ -101,7 +95,6 @@ const SpatialVector{T} = SpatialArray{T,1}
 
 """
     SpatialVector(V, Δ::Length)
-
 Construct a `SpatialVector` with values `V` and sampling `Δ`.
 """
 SpatialVector(A::AbstractVector, Δ::Length) = SpatialArray(A, (Δ,))
