@@ -3,7 +3,6 @@ using TransferFunctions: TransferFunctions as TF
 using OffsetArrays: OffsetArrays as OAs
 using OffsetArrays: OffsetArray as OA
 using ImageFiltering: ImageFiltering as IF
-using TensorOperations
 
 K = OA(zeros(9, 9), -4:4, -4:4)
 K[0, 0] = 0.5
