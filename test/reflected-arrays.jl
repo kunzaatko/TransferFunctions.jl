@@ -17,7 +17,7 @@ O_A3 = OAs.OffsetArray(A3, 0:2, -1:1, -2:0)
     @test TF.ReflectedArray(O_A) isa TF.ReflectedMatrix
     @test TF.ReflectedArray(O_A3) isa TF.ReflectedArray{<:Any,3}
     @testset "reflect $(typeof(a))" for a in (V, A, A3, O_V, O_A, O_A3)
-        @test reflect(a) isa TF.ReflectedArray
+        @test TF.reflect(a) isa TF.ReflectedArray
     end
 end
 

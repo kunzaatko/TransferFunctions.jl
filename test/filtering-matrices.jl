@@ -57,6 +57,39 @@ if VERSION <= v"1.12"
     end
 end
 
+@testset "ImageCore" begin
+    using ImageCore, TestImages
+    using OffsetArrays: OffsetArrays as OAs
+    using ImageFiltering
+
+    @testset "Array types compatibility" begin
+        K_rand = OAs.centered(rand(3, 3))
+        K_rand ./= sum(K_rand)
+
+        @test begin # Gray image
+            img_gray = TestImages.testimage("mandril_gray")[1:10, 1:10]
+
+            fm_img = TF.filtering_matrix(img_gray, K_rand, :replicate)
+            fm_filt = reshape(fm_img' * K_rand[:], axes(img_gray))
+
+            fft_filt = imfilter(img_gray, K_rand)
+
+            fm_filt == fft_filt
+        end
+
+        @test begin # RGB image
+            img_rgb = TestImages.testimage("mandril_color")[1:10, 1:10]
+
+            fm_img = TF.filtering_matrix(img_rgb, K_rand, :replicate)
+            fm_filt = reshape(fm_img' * K_rand[:], axes(img_rgb))
+
+            fft_filt = imfilter(img_rgb, K_rand)
+
+            fm_filt == fft_filt
+        end
+    end
+end
+
 # using OffsetArrays: OffsetArray as OA
 # using OffsetArrays: OffsetArrays as OAs
 
@@ -137,34 +170,3 @@ end
 # FM_2D_2D = TF.FilteringMatrix(A_2D, K)
 #
 # @test OAs.no_offset_view(reshape(FM_2D_2D * K[:], FM_2D_2D.Aaxes)) == A_2D[FM_2D_2D.Aaxes...]
-#
-# @testset "ImageCore" begin
-#     using ImageCore
-#
-#     @testset "Array types compatibility" begin
-#         K_rand = OAs.centered(rand(3, 3))
-#         K_rand ./= sum(K_rand)
-#
-#         @test begin # Gray image
-#             img_gray = TestImages.testimage("mandril_gray")[1:10, 1:10]
-#
-#             fm_img = TF.FilteringMatrix(img_gray, K_rand, "replicate")
-#             fm_filt = reshape(fm_img * K_rand[:], fm_img.Aaxes)
-#
-#             fft_filt = imfilter(img_gray, K_rand)
-#
-#             fm_filt == fft_filt
-#         end
-#
-#         @test begin # RGB image
-#             img_rgb = TestImages.testimage("mandril_color")[1:10, 1:10]
-#
-#             fm_img = TF.FilteringMatrix(img_rgb, K_rand, "replicate")
-#             fm_filt = reshape(fm_img * K_rand[:], fm_img.Aaxes)
-#
-#             fft_filt = imfilter(img_rgb, K_rand)
-#
-#             fm_filt == fft_filt
-#         end
-#     end
-# end
