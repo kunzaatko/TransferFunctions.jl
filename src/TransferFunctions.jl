@@ -25,6 +25,6 @@ include("transfer-function-interface.jl")
 include("linear-transfer-functions.jl")
 include("nonlinear-transfer-functions.jl")
 
-include("extensions.jl")
+include("package-extensions.jl")
 
 end
