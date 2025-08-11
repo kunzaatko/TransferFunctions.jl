@@ -18,6 +18,7 @@ include("types/reflected-arrays.jl")
 
 include("utils.jl")
 include("apodization.jl")
+include("filter.jl")
 
 include("types/tapered-arrays.jl")
 

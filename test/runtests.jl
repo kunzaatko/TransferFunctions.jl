@@ -100,6 +100,10 @@ end
         include("reflected-arrays.jl")
     end
 
+    @cond_testset "filter" begin
+        include("filter.jl")
+    end
+
     @cond_testset "interfaces" begin
         include("interfaces.jl")
     end
