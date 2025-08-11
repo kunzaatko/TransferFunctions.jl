@@ -34,11 +34,11 @@ julia> TransferFunctions.FWHM(tf)
 """
 @interface function FWHM(psf::PointSpreadFunction)
     max = maximum(psf)
-    x_fwhm_right = find_zero(x -> intensity(psf, x * 1u"nm", 0u"nm") - max/2, (0.0, Inf)) * 1u"nm"
-    x_fwhm_left = find_zero(x -> intensity(psf, x * 1u"nm", 0u"nm") - max/2, (-Inf, 0.0)) * 1u"nm"
-    y_fwhm_right = find_zero(y -> intensity(psf, 0u"nm", y * 1u"nm") - max/2, (0.0, Inf)) * 1u"nm"
-    y_fwhm_left = find_zero(y -> intensity(psf, 0u"nm", y * 1u"nm") - max/2, (-Inf, 0.0)) * 1u"nm"
-    return ((x_fwhm_left,x_fwhm_right), (y_fwhm_left, y_fwhm_right))
+    x_fwhm_right = find_zero(x -> intensity(psf, x * 1u"nm", 0u"nm") - max / 2, (0.0, Inf)) * 1u"nm"
+    x_fwhm_left = find_zero(x -> intensity(psf, x * 1u"nm", 0u"nm") - max / 2, (-Inf, 0.0)) * 1u"nm"
+    y_fwhm_right = find_zero(y -> intensity(psf, 0u"nm", y * 1u"nm") - max / 2, (0.0, Inf)) * 1u"nm"
+    y_fwhm_left = find_zero(y -> intensity(psf, 0u"nm", y * 1u"nm") - max / 2, (-Inf, 0.0)) * 1u"nm"
+    return ((x_fwhm_left, x_fwhm_right), (y_fwhm_left, y_fwhm_right))
 end
 
 """
@@ -71,9 +71,9 @@ function conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, args...; bor
         @assert border isa NamedTuple && [:border, :apodization] ⊆ keys(border) "`border` must be a NamedTuple with keys `border` and `apodization`."
         border_widths = map(FWHM(tf), sampling(img)) do fwhm, Δ
             px_widths = fwhm ./ Δ
-            abs.((floor(Int, px_widths[1]),ceil(Int, px_widths[1])))
+            abs.((floor(Int, px_widths[1]), ceil(Int, px_widths[1])))
         end
-        img = taperedges(border.apodization, img, border_widths, border.border) 
+        img = taperedges(border.apodization, img, border_widths, border.border)
     end
     # FIX: I would like the SpatialArray to the be outer wrapper type <30-07-25> 
     psf_array = psf(tf, Δ, 2 .* size(img))
@@ -100,7 +100,7 @@ intensity(psf::RadialPSF, x::Length, y::Length) = intensity(psf, hypot(x, y))
 
 function FWHM(psf::RadialPSF)
     max = maximum(psf)
-    r_fwhm = find_zero(x -> intensity(psf, x * 1u"nm") - max/2, (0.0, Inf)) * 1u"nm"
+    r_fwhm = find_zero(x -> intensity(psf, x * 1u"nm") - max / 2, (0.0, Inf)) * 1u"nm"
     return ((-r_fwhm, r_fwhm), (-r_fwhm, r_fwhm))
 end
 
