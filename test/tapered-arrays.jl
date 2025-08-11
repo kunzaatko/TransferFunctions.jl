@@ -43,7 +43,7 @@ end
 if VERSION <= v"1.12"
     @testset "JET: `getindex`" begin
         ba = TF.TaperedArray(A, Apo.Hann(), 2)
-        @test_opt ba[1, 1]
-        @test_opt ba[1, :]
+        @test_opt target_modules = (TransferFunctions,) ba[1, 1]
+        @test_opt target_modules = (TransferFunctions,) ba[1, :]
     end
 end

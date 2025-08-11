@@ -92,7 +92,7 @@ if VERSION <= v"1.12"
         for T1 in [Float32, Float64, ComplexF32]
             for T2 in [Float32, Float64]
                 a = apo{T1}()
-                @test_opt Apo.apodization(a, T2(0.5))
+                @test_opt target_modules = (TransferFunctions,) Apo.apodization(a, T2(0.5))
             end
         end
     end

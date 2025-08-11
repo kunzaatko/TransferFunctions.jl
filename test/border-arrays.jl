@@ -114,8 +114,8 @@ if VERSION <= v"1.12"
     )
         ba = TF.BorderArray(A, border, 2)
 
-        @test_opt getindex(ba, 0, 0) # border
-        @test_opt getindex(ba, 3, 3) # inside
-        @test_opt getindex(ba, 0:2, 0:2) # slices
+        @test_opt target_modules = (TransferFunctions,) getindex(ba, 0, 0) # border
+        @test_opt target_modules = (TransferFunctions,) getindex(ba, 3, 3) # inside
+        @test_opt target_modules = (TransferFunctions,) getindex(ba, 0:2, 0:2) # slices
     end
 end

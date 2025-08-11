@@ -52,6 +52,6 @@ if VERSION <= v"1.12"
     @testset "JET: `getindex` $a" for a in (V, A, A3, O_V, O_A, O_A3)
         ra = TF.ReflectedArray(a)
         I = rand.(axes(ra))
-        @test_opt getindex(ra, I...)
+        @test_opt target_modules = (TransferFunctions,) getindex(ra, I...)
     end
 end
