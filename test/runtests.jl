@@ -96,6 +96,10 @@ end
         include("tapered-arrays.jl")
     end
 
+    @cond_testset "reflected-arrays" begin
+        include("reflected-arrays.jl")
+    end
+
     @cond_testset "interfaces" begin
         include("interfaces.jl")
     end

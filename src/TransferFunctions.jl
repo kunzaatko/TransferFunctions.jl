@@ -14,6 +14,7 @@ include("types/sampled-arrays.jl")
 include("types/circulant-tensors.jl")
 include("types/filtering-matrices.jl")
 include("types/border-arrays.jl")
+include("types/reflected-arrays.jl")
 
 include("utils.jl")
 include("apodization.jl")
