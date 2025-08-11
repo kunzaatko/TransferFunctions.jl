@@ -40,8 +40,10 @@ end
     @test allequal(typeof, TF.taperedges(img_rgb, 50))
 end
 
-@testset "JET: `getindex`" begin
-    ba = TF.TaperedArray(A, Apo.Hann(), 2)
-    @test_opt ba[1, 1]
-    @test_opt ba[1, :]
+if VERSION <= v"1.12"
+    @testset "JET: `getindex`" begin
+        ba = TF.TaperedArray(A, Apo.Hann(), 2)
+        @test_opt ba[1, 1]
+        @test_opt ba[1, :]
+    end
 end

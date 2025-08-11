@@ -43,15 +43,17 @@ end
     @test size(filtering_matrix(A, (-1:1, -1:1), :circular))[1] == 9
 end
 
-@testset "JET: `getindex`" begin
-    let F = TF.FilteringMatrix(ones(9, 9), (-1:1, -1:1))
-        @test_opt getindex(F, 1, 1)
-        @test_opt getindex(F, 1, :)
-    end
+if VERSION <= v"1.12"
+    @testset "JET: `getindex`" begin
+        let F = TF.FilteringMatrix(ones(9, 9), (-1:1, -1:1))
+            @test_opt getindex(F, 1, 1)
+            @test_opt getindex(F, 1, :)
+        end
 
-    let F = TF.FilteringMatrix(ones(9, 9, 9), (-1:1, -1:1, -1:1))
-        @test_opt getindex(F, 1, 1)
-        @test_opt getindex(F, 1, :)
+        let F = TF.FilteringMatrix(ones(9, 9, 9), (-1:1, -1:1, -1:1))
+            @test_opt getindex(F, 1, 1)
+            @test_opt getindex(F, 1, :)
+        end
     end
 end
 

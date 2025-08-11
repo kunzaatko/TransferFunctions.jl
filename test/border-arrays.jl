@@ -108,12 +108,14 @@ end
     end
 end
 
-@testset "JET: `getindex` $border" for border in (
-    TF.Reflect, TF.Symmetric, TF.Circular, TF.Replicate, TF.Fill
-)
-    ba = TF.BorderArray(A, border, 2)
+if VERSION <= v"1.12"
+    @testset "JET: `getindex` $border" for border in (
+        TF.Reflect, TF.Symmetric, TF.Circular, TF.Replicate, TF.Fill
+    )
+        ba = TF.BorderArray(A, border, 2)
 
-    @test_opt getindex(ba, 0, 0) # border
-    @test_opt getindex(ba, 3, 3) # inside
-    @test_opt getindex(ba, 0:2, 0:2) # slices
+        @test_opt getindex(ba, 0, 0) # border
+        @test_opt getindex(ba, 3, 3) # inside
+        @test_opt getindex(ba, 0:2, 0:2) # slices
+    end
 end

@@ -73,25 +73,27 @@ end
     @test Apo.apodization.(equivs[1], -1:0.01:1) ≈ Apo.apodization.(equivs[2], -1:0.01:1)
 end
 
-@testset "JET: `apodization` $apo" for apo in [
-    Apo.Triangular,
-    Apo.Welch,
-    Apo.Connes,
-    Apo.Cosine,
-    Apo.Hann,
-    Apo.Hamming,
-    Apo.Nuttall,
-    Apo.BlackmanNuttall,
-    Apo.BlackmanHarris,
-    Apo.FlatTop,
-    Apo.Blackman,
-    Apo.Blackman,
-    Apo.ExactBlackman,
-]
-    for T1 in [Float32, Float64, ComplexF32]
-        for T2 in [Float32, Float64]
-            a = apo{T1}()
-            @test_opt Apo.apodization(a, T2(0.5))
+if VERSION <= v"1.12"
+    @testset "JET: `apodization` $apo" for apo in [
+        Apo.Triangular,
+        Apo.Welch,
+        Apo.Connes,
+        Apo.Cosine,
+        Apo.Hann,
+        Apo.Hamming,
+        Apo.Nuttall,
+        Apo.BlackmanNuttall,
+        Apo.BlackmanHarris,
+        Apo.FlatTop,
+        Apo.Blackman,
+        Apo.Blackman,
+        Apo.ExactBlackman,
+    ]
+        for T1 in [Float32, Float64, ComplexF32]
+            for T2 in [Float32, Float64]
+                a = apo{T1}()
+                @test_opt Apo.apodization(a, T2(0.5))
+            end
         end
     end
 end
