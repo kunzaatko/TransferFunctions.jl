@@ -57,6 +57,9 @@ function Base.getindex(A::FilteringMatrix, I::Vararg{Int,2})
     return @inbounds A.parent[PI...]
 end
 
+# TODO: Instead of filtering_matrix, should supply `corrmatrix` and `convmatrix` functions for the corresponding
+# operations <12-08-25> 
+
 """
     filtering_matrix(A, K, [border])
 Construct a [`FilteringMatrix`](@ref) of `A` with the kernel `K` such that the `F'*K[:]` produces a filtered vector of `A`.

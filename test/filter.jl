@@ -12,6 +12,14 @@ using JET
     @test_broken fn(ones(2, 2, 2) + im * ones(2, 2, 2), ones(1, 1, 1)) == fill(1 + 1im, (2, 2, 2))
 end
 
+@testset "corr and filtering" begin
+    A = reshape(1:16, (4, 4))
+    A_fm = filtering_matrix(A, (-1:1, -1:1), :circular)
+    fA_fm = reshape(A_fm' * ones(9), size(A))
+    fA_corr = TF.corr(A, OA(ones(3, 3), -1:1, -1:1))
+    @test fA_fm == fA_corr
+end
+
 if VERSION <= v"1.12"
     @testset "JET: filter $(typeof(A)), $(typeof(B))" for (A, B) in map(Tuple, combinations((ones(3, 3), fill(1 + 1im, (3, 3)), OA(ones(3, 3), -1, -1), OA(fill(1 + 1im, (3, 3)), -1, -1)), 2))
         @test_opt target_modules = (TransferFunctions,) TF.conv(A, B)
