@@ -16,3 +16,25 @@ end
     @test_opt target_modules = (TransferFunctions,) TF.conv(A, B)
     @test_opt target_modules = (TransferFunctions,) TF.corr(A, B)
 end
+
+@testset "ImageCore" begin
+    using ImageCore, TestImages
+    using OffsetArrays: OffsetArrays as OAs
+
+    K_rand = OAs.centered(rand(3, 3))
+    K_rand ./= sum(K_rand)
+
+    @testset "Gray image" begin
+        img_gray = TestImages.testimage("mandril_gray")
+
+        @test TF.corr(img_gray, K_rand) isa AbstractMatrix{<:Gray}
+        @test TF.conv(img_gray, K_rand) isa AbstractMatrix{<:Gray}
+    end
+
+    @testset "RGB image" begin
+        img_rgb = TestImages.testimage("mandril_color")
+
+        @test TF.corr(img_rgb, K_rand) isa AbstractMatrix{<:RGB}
+        @test TF.conv(img_rgb, K_rand) isa AbstractMatrix{<:RGB}
+    end
+end
