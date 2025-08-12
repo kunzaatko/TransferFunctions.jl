@@ -34,7 +34,47 @@ Base.IndexStyle(::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = Index
 
 # FIX: Instead should be `location_bins` which give a vector of rectangles that are the bin location corners of the
 # samples <30-07-25> 
+"""
+    posgrid(a::SampledArray)
+Returns the grid of positions of the samples of `a`.
+
+```jldoctest
+julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
+
+julia> xs, ys = TF.posgrid(sa);
+
+julia> xs 
+4×4 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+   0.0 nm    0.0 nm    0.0 nm    0.0 nm
+  61.0 nm   61.0 nm   61.0 nm   61.0 nm
+ 122.0 nm  122.0 nm  122.0 nm  122.0 nm
+ 183.0 nm  183.0 nm  183.0 nm  183.0 nm
+
+julia> ys 
+4×4 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+```
+"""
 @inline posgrid(a::SampledArray) = posgrid(size(a), sampling(a); center=(1, 1))
+
+"""
+    sample_vertices(a::SampledArray)
+Returns the vertices of the samples of `a` as tuples.
+
+```jldoctest
+julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
+
+julia> TF.sample_vertices(sa)
+4×4 Matrix{Tuple{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}:
+ (0.0 nm, 0.0 nm)    (0.0 nm, 61.0 nm)    (0.0 nm, 122.0 nm)    (0.0 nm, 183.0 nm)
+ (61.0 nm, 0.0 nm)   (61.0 nm, 61.0 nm)   (61.0 nm, 122.0 nm)   (61.0 nm, 183.0 nm)
+ (122.0 nm, 0.0 nm)  (122.0 nm, 61.0 nm)  (122.0 nm, 122.0 nm)  (122.0 nm, 183.0 nm)
+ (183.0 nm, 0.0 nm)  (183.0 nm, 61.0 nm)  (183.0 nm, 122.0 nm)  (183.0 nm, 183.0 nm)
+```
+"""
 @inline sample_vertices(a::SampledArray) =
     map(posgrid(a)...) do x, y
         (x, y)
@@ -46,7 +86,6 @@ Two-dimensional array with elements of type `T` with a given sample spacing of t
 `SampledArray{T,ST,2}`.
 """
 const SampledMatrix{T,ST} = SampledArray{T,ST,2}
-
 
 """
     SampledVector{T, ST} <: AbstractVector{T}

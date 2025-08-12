@@ -17,3 +17,6 @@ end
 @test TransferFunctions.sampling(similar(SpatialArray(ones(10, 10), (50u"nm", 50u"nm")))) == (50u"nm", 50u"nm") # `similar` preserves sampling
 @test_throws MethodError SpatialArray(ones(10, 10), (20u"nm", 20u"nm", 20u"nm"))
 @test_throws MethodError SpatialArray(ones(10, 10), (20u"nm",))
+
+@test SpatialMatrix(ones(10, 10), 20u"nm") isa SpatialArray
+@test SpatialVector(ones(10), 20u"nm") isa SpatialArray

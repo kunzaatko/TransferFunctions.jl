@@ -22,7 +22,7 @@ struct CirculantTensor{T,AA,N,KI,II} <: AbstractArray{T,N}
     interior::II
     function CirculantTensor(parent::AbstractArray, kern::Indices)
         I_interior = interior(axes(parent), kern)
-        new{eltype(parent), typeof(parent),2*length(kern),typeof(kern), typeof(I_interior)}(parent,kern,I_interior)
+        new{eltype(parent),typeof(parent),2 * length(kern),typeof(kern),typeof(I_interior)}(parent, kern, I_interior)
     end
 end
 CirculantTensor(A::AbstractArray, kern::AbstractArray) = CirculantTensor(A, axes(kern))
@@ -31,7 +31,7 @@ CirculantTensor(A::AbstractArray, kern::AbstractArray) = CirculantTensor(A, axes
 Base.axes(A::CirculantTensor) = (A.kern..., A.interior...)
 Base.size(A::CirculantTensor) = length.(axes(A))
 
-@propagate_inbounds function Base.getindex(A::CirculantTensor{<:Any,<:Any,N}, I::Vararg{Int,N})  where {N}
+@propagate_inbounds function Base.getindex(A::CirculantTensor{<:Any,<:Any,N}, I::Vararg{Int,N}) where {N}
     @boundscheck checkbounds(A, I...)
     KI, II = Base.split_rest(I, length(A.interior))
     @inbounds A.parent[(KI .+ II)...]
@@ -46,20 +46,26 @@ If border is specified, the array is padded with the strategy [`border`](@ref Ab
 the array `A` is kept in the contraction output.
 
 ```jldoctest
-julia> circulant(reshape(1:25, (5,5)), (-1:1, -1:1));
+julia> circulant(1:9, -1:1)
+3×6 circulant(::UnitRange{Int64}, (Base.OneTo(3),)) with eltype Int64 with indices Base.OneTo(3)×1:6:
+ 2  3  4  5  6  7
+ 3  4  5  6  7  8
+ 4  5  6  7  8  9
 
-julia> circulant(reshape(1:25, (5,5)), OAs.OffsetArray(ones(3,3), -1:1, -1:1));
+julia> circulant(reshape(1:25, (5,5)), (-1:1, -1:1)); # too large to show
 
-julia> c = circulant(reshape(1:25, (5,5)), (-1:1, -1:1), :replicate);
+julia> circulant(reshape(1:25, (5,5)), OAs.OffsetArray(ones(3,3), -1:1, -1:1)); # too large to show
+
+julia> c = circulant(reshape(1:25, (5,5)), (-1:1, -1:1), :replicate); # too large to show
 
 julia> size(c)
 (3, 3, 5, 5)
 ```
 """
-circulant(A::AbstractArray, kern) =  CirculantTensor(A, kern)
+circulant(A::AbstractArray, kern) = CirculantTensor(A, kern)
 function circulant(A::AbstractArray, kern, border)
     padding = kern_padding(kern)
-    PA  = BorderArray(A, border, padding)
+    PA = BorderArray(A, border, padding)
     return CirculantTensor(PA, kern)
 end
 
