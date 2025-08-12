@@ -7,10 +7,10 @@ tf_1 = TF_1()
 @test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialMatrix.*)"] transfer(tf_1, C_4D)
 @test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialMatrix.*)"] restore(tf_1, C_4D)
 
-struct LTF_1 <: TF.LinearTransferFunction end
+struct LTF_1 <: TF.LinearShiftInvariantTransferFunction end
 ltf_1 = LTF_1()
-@test_throws ["does not implement", r"conv(.*::LinearTransferFunction, .*::SpatialMatrix.*)"] TF.conv(ltf_1, C_4D)
-@test_throws ["does not implement", r"deconv(.*::LinearTransferFunction, .*::SpatialMatrix.*)"] TF.deconv(ltf_1, C_4D)
+@test_throws ["does not implement", r"conv(.*::LinearShiftInvariantTransferFunction, .*::SpatialMatrix.*)"] TF.conv(ltf_1, C_4D)
+@test_throws ["does not implement", r"deconv(.*::LinearShiftInvariantTransferFunction, .*::SpatialMatrix.*)"] TF.deconv(ltf_1, C_4D)
 
 struct PSF_1 <: TF.PointSpreadFunction end
 psf_1 = PSF_1()

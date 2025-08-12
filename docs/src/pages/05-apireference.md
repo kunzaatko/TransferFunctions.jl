@@ -30,7 +30,7 @@ TransferFunction
 
 # Linear Transfer Functions
 ```@docs
-LinearTransferFunction
+LinearShiftInvariantTransferFunction
 conv
 deconv
 ```

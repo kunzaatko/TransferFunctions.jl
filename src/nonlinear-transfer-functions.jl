@@ -1,8 +1,8 @@
 """
-    NonLinearTransferFunction <: TransferFunction
+    NonLinearShiftInvariantTransferFunction <: TransferFunction
 A supertype for all non-linear transfer functions.
 
-See also [`TransferFunctions`](@ref), [`LinearTransferFunction`](@ref)
+See also [`TransferFunctions`](@ref), [`LinearShiftInvariantTransferFunction`](@ref)
 """
 abstract type NonLinearTransferFunction <: TransferFunction end
 

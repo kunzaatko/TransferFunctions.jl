@@ -1,12 +1,12 @@
 using InterfaceFunctions
 
 """
-    OpticalTransferFunction <: LinearTransferFunction
+    OpticalTransferFunction <: LinearShiftInvariantTransferFunction
 
 # Implementation
 To create a new Optical transfer function (OTF) `A <: OpticalTransferFunction`, you must define the __attenuation__ at a given [frequency](@ref TransferFunctions.Frequency) coordinate `attenuation(otf::A, kx::Frequency, ky::Frequency)`.
 """
-abstract type OpticalTransferFunction <: LinearTransferFunction end
+abstract type OpticalTransferFunction <: LinearShiftInvariantTransferFunction end
 Broadcast.broadcastable(tf::OpticalTransferFunction) = Ref(tf)
 
 _fft_conv(otf_arr::AbstractArray, img::AbstractArray) = ifft(otf_arr .* fft(img))

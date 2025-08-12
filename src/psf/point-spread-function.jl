@@ -3,7 +3,7 @@ using Roots
 using TransferFunctions.Apodization
 
 """
-    PointSpreadFunction <: LinearTransferFunction
+    PointSpreadFunction <: LinearShiftInvariantTransferFunction
 A point spread function is a description of a transfer functions specifying the intensity transfer of a single point
 source in the object plane into a region of the image plane.
 
@@ -11,7 +11,7 @@ source in the object plane into a region of the image plane.
 To create a new Point spread function (PSF) `A <: PointSpreadFunction`, you must define the __intensity__ at a given
 [length](@extref Unitful `Length`) coordinate `intensity(psf::A, x::Length, y::Length)`.
 """
-abstract type PointSpreadFunction <: LinearTransferFunction end
+abstract type PointSpreadFunction <: LinearShiftInvariantTransferFunction end
 Broadcast.broadcastable(tf::PointSpreadFunction) = Ref(tf)
 
 """
@@ -78,7 +78,7 @@ function conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, args...; bor
     # FIX: I would like the SpatialArray to the be outer wrapper type <30-07-25> 
     psf_array = psf(tf, Δ, 2 .* size(img))
     psf_array ./= sum(psf_array)
-    imfilter!(similar(img), img, reflect(psf_array), args...)
+    return conv(img, psf_array)
 end
 deconv(tf::PointSpreadFunction, img::SpatialArray) = _wiener_deconv(fft(psf(tf, sampling(img), size(img))), img.parent)
 

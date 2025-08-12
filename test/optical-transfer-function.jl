@@ -54,7 +54,7 @@ end
                 end
             end
         end
-        @testset "`LinearTransferFunction` interface" begin
+        @testset "`LinearShiftInvariantTransferFunction` interface" begin
             A = SpatialArray(rand(Float64, 10, 10), 60u"nm")
 
             @test_broken TF.conv(tf, A) isa SpatialArray

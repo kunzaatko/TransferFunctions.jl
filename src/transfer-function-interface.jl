@@ -10,7 +10,7 @@ There are several characteristics of a transfer functions which can influence th
 commonly we are concerned with its spatial variance/invariance, i.e. whether the response is dependent of the objects
 position in the object plane, and linearity (which is almost always satisfied).
 
-See also [`LinearTransferFunction`](@ref), [`ImpulseResponseMapping`](@ref)
+See also [`LinearShiftInvariantTransferFunction`](@ref), [`ImpulseResponseMapping`](@ref)
 """
 abstract type TransferFunction end
 @interface transfer(t::TransferFunction, ::SpatialMatrix{<:Real})

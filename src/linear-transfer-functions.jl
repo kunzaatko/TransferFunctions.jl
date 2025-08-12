@@ -2,8 +2,9 @@ using InterfaceFunctions
 
 abstract type BoundaryCondition end
 
+# FIX: Documentation update the mismatch of Linear and LinearShiftInvariant <12-08-25> 
 """
-    LinearTransferFunction <: TransferFunction
+    LinearShiftInvariantTransferFunction <: TransferFunction
 A supertype for all linear transfer functions.
 
 A linear transfer function is that which ensures the system to have a linear response. This means that the system obeys
@@ -14,20 +15,20 @@ position within the object plane."
 
 See also [`TransferFunctions`](@ref)
 """
-abstract type LinearTransferFunction <: TransferFunction end
+abstract type LinearShiftInvariantTransferFunction <: TransferFunction end
 """
-    conv(ltf::LinearTransferFunction, img::SpatialArray{<:Real,2})
+    conv(ltf::LinearShiftInvariantTransferFunction, img::SpatialArray{<:Real,2})
 Transfer the image `img` using the linear transfer function `ltf`, i.e. convolve the image with the equivalent PSF.
 """
-@interface conv(t::LinearTransferFunction, ::SpatialMatrix{<:Real})
+@interface conv(t::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
 
 """
-    deconv(ltf::LinearTransferFunction, img::SpatialArray{<:Real,2})
+    deconv(ltf::LinearShiftInvariantTransferFunction, img::SpatialArray{<:Real,2})
 Deconvolve the image `img` that was transferred using the linear transfer function `ltf` using the specified algorithm.
 """
-@interface deconv(t::LinearTransferFunction, ::SpatialMatrix{<:Real})
-transfer(t::LinearTransferFunction, img::SpatialMatrix{<:Real}) = conv(t, img)
-restore(t::LinearTransferFunction, img::SpatialMatrix{<:Real}) = deconv(t, img)
+@interface deconv(t::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
+transfer(t::LinearShiftInvariantTransferFunction, img::SpatialMatrix{<:Real}) = conv(t, img)
+restore(t::LinearShiftInvariantTransferFunction, img::SpatialMatrix{<:Real}) = deconv(t, img)
 
 function _wiener_deconv(otf_arr::AbstractArray, img::SpatialMatrix{<:Real}; snr=100.0)
     # Convert blurred image to frequency domain
