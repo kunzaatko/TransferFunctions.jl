@@ -165,5 +165,10 @@ end
 Determine the padding necessary to keep the input array fully contained in the interior of the output when filtered with
 `kern`.
 """
-kern_padding(kern::Indices) = Tuple((max(0, abs(first(k))),max(0, abs(last(k)))) for k in kern)
+function kern_padding(kern::Indices) 
+  if !all(I -> 0 ∈ I, kern)
+    @warn "A kernel not containing the origin may lead to unexpected filtering output sizes"
+  end
+  Tuple((max(0, abs(first(k))),max(0, abs(last(k)))) for k in kern)
+end
 kern_padding(kern::AbstractArray) = kern_padding(axes(kern))
