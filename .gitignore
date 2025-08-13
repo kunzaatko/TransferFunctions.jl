@@ -41,3 +41,4 @@ logo-dark.xcf
 src/types/flattened-arrays.jl
 src/apodize.jl
 test/flattened-arrays.jl
+docs/cached/*
