@@ -69,6 +69,15 @@ function circulant(A::AbstractArray, kern, border)
     return CirculantTensor(PA, kern)
 end
 
+"""
+    contract(F,K)
+Contract the tensor `F` at the first `ndims(K)` dimensions with the kernel `K`
+"""
+contract(F, K) = dropdims(
+    mapslices(F, dims=Dims(1:(ndims(F)-ndims(K)))) do S
+        sum(S .* K)
+    end; dims=Dims(1:(ndims(F)-ndims(K))))
+
 function Base.showarg(io::IO, A::CirculantTensor, toplevel)
     print(io, "circulant(")
     showarg(io, parent(A), false)
