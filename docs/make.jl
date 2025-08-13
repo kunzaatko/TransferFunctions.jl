@@ -1,7 +1,11 @@
 using TransferFunctions
 using Documenter, DocumenterCitations, DocumenterInterLinks, MakieMaestro
 
-MakieMaestro.Themes.width!(20u"cm")
+MakieMaestro.Themes.width!(25u"cm")
+
+makie_doc_blocks = MakieMaestro.MakieDocBlocks(;
+    formats=[:png]
+)
 
 links = InterLinks(
     "Julia" => "https://docs.julialang.org/en/v1/",
@@ -31,17 +35,22 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Manual" => [
-            "pages/01-interface.md",
-            "pages/02-transfer-functions.md",
-            "pages/03-estimation.md",
-            "pages/04-apodization.md"
+            "pages/manual/01-interface.md",
+            "pages/manual/02-transfer-functions.md",
+            "pages/manual/03-estimation.md",
         ],
+        "Array Types" => [
+            "pages/arrays/sampled-arrays.md"
+            "pages/arrays/border-arrays.md"
+            "pages/arrays/tapered-arrays.md"
+            "pages/arrays/circulant-tensors.md"
+            "pages/arrays/filtering-matrices.md"
+            "pages/arrays/reflected-arrays.md"
+        ],
+        "Apodization" => "pages/apodization.md",
         "Reference" => [
-            "Internals" => [
-                "Array types" => "pages/internals/01-arrays.md"
-            ],
-            "API Index" => "pages/05-apireference.md",
-            "Bibliography" => "pages/06-bibliography.md"
+            "API Index" => "pages/apireference.md",
+            "Bibliography" => "pages/bibliography.md"
         ]],
     plugins=[bib, links],
     warnonly=[:missing_docs],
@@ -52,3 +61,10 @@ deploydocs(;
     repo="github.com/kunzaatko/TransferFunctions.jl",
     devbranch="trunk"
 )
+
+if !haskey(ENV, "GITHUB_ACTIONS")
+    build_path = joinpath(@__DIR__, "build")
+    cached_path = joinpath(@__DIR__, "cached")
+    @info "Making cached docs at $cached_path"
+    cp(build_path, cached_path; force=true)
+end

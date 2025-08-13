@@ -9,20 +9,6 @@ FrequencyUnits
 FrequencyFreeUnits
 ```
 
-# Array Types
-```@docs
-CirculantTensor
-circulant
-
-FilteringMatrix
-SampledArray
-SampledMatrix
-SampledVector
-SpatialArray
-SpatialMatrix
-SpatialVector
-```
-
 # Transfer Functions
 ```@docs
 TransferFunction
@@ -75,34 +61,6 @@ NonLinearTransferFunction
 ImpulseResponseMapping
 ```
 
-# Estimation
-```@docs
-Estimation.bead
-Estimation.LeastSquares
-```
-# Apodization
-
-```@docs
-Apodization
-
-Apodization.ApodizationFunction
-
-Apodization.Blackman
-Apodization.ExactBlackman
-Apodization.Connes
-Apodization.Cosine
-Apodization.Gaussian
-Apodization.Hamming
-Apodization.Welch
-Apodization.BlackmanNuttall
-Apodization.PowerCosine
-Apodization.Triangular
-Apodization.Nuttall
-Apodization.SineSum
-Apodization.BlackmanHarris
-Apodization.FlatTop
-Apodization.Hann
-```
 
 # Internals
 ## Functions
@@ -132,19 +90,13 @@ TransferFunctions.PixelSize
 ## To Sort
 ```@docs
 TransferFunctions.IndependentIndexMapBorder
-TransferFunctions.filtering_matrix
-TransferFunctions.AbstractBorder
 TransferFunctions.IndexMapBorder
 TransferFunctions.Reflect
 TransferFunctions.kern_padding
-TransferFunctions.TaperedArray
 TransferFunctions.Fill
-TransferFunctions.border_array
-TransferFunctions.taperedges
 TransferFunctions.ind2sub
 TransferFunctions.Circular
 TransferFunctions.InvalidBorderExtent
 TransferFunctions.Replicate
 TransferFunctions.Symmetric
-TransferFunctions.BorderArray
 ```

@@ -17,7 +17,8 @@ The ground truth must often also be estimated using a model of the acquired scen
 acquisition of sub-diffraction microspheres or polymer fluorescent beads along with a model consisting of the beads
 known dimensions and estimated positions in the scene.
 
-```@docs; canonical=false
+```@docs
 bead
+LeastSquares
 ```
 
