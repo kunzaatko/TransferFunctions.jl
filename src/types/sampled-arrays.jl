@@ -88,11 +88,25 @@ Two-dimensional array with elements of type `T` with a given sample spacing of t
 const SampledMatrix{T,ST} = SampledArray{T,ST,2}
 
 """
+    SampledMatrix(M, (Δx, Δy))
+    SampledMatrix(M, Δ)
+Construct a `SampledMatrix` with values `M` and sampling `(Δx, Δy)`. For a single `Δ` uses uniform sampling with the
+distance `Δ` in both directions.
+"""
+SampledMatrix(A::AbstractMatrix, Δ) = SampledArray(A, Δ)
+
+"""
     SampledVector{T, ST} <: AbstractVector{T}
 One-dimensional array with elements of type `T` with a given sample spacing of type `ST`. Alias for
 `SampledArray{T,ST,1}`.
 """
 const SampledVector{T,ST} = SampledArray{T,ST,1}
+
+"""
+    SampledVector(V, Δ)
+Construct a `SampledVector` with values `V` and sampling `Δ`.
+"""
+SampledVector(A::AbstractVector, Δ::Length) = SampledArray(A, (Δ,))
 
 """
     SpatialArray{T,N} <: AbstractArray{T,N}
