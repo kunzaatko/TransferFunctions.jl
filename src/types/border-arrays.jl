@@ -235,6 +235,7 @@ BorderArray(parent::AbstractArray{S}, border::AbstractBorder{T}, padding) where 
 
 inferpadding(::AbstractArray{<:Any, N}, padding::Int) where {N} = ntuple(_->(padding,padding), N)
 inferpadding(::AbstractArray{<:Any, N}, padding::NTuple{N, Int}) where {N} = Tuple((p,p) for p in padding)
+inferpadding(::AbstractArray{<:Any, N}, inds::Indices{N}) where {N} = map(Base.Fix{1}(extrema), inds)
 
 BorderArray{T}(parent::AbstractArray{T}, border::AbstractBorder{T}, padding) where {T}  = BorderArray{T}(parent, border, inferpadding(parent, padding))
 
