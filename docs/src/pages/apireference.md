@@ -17,8 +17,8 @@ TransferFunction
 # Linear Transfer Functions
 ```@docs
 LinearShiftInvariantTransferFunction
-conv
-deconv
+conv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
+deconv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
 ```
 
 # Optical Transfer Functions
