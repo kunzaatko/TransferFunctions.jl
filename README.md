@@ -1,3 +1,8 @@
+<p align="center">
+    <img src="./docs/src/assets/logo.png" alt="TransferFunctions.jl Logo: An image graphic overlayed with a bell curve
+    and three filled dots in the julia colors" style="width: 35%">
+</p>
+
 # TransferFunctions
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://kunzaatko.github.io/TransferFunctions.jl/stable/)
