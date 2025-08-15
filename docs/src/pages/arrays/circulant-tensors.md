@@ -16,7 +16,7 @@ A = testimage("mandril_color")
 A circulant tensor is a construct similar to a [filtering matrix](@ref "Filtering Matrices"). It creates "views" into
 the parent array of the indices of the kernel such that if the circulant tensor is
 [contracted](https://en.wikipedia.org/wiki/Tensor_contraction) at the starting dimensions with the kernel it produces the
-correlation result.
+correlation result. This means that it has the combined dimensionality of the  array and the kernel.
 
 ```@docs
 CirculantTensor

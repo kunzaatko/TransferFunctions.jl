@@ -51,6 +51,7 @@ K = OffsetArray(ones(11,11) ./ 121, -5:5, -5:5) # origin (0,0) must be contained
 F_A_inner = filtering_matrix(A, K)
 A_corr_K_inner_flat = F_A_inner' * K[:]
 A_corr_K_inner = reshape(A_corr_K_inner_flat, F_A_inner.interior)
+@assert size(A_corr_K_inner) == (502, 502) # output of the correlation is reduced in size by the size of the kernel
 nothing # hide
 ```
 
@@ -61,6 +62,7 @@ correlation
 F_A = filtering_matrix(A, K, :replicate)
 A_corr_K_flat = F_A' * K[:]
 A_corr_K = reshape(A_corr_K_flat, size(A))
+@assert size(A_corr_K) == (512, 512) # whole domain of A is retained
 nothing # hide
 ```
 
@@ -77,8 +79,26 @@ nothing # hide
 ```
 
 ```@makie filtering-matrices; basename="filtering_matrix_small", formats=:png
-f,_,_ = Recipes.mosaic(Recipes.image!, A_small', K_small'; axis=(;title=["Image", "Filtering Matrix"], yreversed=true),
+f,ax,_ = Recipes.mosaic(Recipes.image!, A_small', K_small'; axis=(;title=["Image", "Filtering Matrix"], yreversed=true),
 linkaxes=false)
+ax[1].xticklabelsvisible = true
+ax[1].xticksvisible = true
+ax[1].xticks = ([12.5], ["13"])
 f
 ```
 
+As can become apparent from the image, under some conditions on the border and the link between the length of `A` and `K`, the filtering matrix of a 2D matrix is a block [circulant matrix](https://en.wikipedia.org/wiki/Circulant_matrix).
+
+If we take a column slice from the image and create a filtering matrix from it, we can observe the structure of
+a filtering matrix of a vector.
+
+```@example filtering-matrices
+A_col = A_small[:, 13]
+K_A_col = filtering_matrix(A_col, (-10:10,), :fill)
+nothing # hide
+```
+
+```@makie filtering-matrices; formats=:png, basename="filtering_matrix_column"
+f,_,_ = Recipes.mosaic(Recipes.image!, reshape(A_col, (:, 1))', K_A_col'; axis=(;title=["Column", "Filtering Matrix"], yreversed=true), linkaxes=false)
+f
+```
