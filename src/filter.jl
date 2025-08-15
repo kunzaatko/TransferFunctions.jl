@@ -6,23 +6,51 @@ using Base: @propagate_inbounds
 # NOTE: Factoring may not be worth it since it results in a 0.3% loss in accuracy and slowdown in tests that were made
 # with random kernels and arrays <11-08-25> 
 
+"""
+    conv([T], A, K, [border])
+Discrete convolution of `A` with `K`.
+
+`A` is extended by the [`border`](@ref "Border Types"). If `T` is given, the output will have the eltype `T`. If the
+border is not specified, no border is added, which for the `FFT` behaves the same as if `:circular` border was used.
+
+See also [`conv!`](@ref), [`corr`](@ref), [`corr!`](@ref)
+"""
 conv(img::AbstractArray, kernel::AbstractArray, args...) = corr(img, reflect(kernel), args...)
+conv(::Type{T}, img::AbstractArray, kernel::AbstractArray, args...) where {T} = corr(T, img, reflect(kernel), args...)
+
+"""
+    conv!(out, A, K, [border])
+Mutating version of [`conv`](@ref).
+
+See [`conv`](@ref) for details.
+"""
 conv!(out::AbstractArray, img::AbstractArray, kernel::AbstractArray, args...) = corr!(out, img, reflect(kernel), args...)
 
-# Step 1: if necessary, determine the output's element type
+"""
+    corr([T], A, K, [border])
+Discrete correlation of `A` with `K`.
+
+`A` is extended by the [`border`](@ref "Border Types"). If `T` is given, the output will have the eltype `T`. If the
+border is not specified, no border is added, which for the `FFT` behaves the same as if `:circular` border was used.
+
+See also [`corr!`](@ref), [`conv`](@ref), [`conv!`](@ref)
+"""
 @inline function corr(img::AbstractArray, kernel, args...)
     corr(corr_outputtype(img, kernel), img, kernel, args...)
 end
-
-# Step 2: if necessary, allocate the ouput
 @inline function corr(::Type{T}, img::AbstractArray, kernel::AbstractArray, args...) where {T}
     corr!(similar(img, T), img, kernel, args...)
 end
 
-function corr!(out::AbstractArray, img::AbstractArray, kernel::AbstractArray, args...)
-    corr!(out, img, kernel, args...)
-end
+"""
+    corr!(out, A, K, [border])
+Mutating version of [`corr`](@ref).
 
+See [`corr`](@ref) for details.
+"""
+@inline function corr!(out::AbstractArray, img::AbstractArray, kernel::AbstractArray, border)
+    corr!(out, border_array(img, border, kern_padding(kernel)), kernel)
+end
 function corr!(out::AbstractArray{S,N}, A::AbstractArray{T,N}, K::AbstractArray) where {S,T,N}
     krn = FFTView(zeros(eltype(K), map(length, axes(A))))
     for I in CartesianIndices(axes(K))
