@@ -56,7 +56,8 @@ end
     @cond_testset "doctests" begin
         # FIX: When running locally, do not ask for SSH key password <10-12-23> 
         # NOTE: Show for `Unitful.jl` does nm⁻¹ on macOS and nm^-1 on Linux. This is necessary, since the `jldoctest` is only one
-        # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage
+        # NOTE: Better than doc-testing in `make.jl` because, I can track the coverage and it doesn't take time when
+        # building documentation
         # NOTE: When updating, must update also in `docs/make.jl` & `test/fix_doctests.jl` <18-12-24> 
         DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
                 include(joinpath(@__DIR__, "doctestsetup.jl"));
