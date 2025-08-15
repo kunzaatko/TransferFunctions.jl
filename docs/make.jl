@@ -48,6 +48,7 @@ makedocs(;
             "pages/arrays/reflected-arrays.md"
         ],
         "Apodization" => "pages/apodization.md",
+        "Filtering" => "pages/filter.md",
         "Reference" => [
             "API Index" => "pages/apireference.md",
             "Bibliography" => "pages/bibliography.md"
