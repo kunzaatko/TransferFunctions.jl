@@ -62,7 +62,7 @@ Convolve the image `img` with the PSF `tf`. Additional arguments are passed to `
 with the size of the FWHM of the PSF in the corresponding directions with the `border` and `apodization` used for edge
 tapering ([`taperedges`](@ref))) and the full expanded array is returned.
 """
-function conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, args...; border=nothing)
+function conv(tf::PointSpreadFunction, img::SpatialMatrix{<:Real}, args...; border=nothing)
     Δ = sampling(img)
     if border == true
         border = (border=:fill, apodization=Apodization.Cosine())
