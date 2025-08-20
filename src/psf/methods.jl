@@ -32,7 +32,7 @@ intensity(psf, x::Length, y::Length, z::Length) = # ...
 @interface Base.maximum(psf::PointSpreadFunction{2}) = response(psf, 0u"nm", 0u"nm")
 @interface Base.maximum(psf::PointSpreadFunction{3}) = response(psf, 0u"nm", 0u"nm", 0u"nm")
 
-@static if VERSION > v"1.11"
+@static if VERSION >= v"1.12.0-rc1"
     using Base: Fix
     @inline function axis_HWHM_closure(psf::PointSpreadFunction{N}, dim::Int) where {N}
         psfresponse = Fix{1}(response, psf)
@@ -44,13 +44,13 @@ intensity(psf, x::Length, y::Length, z::Length) = # ...
 else
     using Base: Fix1
     @inline function axis_HWHM_closure(psf::PointSpreadFunction{2}, dim::Int)
-        psfresponse = Fix1(response, psf)
+        psfresponse = (args...) -> response(psf, args...)
         halfmax = maximum(psf) / 2
         axis_response = dim == 1 ? x -> psfresponse(x, 0u"nm") : x -> psfresponse(0u"nm", x)
         return x -> axis_response(x) - halfmax
     end
     @inline function axis_HWHM_closure(psf::PointSpreadFunction{3}, dim::Int)
-        psfresponse = Fix1(response, psf)
+        psfresponse = (args...) -> response(psf, args...)
         halfmax = maximum(psf) / 2
         axis_response = if dim == 1 
                 x -> psfresponse(x, 0u"nm", 0u"nm") 
