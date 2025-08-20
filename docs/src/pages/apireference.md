@@ -79,4 +79,5 @@ TransferFunctions.InvalidBorderExtent
 TransferFunctions.Replicate
 TransferFunctions.Symmetric
 TransferFunctions.params
+TransferFunctions.PointSpreadFunctionSymmetry
 ```
