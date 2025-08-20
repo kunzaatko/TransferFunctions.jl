@@ -61,18 +61,18 @@ abstract type PSFModel{N} <: PointSpreadFunction{N} end
 include("methods.jl")
 
 # Augmentations
-include("./rotated-psf.jl")
-include("./scaled-psf.jl")
-
-include("./psf-array.jl")
+include("./types/rotated-psf.jl")
+include("./types/scaled-psf.jl")
 
 # Models
-include("./models/airy-disc.jl")
-include("./models/gaussian.jl")
+include("./types/airy-disc.jl")
+include("./types/gaussian.jl")
 
-include("./models/gibson-lanni.jl")
-include("./models/born-wolf.jl")
+# TODO: Fix these models <20-08-25> 
+include("./types/gibson-lanni.jl")
+include("./types/born-wolf.jl")
 
+include("./types/psf-array.jl")
 
 include("./estimation.jl")
 

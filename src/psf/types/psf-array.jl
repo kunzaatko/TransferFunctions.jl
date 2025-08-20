@@ -1,3 +1,6 @@
+"""
+    PSFArray{T<:Real, N} <: PointSpreadFunction{N}
+"""
 struct PSFArray{T<:Real, N} <: PointSpreadFunction{N}
     data::SpatialArray{T, N}
     center::Coordinate{N}
