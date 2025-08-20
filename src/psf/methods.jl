@@ -32,7 +32,7 @@ intensity(psf, x::Length, y::Length, z::Length) = # ...
 @interface Base.maximum(psf::PointSpreadFunction{2}) = response(psf, 0u"nm", 0u"nm")
 @interface Base.maximum(psf::PointSpreadFunction{3}) = response(psf, 0u"nm", 0u"nm", 0u"nm")
 
-@static if VERSION >= v"1.12"
+@static if VERSION > v"1.11"
     using Base: Fix
     @inline function axis_HWHM_closure(psf::PointSpreadFunction{N}, dim::Int) where {N}
         psfresponse = Fix{1}(response, psf)
