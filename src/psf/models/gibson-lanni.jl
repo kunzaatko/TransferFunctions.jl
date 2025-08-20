@@ -1,5 +1,5 @@
 """
-    GibsonLanni{T<:Real} <: RadialPSF
+    GibsonLanni{T<:Real} <: PSFModel{2}
 Gibson & Lanni model point spread function
 
 # Fields
@@ -11,7 +11,7 @@ Gibson & Lanni model point spread function
     + `t_i::Length{T}`: working distance of the objective
     + `t_g::Length{T}`: coverslip thickness
 """
-@kwdef struct GibsonLanni{T<:Real} <: RadialPSF
+@kwdef struct GibsonLanni{T<:Real} <: PSFModel{2}
     λ::Length{T}
     NA::T
     n_i::T = 1.5
@@ -37,3 +37,4 @@ function GibsonLanni(λ::Length{A}, NA::B, n_i::C, n_s::D, n_g::E, t_i::F, t_g::
     T = promote_type(A, B, C, D, E, F, G)
     λ = convert(T, ustrip(λ)) * unit(λ)
 end
+symmtery(::GibsonLanni) = ZAxisRadialSymmetry()

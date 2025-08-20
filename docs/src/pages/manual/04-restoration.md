@@ -1,5 +1,6 @@
 ```@meta
 CurrentModule = TransferFunctions
+CollapsedDocStrings = true
 ```
 
-# Transfer Functions
+# Restoration

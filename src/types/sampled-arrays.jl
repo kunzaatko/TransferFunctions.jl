@@ -81,11 +81,11 @@ julia> TF.sample_vertices(sa)
     end
 
 """
-    SampledMatrix{T, ST} <: AbstractMatrix{T}
+    SampledMatrix{T,ST,AM} <: AbstractMatrix{T}
 Two-dimensional array with elements of type `T` with a given sample spacing of type `ST`. Alias for
-`SampledArray{T,ST,2}`.
+`SampledArray{T,ST,2,AM}`.
 """
-const SampledMatrix{T,ST} = SampledArray{T,ST,2}
+const SampledMatrix{T,ST,AM} = SampledArray{T,ST,2,AM}
 
 """
     SampledMatrix(M, (Δx, Δy))
@@ -96,11 +96,11 @@ distance `Δ` in both directions.
 SampledMatrix(A::AbstractMatrix, Δ) = SampledArray(A, Δ)
 
 """
-    SampledVector{T, ST} <: AbstractVector{T}
+    SampledVector{T,ST,AV} <: AbstractVector{T}
 One-dimensional array with elements of type `T` with a given sample spacing of type `ST`. Alias for
-`SampledArray{T,ST,1}`.
+`SampledArray{T,ST,1,AV}`.
 """
-const SampledVector{T,ST} = SampledArray{T,ST,1}
+const SampledVector{T,ST,AV} = SampledArray{T,ST,1,AV}
 
 """
     SampledVector(V, Δ)
@@ -109,12 +109,12 @@ Construct a `SampledVector` with values `V` and sampling `Δ`.
 SampledVector(A::AbstractVector, Δ::Length) = SampledArray(A, (Δ,))
 
 """
-    SpatialArray{T,N} <: AbstractArray{T,N}
-An `N`-dimensional array representing values sampled uniformly in space. Alias for `SampledArray{T,<:Length,N}`.
+    SpatialArray{T,N,AA} <: AbstractArray{T,N}
+An `N`-dimensional array representing values sampled uniformly in space. Alias for `SampledArray{T,<:Length,N,AA}`.
 
 See also [`SpatialMatrix`](@ref), [`SpatialVector`](@ref), [`SampledArray`](@ref)
 """
-const SpatialArray{T,N} = SampledArray{T,<:Length,N}
+const SpatialArray{T,N,AA} = SampledArray{T,<:Length,N,AA}
 
 """
     SpatialArray(A, (Δx, Δy,...))
@@ -126,11 +126,11 @@ SpatialArray(A::AbstractArray, Δ) = SampledArray(A, Δ)
 SpatialArray(A::AbstractArray{<:Any,N}, Δ::Length) where {N} = SampledArray(A, fillsize(Δ, N))
 
 """
-    SpatialMatrix{T} <: AbstractMatrix{T}
+    SpatialMatrix{T,AM} <: AbstractMatrix{T}
 Two-dimensional array with elements of type `T` with a given sampling distance in both directions. Alias for
-`SpatialArray{T,2}`.
+`SpatialArray{T,2,AM}`.
 """
-const SpatialMatrix{T} = SpatialArray{T,2}
+const SpatialMatrix{T,AM} = SpatialArray{T,2,AM}
 
 """
     SpatialMatrix(M, (Δx, Δy))
@@ -141,10 +141,10 @@ distance `Δ` in both directions.
 SpatialMatrix(A::AbstractMatrix, Δ) = SpatialArray(A, Δ)
 
 """
-    SpatialVector{T} <: AbstractVector{T}
-One-dimensional array with elements of type `T` with a given sampling distance. Alias for `SpatialArray{T,1}`.
+    SpatialVector{T,AV} <: AbstractVector{T}
+One-dimensional array with elements of type `T` with a given sampling distance. Alias for `SpatialArray{T,1,AV}`.
 """
-const SpatialVector{T} = SpatialArray{T,1}
+const SpatialVector{T,AV} = SpatialArray{T,1,AV}
 
 """
     SpatialVector(V, Δ::Length)

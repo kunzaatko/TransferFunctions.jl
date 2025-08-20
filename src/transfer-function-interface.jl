@@ -12,8 +12,25 @@ position in the object plane, and linearity (which is almost always satisfied).
 
 See also [`LinearShiftInvariantTransferFunction`](@ref), [`ImpulseResponseMapping`](@ref)
 """
-abstract type TransferFunction end
+abstract type TransferFunction{N} end
+
+"""
+    transfer(t::TransferFunction, A::SpatialMatrix)
+The forward pass of the transfer function operator `t` on the image `A`.
+
+See also [`restore`](@ref)
+"""
 @interface transfer(t::TransferFunction, ::SpatialMatrix{<:Real})
+
+"""
+    restore(t::TransferFunction, A::SpatialMatrix)
+The reverse pass of the transfer function operator `t` on the image `A`.
+
+It is always inherently an estimation because `A` is always noisy and `t` is often not well conditioned (especially in
+the non-linear case).
+
+See also [`transfer`](@ref)
+"""
 @interface restore(t::TransferFunction, ::SpatialMatrix{<:Real})
 
 # NOTE: Taken from Distributions.jl <kunzaatko> 

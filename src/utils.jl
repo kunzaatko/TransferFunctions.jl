@@ -151,6 +151,17 @@ julia> y_p
 @inline posgrid(sz::Size{2}, Δ::PixelSize{2}; center=roundupcenter(sz)) = (((OneTo(sz[1]) .- center[1]) * Δ[1]) * ones(sz[2])', ones(sz[1]) * ((OneTo(sz[2]) .- center[2]) * Δ[2])')
 posgrid(sz::Size{2}, Δ::Length) = posgrid(sz, fillsize(Δ, 2))
 
+# TODO: Generalize for n dims and define a single function for this <18-08-25> 
+@inline function posgrid(sz::Size{3}, Δ::PixelSize{3}; center=roundupcenter(sz))
+  xc, yc, zc = Tuple(center)
+  Δx,Δy,Δz = Δ
+  xs = [(x - xc) * Δx for x in OneTo(sz[1]), _ in OneTo(sz[2]), _ in OneTo(sz[3])]
+  ys = [(y - yc) * Δy for _ in OneTo(sz[1]), y in OneTo(sz[2]), _ in OneTo(sz[3])]
+  zs = [(z - zc) * Δz for _ in OneTo(sz[1]), _ in OneTo(sz[2]), z in OneTo(sz[3])]
+  return xs, ys, zs
+end
+posgrid(sz::Size{3}, Δ::Length) = posgrid(sz, fillsize(Δ, 3))
+
 ## OffsetArray helpers ##
 
 struct OriginAt{N}
@@ -172,3 +183,9 @@ function kern_padding(kern::Indices)
   Tuple((max(0, abs(first(k))),max(0, abs(last(k)))) for k in kern)
 end
 kern_padding(kern::AbstractArray) = kern_padding(axes(kern))
+
+## Parameter Checking ##
+
+check_emission_wavelength(λ) = λ > zero(λ) || throw(DomainError(λ, "Emission wavelength is a positive value. Got `λ = $λ`."))
+check_numerical_aperture(NA) = NA > zero(NA) || throw(DomainError(NA, "Numerical aperture of the objective is a positive value. Got `NA = $NA`."))
+check_refractive_index(n) = n > zero(n) || throw(DomainError(n, "Refractive index of the immersion is a positive value. Got `n = $n`."))

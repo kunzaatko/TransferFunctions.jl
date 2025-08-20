@@ -1,12 +1,12 @@
 using InterfaceFunctions
 
 """
-    OpticalTransferFunction <: LinearShiftInvariantTransferFunction
+    OpticalTransferFunction{N} <: LinearShiftInvariantTransferFunction{N}
 
 # Implementation
 To create a new Optical transfer function (OTF) `A <: OpticalTransferFunction`, you must define the __attenuation__ at a given [frequency](@ref TransferFunctions.Frequency) coordinate `attenuation(otf::A, kx::Frequency, ky::Frequency)`.
 """
-abstract type OpticalTransferFunction <: LinearShiftInvariantTransferFunction end
+abstract type OpticalTransferFunction{N} <: LinearShiftInvariantTransferFunction{N} end
 Broadcast.broadcastable(tf::OpticalTransferFunction) = Ref(tf)
 
 _fft_conv(otf_arr::AbstractArray, img::AbstractArray) = ifft(otf_arr .* fft(img))
@@ -38,7 +38,7 @@ otf(tf::OpticalTransferFunction, Δ::Length, wh::Dims{2}) = otf(tf, fillsize(Δ,
 otf(tf::OpticalTransferFunction, img::SpatialArray{T,2}) where {T} = otf(tf, sampling(img), size(img))
 
 """
-    RadialOTF <: OpticalTransferFunction
+    RadialOTF{N} <: OpticalTransferFunction{N}
 If the pupil function of the system is symmetric, the OTF as well as the PSF are radially symmetric which can be used to optimize the calculations.
 
 # Implementation
@@ -46,7 +46,7 @@ If the pupil function of the system is symmetric, the OTF as well as the PSF are
 - `cutoff(model::A, [a=0])` returning the largest frequency `f` such that `attenuation(model, f) >= a` if `a > 0` and
 `attenuation(model, f) > 0` if `a = 0`.
 """
-abstract type RadialOTF <: OpticalTransferFunction end
+abstract type RadialOTF{N} <: OpticalTransferFunction{N} end
 @interface attenuation(otf::RadialOTF, ::Frequency)
 attenuation(otf::RadialOTF, fx::Frequency, fy::Frequency) = (@inline; attenuation(otf, hypot(fx, fy)))
 """
@@ -61,4 +61,3 @@ include("./otf-array.jl")
 include("./circular-pupil-otf.jl")
 
 export otf, cutoff, attenuation
-export CircularPupilOTF, OTFArray

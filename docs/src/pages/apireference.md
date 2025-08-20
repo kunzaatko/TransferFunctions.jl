@@ -9,24 +9,10 @@ FrequencyUnits
 FrequencyFreeUnits
 ```
 
-# Transfer Functions
-```@docs
-TransferFunction
-```
-
-# Linear Transfer Functions
-```@docs
-LinearShiftInvariantTransferFunction
-conv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
-deconv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
-```
-
 # Optical Transfer Functions
 ```@docs
-OpticalTransferFunction
 OTFArray
 RadialOTF
-CircularPupilOTF
 ```
 
 ```@docs
@@ -38,29 +24,22 @@ attenuation
 
 # Point Spread Functions
 ```@docs
-PointSpreadFunction
-MeasuredPSF
-PSFArray
-ModelPSF
-RadialPSF
-BornWolf
-GibsonLanni
+PSFModel
 ```
 
 ```@docs
 psf
-intensity
+TransferFunctions.intensity
 fit
 FWHM
+HWHM
 ```
 
 
 # Non-linear Transfer Functions
 ```@docs
-NonLinearTransferFunction
 ImpulseResponseMapping
 ```
-
 
 # Internals
 ## Functions
@@ -99,4 +78,5 @@ TransferFunctions.Circular
 TransferFunctions.InvalidBorderExtent
 TransferFunctions.Replicate
 TransferFunctions.Symmetric
+TransferFunctions.params
 ```

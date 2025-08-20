@@ -2,7 +2,7 @@
 Package for models, estimation, sampling and deconvolution with microscopy transfer functions.
 """
 module TransferFunctions
-using SpecialFunctions, FFTW, Roots, IntervalSets, ImageFiltering, OffsetArrays
+using SpecialFunctions, FFTW, Roots, IntervalSets, OffsetArrays
 using OffsetArrays: centered, center, no_offset_view
 
 using Reexport

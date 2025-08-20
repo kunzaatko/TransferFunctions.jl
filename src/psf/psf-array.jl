@@ -1,21 +1,9 @@
-"""
-    PSFArray{T<:Real} <: PointSpreadFunction
-A measurement of a PSF from the acquired image(s).
-
-# Fields
-- `data::AbstractMatrix{T}`
-- `Δ::PixelSize{2}`
-- `center::Coordinate{2}`
-- `extend::ExtensionMethod`
-"""
-struct PSFArray{T<:Real} <: PointSpreadFunction
-    data::AbstractMatrix{T}
-    Δ::PixelSize{2}
-    center::Coordinate{2}
-    extend::ExtensionMethod
-    function PSFArray(data::AbstractMatrix{T}, Δ::PixelSize{2}, center::Coordinate{2}) where {T<:Real}
+struct PSFArray{T<:Real, N} <: PointSpreadFunction{N}
+    data::SpatialArray{T, N}
+    center::Coordinate{N}
+    function PSFArray(data::SpatialArray{T, N}, center::Coordinate{N}) where {T<:Real,N}
         contained(data, center) || throw(DomainError(center, "The center is not within the data bounds: $center ∉ $(axes(data))"))
-        new{T}(data, Δ, center)
+        new{T,N}(data, center)
     end
 end
 

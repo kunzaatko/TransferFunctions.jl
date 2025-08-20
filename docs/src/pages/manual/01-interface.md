@@ -1,21 +1,31 @@
 ```@meta
 CurrentModule = TransferFunctions
+CollapsedDocStrings = true
 ```
 
-# User Interface
+# Transfer Functions
 
-Any _transfer function_ is a subtype of the abstract type [`TransferFunction`](@ref)
+Any _transfer function_ is a subtype of the abstract [`TransferFunction`](@ref)
 
-```@docs; canonical = false
+```@docs
 TransferFunction
 ```
 
-```@docs; canonical = false
-OpticalTransferFunction
-PointSpreadFunction
+A transfer function can be either linear or non-linear and shift invariant or shift variant.
+
+```@docs
+LinearTransferFunction
+NonLinearTransferFunction
 ```
 
-You can get a transfer function of your optical setup by supplying parameters of the apparatus to a model transfer
-    function that is developed from the underlining physics of a microscope, then you will use a subtype of
-Otherwise you can estimate the transfer function, most commonly by the means of an acquisition where the imaged sample
-is known such as sub-diffraction sized microspheres of known sizes.
+Any fully prescribed transfer function can be used to perform the forward pass (i.e. optical transfer)
+
+```@docs
+TransferFunctions.transfer(::TransferFunction, ::SpatialMatrix{<:Real})
+```
+
+The reverse is much harder and we need estimation and inverse modeling methods for it
+
+```@docs
+restore(::TransferFunction, ::SpatialMatrix{<:Real})
+```

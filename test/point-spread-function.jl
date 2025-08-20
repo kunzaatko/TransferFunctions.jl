@@ -1,33 +1,40 @@
-A = ones(1024, 1024)
+using TransferFunctions: TransferFunctions as TF
+using OffsetArrays: OffsetArrays as OAs
 
-@testset "MeasuredPSF" begin
-    # FIX: @test_throws DomainError PSFArray(ones(3, 3, 3), 32u"nm", (4, 1, 1))
-    # FIX: @test PSFArray(ones(3, 3), 32u"nm") isa MeasuredPSF{<:Real,2}
-    # FIX: @test MeasuredPSF(ones(3, 3, 3), 32u"nm") isa MeasuredPSF{<:Real,3}
-end
+A = ones(100, 100)
 
-@testset "PSFArray" begin end
+λ = 488u"nm"
+NA = 1.4
+n = 1.5
+Δxy = 64u"nm"
+Δx = 64u"nm"
+Δy = 32u"nm"
+Δz = 15u"nm"
 
-@testset "ModelPSF" begin
-    tf = BornWolf(488u"nm", 1.4, 1.7)
+PSF_types = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA), BornWolf(λ, NA, n)]
+PSF_3D = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA)]
 
-    ## Method Availability
-    @test intensity(tf, 250u"nm", 200u"nm") isa Number
-    @test intensity(tf, 250u"nm") isa Number
-end
+s_img = SpatialArray(A, Δxy)
+@testset "`psf` method: $(nameof(typeof(tf)))" for tf in PSF_types
+    let psf_array = psf(tf, Δxy, (11, 11))
+        @test psf_array isa SpatialMatrix{<:Any,<:OAs.OffsetMatrix}
+        @test all(==(Δxy), TF.sampling(psf_array))
+    end
+    let psf_array = psf(tf, (Δx, Δy), (11, 11))
+        @test psf_array isa SpatialMatrix{<:Any,<:OAs.OffsetMatrix}
+        @test TF.sampling(psf_array) == (Δx, Δy)
+    end
 
-@testset "Sampled PSF" begin
-    s_img = SpatialArray(A, 32u"nm")
-    tf = BornWolf(488u"nm", 1.4, 1.7)
-
-    ## Method Availability - Construction
-    @test psf(tf, 64u"nm", (512, 512)) isa AbstractMatrix
-    @test psf(tf, (64u"nm", 32u"nm"), (512, 512)) isa AbstractMatrix
-
-    ## Methods - Array generation
-    @test psf(tf, 60u"nm", (512, 512)) isa OAs.OffsetMatrix
-    @test_throws MethodError psf(tf, s_img)
-
-    ## Non-methods - Array generation
-    @test_throws MethodError psf(tf, 60u"nm", (512.1, 512.4))
+    if tf in PSF_3D
+        @testset "`psf` 3D array" begin
+            let psf_array = psf(tf, Δxy, (11, 11, 11))
+                @test psf_array isa SpatialArray{<:Any,3,<:OAs.OffsetArray}
+                @test all(==(Δxy), TF.sampling(psf_array))
+            end
+            let psf_array = psf(tf, (Δx, Δy, Δz), (11, 11, 11))
+                @test psf_array isa SpatialArray{<:Any,3,<:OAs.OffsetArray}
+                @test TF.sampling(psf_array) == (Δx, Δy, Δz)
+            end
+        end
+    end
 end

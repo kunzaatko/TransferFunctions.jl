@@ -1,6 +1,6 @@
 module Estimation
 using InterfaceFunctions
-using TransferFunctions: Size, FilteringMatrix, aroundorigin, ModelPSF, TransferFunction, PSFArray
+using TransferFunctions: Size, FilteringMatrix, aroundorigin, PSFModel, TransferFunction, PSFArray
 include("estimation/beads-acquisition.jl")
 
 abstract type EstimationAlgorithm{H<:TransferFunction} end
@@ -30,7 +30,7 @@ end
 
 abstract type Optimization end
 
-struct ForwardPassInversion{M<:ModelPSF,O<:Optimization} <: FromGroundTruth{M}
+struct ForwardPassInversion{M<:PSFModel,O<:Optimization} <: FromGroundTruth{M}
 end
 
 abstract type BlindDeconvolution{H<:TransferFunction} <: EstimationAlgorithm{H} end

@@ -10,7 +10,10 @@ makie_doc_blocks = MakieMaestro.MakieDocBlocks(;
 links = InterLinks(
     "Julia" => "https://docs.julialang.org/en/v1/",
     "Unitful" => "https://juliaphysics.github.io/Unitful.jl/stable/",
-    "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/"
+    "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/",
+    # TODO: When `objects.inv` are generated for the stable branch, change to it <19-08-25> 
+    "Rotations" => "https://juliageometry.github.io/Rotations.jl/dev/",
+    "ComponentArrays" => "https://docs.sciml.ai/ComponentArrays/stable/"
 )
 
 DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
@@ -36,8 +39,18 @@ makedocs(;
         "Home" => "index.md",
         "Manual" => [
             "pages/manual/01-interface.md",
-            "pages/manual/02-transfer-functions.md",
-            "pages/manual/03-estimation.md",
+            "pages/manual/02-linear-transfer-functions.md",
+            "pages/manual/03-nonlinear-transfer-functions.md",
+            "pages/manual/04-restoration.md",
+        ],
+        "Transfer Functions" => [
+            "Models" => [
+                "Airy Disc" => "pages/transfer-function-types/airy-disc.md",
+                "Gaussian" => "pages/transfer-function-types/gaussian.md",
+                "Born & Wolf" => "pages/transfer-function-types/born-wolf.md",
+                "Gibson & Lanni" => "pages/transfer-function-types/gibson-lanni.md",
+                "Circular Pupil" => "pages/transfer-function-types/circular-pupil.md",
+            ],
         ],
         "Array Types" => [
             "pages/arrays/sampled-arrays.md"
