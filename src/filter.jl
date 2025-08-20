@@ -77,8 +77,8 @@ end
 
 """
     RFFTOut{T,N,AA<:AbstractArray{T,N}}  <: AbstractArray{T,N}
-A trivial wrapper that allows to specify for `ifft` and `mul!` while exploiting the conjugate symmetry of real arrays
-under the Fourier transform for real arrays.
+A trivial wrapper that allows to specify for [`ifft`](@extref `AbstractFFTs.ifft`) and `mul!` while exploiting the
+conjugate symmetry of real arrays under the Fourier transform for real arrays.
 
 See also [`FFTOut`](@ref)
 """
@@ -90,8 +90,8 @@ Base.parent(a::RFFTOut) = (@inline; a.parent)
 
 """
     FFTOut{T,N,AA<:AbstractArray{T,N}}  <: AbstractArray{T,N}
-A trivial wrapper that allows to specify for `ifft` and `mul!` and exploit the conjugate symmetry of the Fourier
-transform in the other argument to `mul!` when it is real.
+A trivial wrapper that allows to specify for [`ifft`](@extref `AbstractFFTs.ifft`) and `mul!` and exploit the conjugate
+symmetry of the Fourier transform in the other argument to `mul!` when it is real.
 
 See also [`RFFTOut`](@ref)
 """

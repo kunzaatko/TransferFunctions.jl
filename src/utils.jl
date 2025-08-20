@@ -21,8 +21,7 @@ roundcenter(r::RoundingMode, ind::AbstractUnitRange{T}) where {T} = first(ind) +
 
 """
     roundupcenter(A)
-
-Calculate center index of `A` rounded-up (i.e. `fft` center).
+Calculate center index of `A` rounded-up (i.e. [`fft`](@extref `AbstractFFTs.fft`) center).
 
 # Examples
 ```jldoctest
@@ -37,8 +36,7 @@ roundupcenter(args...) = (@inline; roundcenter(RoundUp, args...))
 
 """
     rounddowncenter(A)
-
-Calculate center index of `A` rounded-down (i.e. `ifft` center).
+Calculate center index of `A` rounded-down (i.e. [`ifft`](@extref `AbstractFFTs.ifft`) center).
 
 # Examples
 ```jldoctest
@@ -74,7 +72,7 @@ exactcenter(ind::AbstractUnitRange) = first(ind) + (last(ind) - first(ind)) / 2
     contained(A, loc::Coordinate{N})
 Return `true` if the coordinate `loc` is contained in the axes of array `A`. 
 """
-contained(A::AbstractArray{<:Any,N}, loc::Coordinate{N, Int}) where {N} = all(loc .∈ axes(A))
+contained(A::AbstractArray{<:Any,N}, loc::Coordinate{N,Int}) where {N} = all(loc .∈ axes(A))
 
 """
     interior(inds::Indices{N}, kern::Indices{N})
@@ -154,7 +152,7 @@ posgrid(sz::Size{2}, Δ::Length) = posgrid(sz, fillsize(Δ, 2))
 # TODO: Generalize for n dims and define a single function for this <18-08-25> 
 @inline function posgrid(sz::Size{3}, Δ::PixelSize{3}; center=roundupcenter(sz))
   xc, yc, zc = Tuple(center)
-  Δx,Δy,Δz = Δ
+  Δx, Δy, Δz = Δ
   xs = [(x - xc) * Δx for x in OneTo(sz[1]), _ in OneTo(sz[2]), _ in OneTo(sz[3])]
   ys = [(y - yc) * Δy for _ in OneTo(sz[1]), y in OneTo(sz[2]), _ in OneTo(sz[3])]
   zs = [(z - zc) * Δz for _ in OneTo(sz[1]), _ in OneTo(sz[2]), z in OneTo(sz[3])]
@@ -165,7 +163,7 @@ posgrid(sz::Size{3}, Δ::Length) = posgrid(sz, fillsize(Δ, 3))
 ## OffsetArray helpers ##
 
 struct OriginAt{N}
-    origin::CartesianIndex{N}
+  origin::CartesianIndex{N}
 end
 (oat::OriginAt{N})(x::AbstractArray{<:Any,N}) where {N} = OffsetArrays.Origin(CartesianIndex{N}(ntuple(_ -> 1, Val(N))) - oat.origin)(x)
 
@@ -176,11 +174,11 @@ end
 Determine the padding necessary to keep the input array fully contained in the interior of the output when filtered with
 `kern`.
 """
-function kern_padding(kern::Indices) 
+function kern_padding(kern::Indices)
   if !all(I -> 0 ∈ I, kern)
     @warn "A kernel not containing the origin may lead to unexpected filtering output sizes"
   end
-  Tuple((max(0, abs(first(k))),max(0, abs(last(k)))) for k in kern)
+  Tuple((max(0, abs(first(k))), max(0, abs(last(k)))) for k in kern)
 end
 kern_padding(kern::AbstractArray) = kern_padding(axes(kern))
 

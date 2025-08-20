@@ -14,6 +14,22 @@ where `A` is the parent array of the [`BorderArray`](@ref).
 """
 abstract type AbstractBorder{T} end
 @interface Base.getindex(b::AbstractBorder{T}, A::AbstractArray{T,N}, I::Vararg{Int,N}) where {T,N}
+
+"""
+    validextension(b::AbstractBorder, A::AbstractArray)
+Returns the maximum padding extension that is valid for the border `b` and the parent array `A`.
+
+```jldoctest
+julia> TF.validextension(TF.Circular(), ones(40,40))
+((40, 40), (40, 40))
+
+julia> TF.validextension(TF.Symmetric(), ones(40,40))
+((39, 39), (39, 39))
+
+julia> TF.validextension(TF.Fill(0), ones(40,40))
+((9223372036854775807, 9223372036854775807), (9223372036854775807, 9223372036854775807))
+```
+"""
 @interface validextension(b::AbstractBorder, A::AbstractArray)
 function AbstractBorder{T}(s::Symbol) where {T}
     s == :replicate && return Replicate{T}()

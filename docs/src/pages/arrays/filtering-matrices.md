@@ -55,7 +55,7 @@ A_corr_K_inner = reshape(A_corr_K_inner_flat, F_A_inner.interior)
 nothing # hide
 ```
 
-We can extend the parent array by a border (see [Border Arrays](@ref)) to obtain the whole domain of `A` in the output of the
+We can extend the parent array by a border (see [Border Arrays](@ref border-arrays-manual)) to obtain the whole domain of `A` in the output of the
 correlation
 
 ```@example filtering-matrices

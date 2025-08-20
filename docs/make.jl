@@ -11,7 +11,7 @@ links = InterLinks(
     "Julia" => "https://docs.julialang.org/en/v1/",
     "Unitful" => "https://juliaphysics.github.io/Unitful.jl/stable/",
     "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/",
-    # TODO: When `objects.inv` are generated for the stable branch, change to it <19-08-25> 
+    "AbstractFFTs" => "https://juliamath.github.io/AbstractFFTs.jl/dev/",
     "Rotations" => "https://juliageometry.github.io/Rotations.jl/dev/",
     "ComponentArrays" => "https://docs.sciml.ai/ComponentArrays/stable/"
 )
@@ -27,7 +27,7 @@ bib = CitationBibliography(
 makedocs(;
     modules=[TransferFunctions],
     authors="Martin Kunz <martinkunz@email.cz> and contributors",
-    repo="https://github.com/kunzaatko/TransferFunctions.jl/blob/{commit}{path}#{line}",
+    repo=Remotes.GitHub("kunzaatko","TransferFunctions.jl"),
     sitename="TransferFunctions.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
@@ -44,13 +44,18 @@ makedocs(;
             "pages/manual/04-restoration.md",
         ],
         "Transfer Functions" => [
-            "Models" => [
-                "Airy Disc" => "pages/transfer-function-types/airy-disc.md",
-                "Gaussian" => "pages/transfer-function-types/gaussian.md",
-                "Born & Wolf" => "pages/transfer-function-types/born-wolf.md",
-                "Gibson & Lanni" => "pages/transfer-function-types/gibson-lanni.md",
-                "Circular Pupil" => "pages/transfer-function-types/circular-pupil.md",
-            ],
+                "Point Spread Functions" => [
+                    "Models" => [
+                        "Airy Disc" => "pages/transfer-function-types/airy-disc.md",
+                        "Gaussian" => "pages/transfer-function-types/gaussian.md",
+                        "Born & Wolf" => "pages/transfer-function-types/born-wolf.md",
+                        "Gibson & Lanni" => "pages/transfer-function-types/gibson-lanni.md",
+                    ],
+                    "Modifications" => "pages/transfer-function-types/psf-augmentations.md",
+                ],
+                "Optical Transfer Functions" => [
+                    "Circular Pupil" => "pages/transfer-function-types/circular-pupil.md",
+                ]
         ],
         "Array Types" => [
             "pages/arrays/sampled-arrays.md"
@@ -62,6 +67,11 @@ makedocs(;
         ],
         "Apodization" => "pages/apodization.md",
         "Filtering" => "pages/filter.md",
+        "Developer Documentation" => [
+            "Point Spread Functions" => "pages/devdocs/point-spread-functions.md"
+            "Filtering" => "pages/devdocs/filtering.md"
+            "Array Types" => "pages/devdocs/array-types.md"
+        ],
         "Reference" => [
             "API Index" => "pages/apireference.md",
             "Bibliography" => "pages/bibliography.md"

@@ -44,3 +44,11 @@ scalebar!(ax, A_sampled; textcolor=:white, linecolor=:yellow)
 f
 ```
 
+
+## Methods on `SampledArray`s
+
+To get the sampling vertices, you can use [`TransferFunctions.sample_vertices`](@ref)
+
+```@docs
+TransferFunctions.sample_vertices(::SampledArray)
+```

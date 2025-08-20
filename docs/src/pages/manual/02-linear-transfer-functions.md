@@ -28,7 +28,6 @@ is known such as sub-diffraction sized microspheres of known sizes.
 ```@docs
 LinearShiftInvariantTransferFunction
 OpticalTransferFunction
-PointSpreadFunction
 ```
 
 ```@docs
@@ -36,9 +35,24 @@ conv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
 deconv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
 ```
 
+## Point Spread Functions
+
+A point spread functions is a linear shift invariant transfer function that is defines the response of the system to
+a single point light source in the focal plane (or object space if the imaging in multiple 3D).
+
+```@docs
+TransferFunctions.PointSpreadFunction
+```
+
+The `response` method gives the density of the point spread function at a given location relative to its center.
+
+```@docs
+response(::PointSpreadFunction, args...) 
+```
+
 # Estimation
 
-Estimation methods for transfer functions are implemented in the `Estimation` module of the `TransferFucntions` package.
+Estimation methods for transfer functions are implemented in the `Estimation` module of the `TransferFunctions` package.
 
 ## Non-Blind Methods
 

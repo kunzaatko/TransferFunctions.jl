@@ -10,7 +10,7 @@ using OffsetArrays: no_offset_view
 A = testimage("mandril_color")
 ```
 
-# Border Arrays 
+# [Border Arrays](@id border-arrays-manual)
 
 A `BorderArray` is a light wrapper on a `parent::AbstractArray` that expands the domain by a border with the prescribed
 extent given in the constructor by `edges`. The border is added by a rule that prescribes a value to a given index
@@ -41,6 +41,14 @@ TransferFunctions.AbstractBorder
 
 For different applications, different border types are optimal.
 
+```@docs
+TransferFunctions.Replicate
+TransferFunctions.Symmetric
+TransferFunctions.Reflect
+TransferFunctions.Circular
+TransferFunctions.Fill
+```
+
 If you want to simply remove the boundary effects of filtering and do not care about the values of the edges of the
 output (or the filtering kernel is small enough compared to the array that the edges are not important) you can fill the
 border with zeros or some other value 
@@ -70,4 +78,10 @@ f,_,_ = Recipes.mosaic(borders...; axis=(;yreversed=true, title=map(string, bord
     Recipes.image!(ax,collect(no_offset_view(ba))')
 end
 f
+```
+
+If the border type does not support the extent of the padding that is given in the constructor, the [`TransferFunctions.InvalidBorderExtent`](@ref) is thrown.
+
+```@docs
+TransferFunctions.InvalidBorderExtent
 ```

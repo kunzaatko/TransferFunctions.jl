@@ -2,13 +2,6 @@
 CurrentModule = TransferFunctions
 ```
 
-# Unit Types
-```@docs
-Frequency
-FrequencyUnits
-FrequencyFreeUnits
-```
-
 # Optical Transfer Functions
 ```@docs
 OTFArray
@@ -24,24 +17,18 @@ attenuation
 
 # Point Spread Functions
 ```@docs
-PSFModel
-```
-
-```@docs
 psf
-TransferFunctions.intensity
 fit
 FWHM
 HWHM
 ```
-
 
 # Non-linear Transfer Functions
 ```@docs
 ImpulseResponseMapping
 ```
 
-# Internals
+# Internal Utility Functions and Types
 ## Functions
 ```@docs
 TransferFunctions.roundcenter
@@ -66,20 +53,9 @@ TransferFunctions.Coordinate
 TransferFunctions.PixelSize
 ```
 
-## To Sort
+# Unit Types
 ```@docs
-TransferFunctions.IndependentIndexMapBorder
-TransferFunctions.IndexMapBorder
-TransferFunctions.Reflect
-TransferFunctions.kern_padding
-TransferFunctions.Fill
-TransferFunctions.ind2sub
-TransferFunctions.Circular
-TransferFunctions.InvalidBorderExtent
-TransferFunctions.Replicate
-TransferFunctions.Symmetric
-TransferFunctions.params
-TransferFunctions.PointSpreadFunctionSymmetry
-TransferFunctions.NoSymmetry
-TransferFunctions.ZAxisRadialSymmetry
+Frequency
+FrequencyUnits
+FrequencyFreeUnits
 ```

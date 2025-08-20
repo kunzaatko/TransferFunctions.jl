@@ -12,3 +12,8 @@ using TransferFunctions
 ```@docs
 IsotropicGaussian
 ```
+
+```@docs
+TransferFunctions.C_AiryDisc_lateral
+TransferFunctions.C_AiryDisc_axial
+```

@@ -1,22 +1,14 @@
 """
     PSFArray{T<:Real, N} <: PointSpreadFunction{N}
+A PSF that is defined by an array of values sampled at some rate. 
+
+The data is stored in the `data` field of the type [`SpatialArray`](@ref) which has to have a dimension of `N`.
 """
-struct PSFArray{T<:Real, N} <: PointSpreadFunction{N}
-    data::SpatialArray{T, N}
-    center::Coordinate{N}
-    function PSFArray(data::SpatialArray{T, N}, center::Coordinate{N}) where {T<:Real,N}
-        contained(data, center) || throw(DomainError(center, "The center is not within the data bounds: $center ∉ $(axes(data))"))
-        new{T,N}(data, center)
+struct PSFArray{T, N, P<:SpatialArray{T, N}} <: PointSpreadFunction{N}
+    data::P
+    function PSFArray(data::SpatialArray)
+        new{eltype(data),ndims(data),typeof(data)}(data)
     end
 end
 
-PSFArray(data::AbstractMatrix{T}, Δ::Length, args...) where {T} = PSFArray(data, fillsize(Δ, 2), args...)
-PSFArray(data::AbstractMatrix{T}, Δ::PixelSize{2}) where {T} = PSFArray(data, Δ, exactcenter(data))
-PSFArray(data::SpatialMatrix{T}, args...) where {T} = PSFArray(data.data, data.Δ, args...)
-
-function Base.show(io::IO, ::MIME"text/plain", tf::PSFArray{T}) where {T}
-    showcenter = tf.center == tf.data .÷ 2
-    centerstring = showcenter ? ", center = $(tf.center)" : ""
-    print(io, "PSFArray(Δxy = $(allequal(tf.Δ) ? tf.Δ[1] : tf.Δ)$(centerstring)) with eltype $T with $(join(map(string, size(tf.data)), "×")) points:\n")
-    Base.print_array(io, tf.data)
-end
+export PSFArray

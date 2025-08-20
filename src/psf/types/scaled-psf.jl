@@ -1,4 +1,10 @@
 const Scale{N,T} = NTuple{N, T} where {T<:Real}
+
+# TODO: Finish the docs with examples <20-08-25> 
+"""
+    ScaledPSF{N,T,P<:PointSpreadFunction{N}} <: PointSpreadFunction{N}
+A wrapper around the parent `P <: PointSpreadFunction{N}` that scales the PSF with `scale`.
+"""
 struct ScaledPSF{N,T,P<:PointSpreadFunction{N}} <: PointSpreadFunction{N}
     parent::P
     scale::Scale{N,T}
