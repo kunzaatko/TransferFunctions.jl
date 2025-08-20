@@ -1,18 +1,62 @@
-# TODO: Documentation <20-08-25> 
+using Roots, InterfaceFunctions
+using TransferFunctions.Apodization
+
 """
-    intensity(psf::PointSpreadFunction)
+    intensity(psf::PointSpreadFunction, r::Length...)
+The intensity of the [`PointSpreadFunction`](@ref) at the given coordinates.
+
+For different [`PointSpreadFunctionSymmetry`](@ref) of the `psf`, it has to be defined for different arguments.
+- `symmetry(psf) == ZAxisRadialSymmetry() && psf isa PointSpreadFunction{2}` then a single argument version must be defined
+```julia
+intensity(psf, r::Length) = # ...
+```
+- `symmetry(psf) == ZAxisRadialSymmetry() && psf isa PointSpreadFunction{3}` then a two argument version must be defined
+```julia
+intensity(psf, r::Length, z::Length) = # ...
+```
+- `symmetry(psf) == NoSymmetry() && psf isa PointSpreadFunction{2}` then a two argument version must be defined
+```julia
+intensity(psf, x::Length, y::Length) = # ...
+```
+- `symmetry(psf) == NoSymmetry() && psf isa PointSpreadFunction{3}` then a three argument version must be defined
+```julia
+intensity(psf, x::Length, y::Length, z::Length) = # ...
+```
 """
 @interface intensity(psf::PointSpreadFunction, args...)
 
 @interface Base.maximum(psf::PointSpreadFunction{2}) = response(psf, 0u"nm", 0u"nm")
 @interface Base.maximum(psf::PointSpreadFunction{3}) = response(psf, 0u"nm", 0u"nm", 0u"nm")
 
-@inline function axis_HWHM_closure(psf::PointSpreadFunction{N}, dim::Int) where {N}
-    psfresponse = Fix{1}(response, psf)
-    halfmax = maximum(psf) / 2
-    fixed = Tuple(setdiff(1:N, dim))
-    axis_response = mapfoldr(F -> Fix{F}, (a,b) -> a(b,0u"nm"), fixed; init = psfresponse)
-    return x -> axis_response(x) - halfmax
+@static if VERSION >= v"1.12"
+    using Base: Fix
+    @inline function axis_HWHM_closure(psf::PointSpreadFunction{N}, dim::Int) where {N}
+        psfresponse = Fix{1}(response, psf)
+        halfmax = maximum(psf) / 2
+        fixed = Tuple(setdiff(1:N, dim))
+        axis_response = mapfoldr(F -> Fix{F}, (a,b) -> a(b,0u"nm"), fixed; init = psfresponse)
+        return x -> axis_response(x) - halfmax
+    end
+else
+    using Base: Fix1
+    @inline function axis_HWHM_closure(psf::PointSpreadFunction{2}, dim::Int) where {N}
+        psfresponse = Fix1(response, psf)
+        halfmax = maximum(psf) / 2
+        axis_response = dim == 1 ? x -> psfresponse(x, 0u"nm") : x -> psfresponse(0u"nm", x)
+        return x -> axis_response(x) - halfmax
+    end
+    @inline function axis_HWHM_closure(psf::PointSpreadFunction{3}, dim::Int) where {N}
+        psfresponse = Fix1(response, psf)
+        halfmax = maximum(psf) / 2
+        axis_response = if dim == 1 
+                x -> psfresponse(x, 0u"nm", 0u"nm") 
+            elseif dim == 2 
+                x -> psfresponse(0u"nm", x, 0u"nm") 
+            else 
+            x -> psfresponse(0u"nm", 0u"nm", x)
+            end
+        return x -> axis_response(x) - halfmax
+    end
 end
 
 """

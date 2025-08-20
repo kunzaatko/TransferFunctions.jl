@@ -1,7 +1,4 @@
 using InterfaceFunctions
-using Roots
-using Base: Fix
-using TransferFunctions.Apodization
 
 """
     PointSpreadFunction{N} <: LinearShiftInvariantTransferFunction{N}
