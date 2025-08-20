@@ -47,9 +47,9 @@ The intensity of a `PSF` at a given location.
 """
 @interface response(psf::PointSpreadFunction, args...) = response(symmetry(psf), psf, args...)
 @inline response(::ZAxisRadialSymmetry, psf::PointSpreadFunction, x::Length, y::Length) = intensity(psf, hypot(x, y))
-@inline response(::ZAxisRadialSymmetry, psf::PointSpreadFunction, x::Length, y::Length, z::Length) = intensity(psf, hypot(x, y), z)
+@inline response(::ZAxisRadialSymmetry, psf::PointSpreadFunction{3}, x::Length, y::Length, z::Length) = intensity(psf, hypot(x, y), z)
 @inline response(::NoSymmetry, psf::PointSpreadFunction, x::Length, y::Length) = intensity(psf, x, y)
-@inline response(::NoSymmetry, psf::PointSpreadFunction, x::Length, y::Length, z::Length) = intensity(psf, x, y, z)
+@inline response(::NoSymmetry, psf::PointSpreadFunction{3}, x::Length, y::Length, z::Length) = intensity(psf, x, y, z)
 
 """
     PSFModel <: PointSpreadFunction 

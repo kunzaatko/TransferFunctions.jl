@@ -1,6 +1,7 @@
 using Roots, InterfaceFunctions
 using TransferFunctions.Apodization
 
+# TODO: Should be handled by interface functions whether the trait is implemented <20-08-25> 
 """
     intensity(psf::PointSpreadFunction, r::Length...)
 The intensity of the [`PointSpreadFunction`](@ref) at the given coordinates.
@@ -23,7 +24,10 @@ intensity(psf, x::Length, y::Length) = # ...
 intensity(psf, x::Length, y::Length, z::Length) = # ...
 ```
 """
-@interface intensity(psf::PointSpreadFunction, args...)
+@interface intensity(psf::PointSpreadFunction{3}, x::Length, y::Length, z::Length)
+@interface intensity(psf::PointSpreadFunction{3}, r::Length, z::Length)
+@interface intensity(psf::PointSpreadFunction{2}, x::Length, y::Length)
+@interface intensity(psf::PointSpreadFunction{2}, r::Length)
 
 @interface Base.maximum(psf::PointSpreadFunction{2}) = response(psf, 0u"nm", 0u"nm")
 @interface Base.maximum(psf::PointSpreadFunction{3}) = response(psf, 0u"nm", 0u"nm", 0u"nm")
@@ -39,13 +43,13 @@ intensity(psf, x::Length, y::Length, z::Length) = # ...
     end
 else
     using Base: Fix1
-    @inline function axis_HWHM_closure(psf::PointSpreadFunction{2}, dim::Int) where {N}
+    @inline function axis_HWHM_closure(psf::PointSpreadFunction{2}, dim::Int)
         psfresponse = Fix1(response, psf)
         halfmax = maximum(psf) / 2
         axis_response = dim == 1 ? x -> psfresponse(x, 0u"nm") : x -> psfresponse(0u"nm", x)
         return x -> axis_response(x) - halfmax
     end
-    @inline function axis_HWHM_closure(psf::PointSpreadFunction{3}, dim::Int) where {N}
+    @inline function axis_HWHM_closure(psf::PointSpreadFunction{3}, dim::Int)
         psfresponse = Fix1(response, psf)
         halfmax = maximum(psf) / 2
         axis_response = if dim == 1 
