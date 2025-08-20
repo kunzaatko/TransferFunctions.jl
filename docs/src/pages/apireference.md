@@ -80,4 +80,6 @@ TransferFunctions.Replicate
 TransferFunctions.Symmetric
 TransferFunctions.params
 TransferFunctions.PointSpreadFunctionSymmetry
+TransferFunctions.NoSymmetry
+TransferFunctions.ZAxisRadialSymmetry
 ```
