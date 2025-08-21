@@ -27,13 +27,13 @@ bib = CitationBibliography(
 makedocs(;
     modules=[TransferFunctions],
     authors="Martin Kunz <martinkunz@email.cz> and contributors",
-    repo=Remotes.GitHub("kunzaatko","TransferFunctions.jl"),
+    repo=Remotes.GitHub("kunzaatko", "TransferFunctions.jl"),
     sitename="TransferFunctions.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://kunzaatko.github.io/TransferFunctions.jl",
         edit_link="trunk",
-        assets=String[]
+        assets=["assets/favicon.ico"],
     ),
     pages=[
         "Home" => "index.md",
@@ -44,18 +44,18 @@ makedocs(;
             "pages/manual/04-restoration.md",
         ],
         "Transfer Functions" => [
-                "Point Spread Functions" => [
-                    "Models" => [
-                        "Airy Disc" => "pages/transfer-function-types/airy-disc.md",
-                        "Gaussian" => "pages/transfer-function-types/gaussian.md",
-                        "Born & Wolf" => "pages/transfer-function-types/born-wolf.md",
-                        "Gibson & Lanni" => "pages/transfer-function-types/gibson-lanni.md",
-                    ],
-                    "Modifications" => "pages/transfer-function-types/psf-augmentations.md",
+            "Point Spread Functions" => [
+                "Models" => [
+                    "Airy Disc" => "pages/transfer-function-types/airy-disc.md",
+                    "Gaussian" => "pages/transfer-function-types/gaussian.md",
+                    "Born & Wolf" => "pages/transfer-function-types/born-wolf.md",
+                    "Gibson & Lanni" => "pages/transfer-function-types/gibson-lanni.md",
                 ],
-                "Optical Transfer Functions" => [
-                    "Circular Pupil" => "pages/transfer-function-types/circular-pupil.md",
-                ]
+                "Modifications" => "pages/transfer-function-types/psf-augmentations.md",
+            ],
+            "Optical Transfer Functions" => [
+                "Circular Pupil" => "pages/transfer-function-types/circular-pupil.md",
+            ]
         ],
         "Array Types" => [
             "pages/arrays/sampled-arrays.md"
