@@ -52,9 +52,9 @@ julia> scalebar(84u"nm"; format=q -> q >= 1000u"nm" ? TransferFunctions.scalebar
     end...
     
     "Colour of the scale text under the `Scalebar`"
-    textcolor = @inherit textcolor :white
+    textcolor =  :white
     "Colour of the `Scalebar` line"
-    linecolor = @inherit linecolor :yellow
+    linecolor =  :yellow
     "Width of the line in during the maximum length of the `Scalebar`"
     linewidth = @inherit linewidth
     "Whether to update the width of the bar of the `Scalebar` with zooming"
