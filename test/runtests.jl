@@ -125,6 +125,10 @@ end
         include("point-spread-function-models.jl")
     end
 
+    @cond_testset "synthetic-data" begin
+        include("synthetic-data.jl")
+    end
+
     @cond_testset "Estimation" begin
         include("estimation.jl")
     end

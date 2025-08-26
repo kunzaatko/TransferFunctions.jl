@@ -3,6 +3,7 @@ using Unitful: Length, Quantity, 𝐋
 using OffsetArrays: OffsetMatrix, OffsetArray
 using Statistics
 using TransferFunctions: PixelSize, SpatialArray
+
 const PerLength = Quantity{<:Any,inv(𝐋)}
 
 """
@@ -93,13 +94,5 @@ end
 bead(d, Δxy; vargs...) = bead(Float64, d, Δxy; vargs...)
 # NOTE: step 2 assume same axes sampling
 bead(T::Type{<:Real}, d, Δxy::Length; vargs...) = bead(T, d, (Δxy, Δxy); vargs...)
-
-struct Beads
-    positions::AbstractVector{Tuple{Real,Real}}
-    Δxy::Tuple{Length,Length} # pixel size
-    wh::Tuple{Int,Int}
-    diameter::Length
-    α_evanescent::PerLength
-end
 
 export bead
