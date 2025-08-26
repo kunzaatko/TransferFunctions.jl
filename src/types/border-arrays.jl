@@ -1,6 +1,9 @@
 using InterfaceFunctions
 using Base: @propagate_inbounds, showarg
 
+# FIX: The signature of the `border_array` function should be updated to `border_array(parent, padding, border)` instead
+# to be consistent with other filtering methods such as `filtering_array` <22-08-25> 
+
 """
     AbstractBorder{T}
 Super type for borders of arrays with the element type `T`
@@ -249,9 +252,10 @@ BorderArray(parent::AbstractArray{T}, border::Type{Fill}, padding) where {T} = B
 BorderArray(parent::AbstractArray, border::Type{<:AbstractBorder}, padding) = BorderArray(parent, border(), padding)
 BorderArray(parent::AbstractArray{S}, border::AbstractBorder{T}, padding) where {S,T} = BorderArray{S}(parent, convert(AbstractBorder{S}, border), padding)
 
+# TODO: Test `inferpadding` separately. It had mistakes before <22-08-25> 
 inferpadding(::AbstractArray{<:Any, N}, padding::Int) where {N} = ntuple(_->(padding,padding), N)
 inferpadding(::AbstractArray{<:Any, N}, padding::NTuple{N, Int}) where {N} = Tuple((p,p) for p in padding)
-inferpadding(::AbstractArray{<:Any, N}, inds::Indices{N}) where {N} = map(Base.Fix{1}(extrema), inds)
+inferpadding(::AbstractArray{<:Any, N}, inds::Indices{N}) where {N} = Tuple(abs.(extrema(i)) for i in inds)
 
 BorderArray{T}(parent::AbstractArray{T}, border::AbstractBorder{T}, padding) where {T}  = BorderArray{T}(parent, border, inferpadding(parent, padding))
 
