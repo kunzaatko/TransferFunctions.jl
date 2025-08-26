@@ -1,4 +1,4 @@
-using Base: CartesianIndices, @propagate_inbounds
+using Base: CartesianIndices, @propagate_inbounds, OneTo
 
 # TODO: This should instead be defined in some package like MicroscopyCore.jl or similar <30-07-25> 
 """
@@ -31,54 +31,6 @@ Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S}
 @propagate_inbounds Base.setindex!(A::SampledArray, v, i) = setindex!(parent(A), v, i)
 Base.IndexStyle(::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = IndexStyle(AA)
 @inline sampling(a::SampledArray) = a.sampling
-
-# FIX: Instead should be `location_bins` which give a vector of rectangles that are the bin location corners of the
-# samples <30-07-25> 
-"""
-    posgrid(a::SampledArray)
-Returns the grid of positions of the samples of `a`.
-
-```jldoctest
-julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
-
-julia> xs, ys = TF.posgrid(sa);
-
-julia> xs 
-4×4 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
-   0.0 nm    0.0 nm    0.0 nm    0.0 nm
-  61.0 nm   61.0 nm   61.0 nm   61.0 nm
- 122.0 nm  122.0 nm  122.0 nm  122.0 nm
- 183.0 nm  183.0 nm  183.0 nm  183.0 nm
-
-julia> ys 
-4×4 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
- 0.0 nm  61.0 nm  122.0 nm  183.0 nm
- 0.0 nm  61.0 nm  122.0 nm  183.0 nm
- 0.0 nm  61.0 nm  122.0 nm  183.0 nm
- 0.0 nm  61.0 nm  122.0 nm  183.0 nm
-```
-"""
-@inline posgrid(a::SampledArray) = posgrid(size(a), sampling(a); center=(1, 1))
-
-"""
-    sample_vertices(a::SampledArray)
-Returns the vertices of the samples of `a` as tuples.
-
-```jldoctest
-julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
-
-julia> TF.sample_vertices(sa)
-4×4 Matrix{Tuple{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}:
- (0.0 nm, 0.0 nm)    (0.0 nm, 61.0 nm)    (0.0 nm, 122.0 nm)    (0.0 nm, 183.0 nm)
- (61.0 nm, 0.0 nm)   (61.0 nm, 61.0 nm)   (61.0 nm, 122.0 nm)   (61.0 nm, 183.0 nm)
- (122.0 nm, 0.0 nm)  (122.0 nm, 61.0 nm)  (122.0 nm, 122.0 nm)  (122.0 nm, 183.0 nm)
- (183.0 nm, 0.0 nm)  (183.0 nm, 61.0 nm)  (183.0 nm, 122.0 nm)  (183.0 nm, 183.0 nm)
-```
-"""
-@inline sample_vertices(a::SampledArray) =
-    map(posgrid(a)...) do x, y
-        (x, y)
-    end
 
 """
     SampledMatrix{T,ST,AM} <: AbstractMatrix{T}
@@ -125,6 +77,55 @@ distance `Δ` in every direction.
 SpatialArray(A::AbstractArray, Δ) = SampledArray(A, Δ)
 SpatialArray(A::AbstractArray{<:Any,N}, Δ::Length) where {N} = SampledArray(A, fillsize(Δ, N))
 
+# FIX: Should also be a method for SampledArray <26-08-25> 
+# FIX: Instead should be `location_bins` which give a vector of rectangles that are the bin location corners of the
+# samples <30-07-25> 
+"""
+    posgrid(a::SampledArray)
+Returns the grid of positions of the samples of `a`.
+
+```jldoctest
+julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
+
+julia> xs, ys = TF.posgrid(sa);
+
+julia> xs 
+4×4 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+   0.0 nm    0.0 nm    0.0 nm    0.0 nm
+  61.0 nm   61.0 nm   61.0 nm   61.0 nm
+ 122.0 nm  122.0 nm  122.0 nm  122.0 nm
+ 183.0 nm  183.0 nm  183.0 nm  183.0 nm
+
+julia> ys 
+4×4 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+ 0.0 nm  61.0 nm  122.0 nm  183.0 nm
+```
+"""
+@inline posaxes(a::SpatialArray) = posaxes(axes(a), sampling(a))
+
+"""
+    sample_vertices(a::SampledArray)
+Returns the vertices of the samples of `a` as tuples.
+
+```jldoctest
+julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
+
+julia> TF.sample_vertices(sa)
+4×4 Matrix{Tuple{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}:
+ (0.0 nm, 0.0 nm)    (0.0 nm, 61.0 nm)    (0.0 nm, 122.0 nm)    (0.0 nm, 183.0 nm)
+ (61.0 nm, 0.0 nm)   (61.0 nm, 61.0 nm)   (61.0 nm, 122.0 nm)   (61.0 nm, 183.0 nm)
+ (122.0 nm, 0.0 nm)  (122.0 nm, 61.0 nm)  (122.0 nm, 122.0 nm)  (122.0 nm, 183.0 nm)
+ (183.0 nm, 0.0 nm)  (183.0 nm, 61.0 nm)  (183.0 nm, 122.0 nm)  (183.0 nm, 183.0 nm)
+```
+"""
+@inline sample_vertices(a::SpatialArray) =
+    map(posgrid(a)...) do x, y
+        (x, y)
+    end
+
 """
     SpatialMatrix{T,AM} <: AbstractMatrix{T}
 Two-dimensional array with elements of type `T` with a given sampling distance in both directions. Alias for
@@ -152,4 +153,9 @@ Construct a `SpatialVector` with values `V` and sampling `Δ`.
 """
 SpatialVector(A::AbstractVector, Δ::Length) = SpatialArray(A, (Δ,))
 
-export SpatialArray, SpatialMatrix, SpatialVector, SampledArray
+const DimOrInd = Union{Integer, AbstractUnitRange}
+const DimOrOneTo = Union{Integer, OneTo} # NOTE: Without this type, there is an ambiguity <25-08-25> 
+Base.similar(sa::SampledArray, ::Type{T}, dims_or_inds::Tuple{DimOrInd, Vararg{DimOrInd}}) where {T}  = SampledArray(similar(parent(sa), T, dims_or_inds), sampling(sa))
+Base.similar(sa::SampledArray, ::Type{T}, dims_or_inds::Tuple{DimOrOneTo, Vararg{DimOrOneTo}}) where {T}  = SampledArray(similar(parent(sa), T, dims_or_inds), sampling(sa))
+
+export SpatialArray, SpatialMatrix, SpatialVector, SampledArray, sampling
