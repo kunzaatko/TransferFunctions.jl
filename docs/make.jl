@@ -14,7 +14,8 @@ links = InterLinks(
     "AbstractFFTs" => "https://juliamath.github.io/AbstractFFTs.jl/dev/",
     "Rotations" => "https://juliageometry.github.io/Rotations.jl/dev/",
     "ComponentArrays" => "https://docs.sciml.ai/ComponentArrays/stable/",
-    "Roots" => "https://juliamath.github.io/Roots.jl/stable/"
+    "Roots" => "https://juliamath.github.io/Roots.jl/stable/",
+    "Distributions" => "https://juliastats.github.io/Distributions.jl/stable/"
 )
 
 DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
@@ -66,8 +67,9 @@ makedocs(;
             "pages/arrays/filtering-matrices.md"
             "pages/arrays/reflected-arrays.md"
         ],
-        "Apodization" => "pages/apodization.md",
         "Filtering" => "pages/filter.md",
+        "Apodization" => "pages/apodization.md",
+        "Synthetic Data" => "pages/synthetic-data.md",
         "Developer Documentation" => [
             "Point Spread Functions" => "pages/devdocs/point-spread-functions.md"
             "Filtering" => "pages/devdocs/filtering.md"

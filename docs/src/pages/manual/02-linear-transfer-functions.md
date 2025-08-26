@@ -50,9 +50,17 @@ The `response` method gives the density of the point spread function at a given 
 response(::PointSpreadFunction, args...) 
 ```
 
+```@docs
+conv(::PointSpreadFunction{2}, ::SpatialMatrix{<:Real}, ::Any)
+```
+
 # Estimation
 
 Estimation methods for transfer functions are implemented in the `Estimation` module of the `TransferFunctions` package.
+
+```@docs
+TransferFunctions.Estimation.estimate
+```
 
 ## Non-Blind Methods
 
@@ -66,7 +74,6 @@ acquisition of sub-diffraction microspheres or polymer fluorescent beads along w
 known dimensions and estimated positions in the scene.
 
 ```@docs
-Estimation.bead
 Estimation.LeastSquares
 ```
 

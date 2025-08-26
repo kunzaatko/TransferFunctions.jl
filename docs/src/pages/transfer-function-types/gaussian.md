@@ -17,3 +17,10 @@ IsotropicGaussian
 TransferFunctions.C_AiryDisc_lateral
 TransferFunctions.C_AiryDisc_axial
 ```
+
+# Characteristics
+
+```@docs
+TransferFunctions.encircled_energy(::IsotropicGaussian{2}, ::Length)
+TransferFunctions.energy_radius(::IsotropicGaussian{2}, ::Real)
+```

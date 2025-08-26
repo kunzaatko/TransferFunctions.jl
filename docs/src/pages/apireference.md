@@ -42,8 +42,11 @@ TransferFunctions.interior
 
 TransferFunctions.fftfreqs
 TransferFunctions.posgrid
+TransferFunctions.posaxes
 
 TransferFunctions.fillsize
+
+TransferFunctions.inner_axes
 ```
 
 ## Type Aliases
@@ -51,6 +54,8 @@ TransferFunctions.fillsize
 TransferFunctions.Size
 TransferFunctions.Coordinate
 TransferFunctions.PixelSize
+TransferFunctions.OneEdge
+TransferFunctions.Edges
 ```
 
 # Unit Types

@@ -14,6 +14,9 @@ The **Airy disc** describes the diffraction-limited point spread function (PSF) 
 fundamental resolution limit of a conventional microscope. It arises from scalar diffraction theory under the assumption
 of a perfectly aligned, aberration-free, incoherent imaging system.
 
+It is parametrized by the wavelength (``\lambda``) of the emitted light, refractive index of the medium (``n``), and the
+numerical aperture (``\mathrm{NA}``).
+
 ```@docs
 AiryDisc
 AiryDisc(::Length{A}, ::Real, ::Real) where {A<:Real}
@@ -26,10 +29,19 @@ h(r) \;=\; \left( \frac{2 J_1\!\left(\tfrac{\pi \, \mathrm{NA}}{\lambda} \, r\ri
 
 where ``J_1`` is the Bessel function of the first kind, ``\lambda`` is the wavelength of the propagated light in the medium and ``\mathrm{NA} = n \sin \theta`` is the numerical aperture.
 
+```@docs
+TransferFunctions.intensity(::AiryDisc{<:Any, T}, ::Length) where {T}
+```
+
 In the axial direction it is defined as proportionally to the lateral plane with the ratio
 
 ```math
 h(z) \;\propto\; \left( \frac{\sin\!\left(\tfrac{\pi \, \mathrm{NA}^2}{\lambda n} \, z\right)}{\tfrac{\pi \, \mathrm{NA}^2}{\lambda n} \, z} \right)^{\!2}.
+```
+
+```@docs
+TransferFunctions.axialintensity(::AiryDisc{3, T}, ::Length) where {T}
+TransferFunctions.intensity(::AiryDisc{3}, ::Length, ::Length)
 ```
 
 With the parameters 
@@ -89,9 +101,22 @@ which gives
 FWHM_axial * NA^2 / (λ * n)
 ```
 
-## Properties
+The energy for a given radius of the Airy disc has a closed form expression and can be computed using the method
+```@docs
+TransferFunctions.encircled_energy(::AiryDisc{2}, ::Length)
+```
 
-* Radially symmetric intensity profile with a bright central maximum and concentric rings.
-* Sets the fundamental resolution limit for widefield microscopy.
-* Depends only on wavelength (``\lambda``), refractive index of the medium (``n``), and the numerical aperture (``\mathrm{NA}``).
-* Widely used as a reference PSF model and as a basis for Gaussian approximations.
+```@example airy-disc
+TF.encircled_energy(airypsf_2d, 300u"nm") 
+```
+
+For a desired contained energy the correct radius can be found by [bisection](@extref `Roots.Bisection`) which and can be computed using
+the method
+
+```@docs
+TransferFunctions.energy_radius(::AiryDisc{2}, ::Real)
+```
+
+```@example airy-disc
+TF.energy_radius(airypsf_2d, 0.05)
+```

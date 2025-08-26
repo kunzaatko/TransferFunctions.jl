@@ -50,5 +50,5 @@ f
 To get the sampling vertices, you can use [`TransferFunctions.sample_vertices`](@ref)
 
 ```@docs
-TransferFunctions.sample_vertices(::SampledArray)
+TransferFunctions.sample_vertices(::SpatialArray)
 ```
