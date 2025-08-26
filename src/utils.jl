@@ -208,13 +208,29 @@ end
 Determine the padding necessary to keep the input array fully contained in the interior of the output when filtered with
 `kern`.
 """
-function kern_padding(kern::Indices)
-  if !all(I -> 0 ∈ I, kern)
+function kern_padding(K::Indices)
+  if !all(I -> 0 ∈ I, K)
     @warn "A kernel not containing the origin may lead to unexpected filtering output sizes"
   end
-  Tuple((max(0, abs(first(k))), max(0, abs(last(k)))) for k in kern)
+  Tuple((max(0, abs(first(k))), max(0, abs(last(k)))) for k in K)
 end
-kern_padding(kern::AbstractArray) = kern_padding(axes(kern))
+kern_padding(K::AbstractArray) = kern_padding(axes(K))
+
+"""
+    inner_axes(A, edges)
+    inner_axes(A, K)
+Determine the inner axes of the array with edges `edges` or when filtered with kernel `K`.
+
+```jldoctest
+julia> TF.inner_axes(ones(100,100), ((2,4), (1,10)))
+(3:96, 2:90)
+
+julia> TF.inner_axes(ones(100,100), OAs.OffsetArray(ones(11,11), -5:5, -3:7))
+(6:95, 4:93)
+```
+"""
+inner_axes(A::AbstractArray{<:Any, N}, edges::Edges{N}) where {N} = map((a, e) -> (first(a)+e[1]):(last(a)-e[2]), axes(A), edges)
+inner_axes(A::AbstractArray, K) = inner_axes(A, kern_padding(K))
 
 ## Parameter Checking ##
 

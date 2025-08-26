@@ -22,3 +22,21 @@ const Coordinate{N,T} = NTuple{N,T} where {T<:Real}
 const Size{N} = NTuple{N,Int}
 
 include("types/extension-interface.jl")
+"""
+    OneEdge
+Alias for `Tuple{Int,Int}`.
+
+An edge is a tuple with the interpretation of `(start, end)` that determines the padding applied in
+a [`BorderArray`](@ref) or a [`TaperedArray`](@ref).
+
+See also [`Edges`](@ref)
+"""
+const OneEdge = Tuple{Int,Int}
+
+"""
+    Edges{N}
+Edges of an `N`-dimensional array. Alias for `NTuple{N,OneEdge}`
+
+See also [`OneEdge`](@ref), [`TaperedArray`](@ref), [`BorderArray`](@ref)
+"""
+const Edges{N} = NTuple{N,OneEdge}
