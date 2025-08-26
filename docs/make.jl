@@ -13,7 +13,8 @@ links = InterLinks(
     "ImageFiltering" => "https://juliaimages.org/ImageFiltering.jl/stable/",
     "AbstractFFTs" => "https://juliamath.github.io/AbstractFFTs.jl/dev/",
     "Rotations" => "https://juliageometry.github.io/Rotations.jl/dev/",
-    "ComponentArrays" => "https://docs.sciml.ai/ComponentArrays/stable/"
+    "ComponentArrays" => "https://docs.sciml.ai/ComponentArrays/stable/",
+    "Roots" => "https://juliamath.github.io/Roots.jl/stable/"
 )
 
 DocMeta.setdocmeta!(TransferFunctions, :DocTestSetup, :(
