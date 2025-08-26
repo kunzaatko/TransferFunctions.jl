@@ -56,16 +56,18 @@ end
 
 symmetry(::IsotropicGaussian) = ZAxisRadialSymmetry()
 
+@inline σ_xy(tf::IsotropicGaussian) = tf.C_lateral * (tf.λ / tf.NA) / (2 * √(2log(2)))
 function intensity(tf::IsotropicGaussian, r::Length)
-    σ_xy = tf.C_lateral * (tf.λ / tf.NA) / (2 * √(2log(2)))
-    w_xy = ustrip(2π * σ_xy^2) # NOTE: dimension gets integrated out from the normalization factor
-    return exp(-r^2 / (2σ_xy^2)) / w_xy
+    σ = σ_xy(tf)
+    w_xy = ustrip(2π * σ^2) # NOTE: dimension gets integrated out from the normalization factor
+    return exp(-r^2 / (2σ^2)) / w_xy
 end
 
+@inline σ_z(tf::IsotropicGaussian) =  tf.C_axial * (tf.λ * tf.n / tf.NA^2) / √(2log(2))
 function axialintensity(tf::IsotropicGaussian{3}, z::Length)
-    σ_z = tf.C_axial * (tf.λ * tf.n / tf.NA^2) / √(2log(2))
-    w_z = ustrip(√(2π) * σ_z) # NOTE: dimension gets integrated out from the normalization factor
-    return exp(-z^2 / (2σ_z^2)) / w_z
+    σ = σ_z(tf)
+    w_z = ustrip(√(2π) * σ) # NOTE: dimension gets integrated out from the normalization factor
+    return exp(-z^2 / (2σ^2)) / w_z
 end
 
 function intensity(tf::IsotropicGaussian{3}, r::Length, z::Length)

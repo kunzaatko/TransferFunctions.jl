@@ -1,6 +1,6 @@
 using TransferFunctions: TransferFunctions as TF
 
-C_4D = TF.SpatialArray(ones(40, 40), 20u"nm")
+C_4D = SpatialArray(ones(40, 40), 20u"nm")
 
 struct TF_1 <: TF.TransferFunction{2} end
 tf_1 = TF_1()
