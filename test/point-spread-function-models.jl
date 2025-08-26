@@ -3,25 +3,41 @@ using TransferFunctions: TransferFunctions as TF
 λ = 488u"nm"
 NA = 1.4
 n = 1.5
+f = 1.3
 
-PSF_model_types = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA), BornWolf(λ, NA, n)]
+PSF_radially_symmetric = [AiryDisc, IsotropicGaussian] #, BornWolf]
 
-PSF_3D = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA)] # , BornWolf(λ, NA, n)]
-PSF_radial = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA)] #, BornWolf(λ, NA, n)]
+PSF_2D = [AiryDisc{2}(λ, NA), IsotropicGaussian{2}(λ, NA), BornWolf{2}(λ, NA, f)]
+@testset "Blanket tests 2D PSF model: $(nameof(typeof(tf)))" for tf in PSF_2D
+  @test tf isa TF.PointSpreadFunction{2}
+  @test tf isa TF.TransferFunction{2}
+  @test response(tf, 300u"nm", 200u"nm") isa Number
+  @test isconcretetype(eltype(response.(tf, range(-400u"nm", 400u"nm", 11), range(-400u"nm", 400u"nm", 11))))
+  @test_throws MethodError response(tf, 300u"nm")
+  @test_throws MethodError response(tf, 300u"nm", 200u"nm", 200u"nm")
 
-@testset "Blanket tests: $(nameof(typeof(tf)))" for tf in PSF_model_types
-  if tf in PSF_3D
-    @testset "3D PSF" begin
-      @test tf isa TF.PointSpreadFunction{3}
-      @test tf isa TF.TransferFunction{3}
-      @test response(tf, 300u"nm", 200u"nm", 100u"nm") isa Number
-    end
-  end
-
-  if tf in PSF_radial
+  if any(typeof(tf) isa PSF_radial for PSF_radial in PSF_radially_symmetric)
     @testset "Radial PSF" begin
       @test TF.intensity(tf, 250u"nm") isa Number # radius method existence
       @test response(tf, 300u"nm", 200u"nm") == response(tf, 200u"nm", 300u"nm") # isotropic property
+      @test allequal(TF.FWHM(tf)) # same FWHM
+    end
+  end
+end
+
+PSF_3D = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA)] # , BornWolf(λ, NA, n)]
+@testset "Blanket tests 3D PSF model: $(nameof(typeof(tf)))" for tf in PSF_3D
+  @test tf isa TF.PointSpreadFunction{3}
+  @test tf isa TF.TransferFunction{3}
+  @test response(tf, 300u"nm", 200u"nm", 100u"nm") isa Number
+  @test isconcretetype(eltype(response.(tf, range(-400u"nm", 400u"nm", 11), range(-400u"nm", 400u"nm", 11), range(-100u"nm", 100u"nm", 11))))
+  @test_throws MethodError response(tf, 300u"nm", 200u"nm", 100u"nm", 100u"nm")
+  @test_throws MethodError response(tf, 300u"nm", 200u"nm")
+
+  if any(typeof(tf) isa PSF_radial for PSF_radial in PSF_radially_symmetric)
+    @testset "Radial PSF" begin
+      @test TF.intensity(tf, 250u"nm") isa Number # radius method existence
+      @test response(tf, 300u"nm", 200u"nm", 100u"nm") == response(tf, 200u"nm", 300u"nm", 100u"nm") # isotropic property
       @test allequal(TF.FWHM(tf)[1:2]) # same FWHM
     end
   end
