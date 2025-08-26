@@ -73,7 +73,7 @@ See also [`FWHM`](@ref)
 julia> tf = AiryDisc(λ=488u"nm", NA=1.4);
 
 julia> TransferFunctions.HWHM(tf)
-((-89.66947452527637 nm, 89.66947452527637 nm), (-89.66947452527637 nm, 89.66947452527637 nm), (-46.80625132468546 nm, 46.80625132468546 nm))
+((-89.66947452527637 nm, 89.66947452527637 nm), (-89.66947452527637 nm, 89.66947452527637 nm), (-147.04617530370933 nm, 147.04617530370933 nm))
 ``` 
 """
 @interface function HWHM(psf::PointSpreadFunction{N}) where {N}
