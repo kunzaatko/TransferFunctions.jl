@@ -1,5 +1,5 @@
 using TransferFunctions: Length, PixelSize, Coordinate
-using Base: OneTo
+using Base: OneTo, Indices
 using OffsetArrays
 
 """
@@ -122,43 +122,77 @@ julia> y_f
 @inline fftfreqs(sz::Size{2}, Δ::PixelSize{2}) = (fftfreq(sz[1], 1 / Δ[1]) * ones(sz[2])', ones(sz[1]) * fftfreq(sz[2], 1 / Δ[2])')
 fftfreqs(sz::Size{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, 2))
 
-"""
-    posgrid(sz::Size{2}, Δ::PixelSize{2}; center=roundupcenter(sz))
-Generate a position grid for 2D sampled images with the pixel size `Δ`
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}) where {N} = map(axes, Δ) do ax, Δax
+  ax .* Δax
+end
+const SizeSpec{N} = Union{Size{N}, Indices{N}}
+@inline posaxes(sz::Size{N}, Δ::PixelSize{N}; center=roundupcenter(sz)) where {N} = posaxes(Tuple(OneTo(s) .- c for (s,c) in zip(sz, Tuple(center))), Δ)
+@inline posaxes(sz::SizeSpec{N}, Δ::Length; kwargs...) where {N} = @inline posaxes(sz, fillsize(Δ, N); kwargs...)
 
-```jldoctest
-julia> x_p, y_p = TF.posgrid((5, 5), 50u"nm");
+# TODO: Generalize for n dims and define a single function for this <18-08-25> 
+"""
+    posgrid(axes::Indices, Δ)
+    posgrid(sz::Size, Δ; center=roundupcenter(sz))
+Generate a position grid for 2D sampled images with the pixel size `Δ`.
+
+If a size `sz` is passed generate a position grid with the given size and the center in `center`. If `Δ` is a tuple of
+[`Length`s](@extref Unitful `Length`) then the elements are used for the sampling in the respective dimensions. If `Δ`
+is a single length, then it is used for all dimensions.
+
+
+  ```jldoctest
+julia> x_p, y_p = TF.posgrid((-3:5, -1:3), (50u"nm", 20u"nm"));
 
 julia> x_p
-5×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+9×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ -150.0 nm  -150.0 nm  -150.0 nm  -150.0 nm  -150.0 nm
  -100.0 nm  -100.0 nm  -100.0 nm  -100.0 nm  -100.0 nm
   -50.0 nm   -50.0 nm   -50.0 nm   -50.0 nm   -50.0 nm
     0.0 nm     0.0 nm     0.0 nm     0.0 nm     0.0 nm
    50.0 nm    50.0 nm    50.0 nm    50.0 nm    50.0 nm
   100.0 nm   100.0 nm   100.0 nm   100.0 nm   100.0 nm
+  150.0 nm   150.0 nm   150.0 nm   150.0 nm   150.0 nm
+  200.0 nm   200.0 nm   200.0 nm   200.0 nm   200.0 nm
+  250.0 nm   250.0 nm   250.0 nm   250.0 nm   250.0 nm
 
 julia> y_p
-5×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
- -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
- -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
- -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
- -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
- -100.0 nm  -50.0 nm  0.0 nm  50.0 nm  100.0 nm
+9×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+ -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+
+julia> TF.posgrid((3,3,3), 50u"nm")[3]
+3×3×3 Array{Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 3}:
+[:, :, 1] =
+ -50 nm  -50 nm  -50 nm
+ -50 nm  -50 nm  -50 nm
+ -50 nm  -50 nm  -50 nm
+
+[:, :, 2] =
+ 0 nm  0 nm  0 nm
+ 0 nm  0 nm  0 nm
+ 0 nm  0 nm  0 nm
+
+[:, :, 3] =
+ 50 nm  50 nm  50 nm
+ 50 nm  50 nm  50 nm
+ 50 nm  50 nm  50 nm
 ```
 """
-@inline posgrid(sz::Size{2}, Δ::PixelSize{2}; center=roundupcenter(sz)) = (((OneTo(sz[1]) .- center[1]) * Δ[1]) * ones(sz[2])', ones(sz[1]) * ((OneTo(sz[2]) .- center[2]) * Δ[2])')
-posgrid(sz::Size{2}, Δ::Length) = posgrid(sz, fillsize(Δ, 2))
-
-# TODO: Generalize for n dims and define a single function for this <18-08-25> 
-@inline function posgrid(sz::Size{3}, Δ::PixelSize{3}; center=roundupcenter(sz))
-  xc, yc, zc = Tuple(center)
-  Δx, Δy, Δz = Δ
-  xs = [(x - xc) * Δx for x in OneTo(sz[1]), _ in OneTo(sz[2]), _ in OneTo(sz[3])]
-  ys = [(y - yc) * Δy for _ in OneTo(sz[1]), y in OneTo(sz[2]), _ in OneTo(sz[3])]
-  zs = [(z - zc) * Δz for _ in OneTo(sz[1]), _ in OneTo(sz[2]), z in OneTo(sz[3])]
+@inline posgrid(posaxes::NTuple{2}) = ((posaxes[1] * ones(length(posaxes[2]))'), ones(length(posaxes[1])) * (posaxes[2])')
+@inline function posgrid(posaxes::NTuple{3})
+  xs = [x for x in posaxes[1], _ in posaxes[2], _ in posaxes[3]]
+  ys = [y for _ in posaxes[1], y in posaxes[2], _ in posaxes[3]]
+  zs = [z for _ in posaxes[1], _ in posaxes[2], z in posaxes[3]]
   return xs, ys, zs
 end
-posgrid(sz::Size{3}, Δ::Length) = posgrid(sz, fillsize(Δ, 3))
+posgrid(args...; kwargs...) = posgrid(posaxes(args...; kwargs...))
 
 ## OffsetArray helpers ##
 
