@@ -1,8 +1,9 @@
-using Unitful
+using Distributions
+using TransferFunctions: Size, PixelSize, fillsize
+using TransferFunctions
 using Unitful: Length, Quantity, 𝐋
 using OffsetArrays: OffsetMatrix, OffsetArray
-using Statistics
-using TransferFunctions: PixelSize, SpatialArray
+using Statistics, LinearAlgebra
 
 const PerLength = Quantity{<:Any,inv(𝐋)}
 
@@ -90,9 +91,77 @@ function bead(
     buf .*= intensity / buf[0, 0]
     return SpatialArray(buf, Δxy)
 end
-# NOTE: step 1 add default type
-bead(d, Δxy; vargs...) = bead(Float64, d, Δxy; vargs...)
-# NOTE: step 2 assume same axes sampling
-bead(T::Type{<:Real}, d, Δxy::Length; vargs...) = bead(T, d, (Δxy, Δxy); vargs...)
+bead(d, Δ; vargs...) = bead(Float64, d, Δ; vargs...) # default type
+bead(T::Type{<:Real}, d, Δ::Length; vargs...) = bead(T, d, fillsize(Δ, 2); vargs...) # fill the sampling
 
-export bead
+# TODO: Beads themselves should not hold the width and height of the resulting ground truth image and neither should any
+# other synthetic model. <26-08-25> 
+# TODO: Synthetic Data for N-dims <21-08-25> 
+"""
+    Beads{T, D} <: SyntheticModel{2}
+Sub-diffraction beads synthetic data model.
+
+It can be constructed with [`beads`](@ref) which samples the position of the beads with an allowed `spacing`.
+"""
+struct Beads{T, D} <: SyntheticModel{2}
+    positions::Vector{Tuple{T,T}}
+    Δxy::PixelSize{2} # pixel size
+    wh::Size{2}
+    diameter::D
+    α_evanescent::PerLength # FIX: Instead of this, I would like something like params to the beads that will be stored <21-08-25> 
+end
+
+# TODO: Randomized or vector of diameters <21-08-25> 
+# FIX: This could be done by passing a Sampleable <21-08-25> 
+"""
+    beads(N::Int, d::Length, Δxy::PixelSize, wh::Size; <kwargs>)
+Generate synthetic the `Beads` `SyntheticModel` with `N` beads of the diameter `d` 
+
+# Keyword Arguments
+- `spacing::Length=2.5d`: spacing between the beads
+- `maxiters=30`: maximum number of attempts to generate the beads locations with the given spacing
+- `xdist=Uniform(0,wh[1])`: distribution for sampling the x-coordinate
+- `ydist=Uniform(0,wh[2])`: distribution for sampling the y-coordinate
+- `α=0u"nm^-1`: evanescent wave attenuation constant
+"""
+function beads(N::Int, d::Length, Δ::PixelSize, wh::Size; 
+        α::PerLength=0u"nm^-1", 
+        spacing::Length = d * 2.5,  
+        xdist=Uniform(0,wh[1]), 
+        ydist=Uniform(0,wh[2]),
+        maxiters::Int=30
+    )
+    positions = NTuple{2,Float64}[]
+    iters = 0
+    while length(positions) < N
+        n = length(positions)
+        positions = append!(positions, zip(rand(xdist, N-n), rand(ydist, N-n)))
+        # PERF: Inefficient, because we are filtering the whole array and removing all the close points even though, one
+        # of them may remain. It may be faster to iterate over the vector and remove the invalid points one by one. <21-08-25> 
+        filter!(positions) do p
+            !any(norm((p .- other) .* Δ) < spacing for other in positions if other != p)
+        end
+        iters += 1
+        if iters >= maxiters
+            throw(error("Failed to generate $N bead positions in $maxiters attempts. Try to decrease `N` ($N) or the `spacing` ($spacing)"))
+        end
+    end
+    return Beads(positions, Δ, wh, d, α)
+end
+
+beads(N::Int, d::Length, Δ::Length, args...; vargs...) = beads(N, d, fillsize(Δ, 2), args...; vargs...)
+
+
+function groundtruth(bs::Beads)
+    buf = zeros(bs.wh)
+    for p in bs.positions
+		px_position = round.(Int, p)
+		subpx_position = p .- px_position
+		b = bead(bs.diameter,bs.Δxy;α=bs.α_evanescent, position=subpx_position)
+        b_window = CartesianIndices(b) .+ CartesianIndex(px_position)
+        buf_overlap = intersect(CartesianIndices(buf), CartesianIndices(b) .+ CartesianIndex(px_position))
+        b_overlap = intersect(buf_overlap .- CartesianIndex(px_position), CartesianIndices(b))
+        buf[buf_overlap] .+= b[b_overlap]
+    end
+    return SpatialArray(buf, bs.Δxy)
+end

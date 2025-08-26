@@ -5,6 +5,7 @@ authors = ["Martin Kunz <martinkunz@email.cz> and contributors"]
 
 [deps]
 ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FFTViews = "4f61f5a4-77b1-5117-aa51-3ab5ef4ef0cd"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 InterfaceFunctions = "9f9138d1-22ea-4a5b-8917-3b6286796293"
@@ -22,22 +23,19 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 [weakdeps]
 ComputePipeline = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
-Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [extensions]
 DimensionalDataExt = "DimensionalData"
 ImageCoreExt = "ImageCore"
 MakieExt = ["Makie", "ComputePipeline"]
-TestExt = ["Test", "Distributions"]
 
 [compat]
 ComponentArrays = "0.15.29"
 ComputePipeline = "0.1.3"
 DimensionalData = "^0.29"
-Distributions = "^0.25"
+Distributions = "0.25.120"
 FFTViews = "0.3.2"
 FFTW = "^1"
 ImageCore = "0.10.5"
@@ -52,6 +50,5 @@ Rotations = "1.7.1"
 SpecialFunctions = "^2"
 StaticArraysCore = "1.4.3"
 Statistics = "^1"
-Test = "^1"
 Unitful = "^1"
 julia = "1.11,1.12"

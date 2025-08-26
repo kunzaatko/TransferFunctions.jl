@@ -4,7 +4,6 @@ using InterfaceFunctions
 using TransferFunctions
 using TransferFunctions: Size, aroundorigin, PSFModel, TransferFunction, PSFArray, sampling, inner_axes, PSFArray
 using OffsetArrays: no_offset_view
-include("estimation/beads-acquisition.jl")
 
 abstract type EstimationAlgorithm{H<:TransferFunction} end
 abstract type FromGroundTruth{H<:TransferFunction} <: EstimationAlgorithm{H} end
