@@ -15,7 +15,7 @@ Gibson & Lanni model point spread function
     λ::Length{T}
     NA::T
     n_i::T = 1.5
-    n_s::T = 4 // 3
+    n_s::T = float(4 // 3)
     n_g::T = 1.5
     t_i::Length{T}
     t_g::Length{T}

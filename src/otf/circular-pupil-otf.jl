@@ -7,7 +7,7 @@ Ideal (aberration free) OTF of a diffraction limited imaging system with incoher
 Base.@kwdef struct CircularPupilOTF{T<:Real} <: RadialOTF{2}
     λ::Length{T}
     NA::T
-    n::T = 4 // 3
+    n::T = float(4 // 3)
     curvature::T
     function CircularPupilOTF(λ::Length{A}, NA::B, n::C, curvature::D) where {A<:Real,B<:Real,C<:Real,D<:Real}
         oneunit(curvature) >= curvature > zero(curvature) || throw(DomainError(curvature, "Valid domain for curvature is (0,1]"))
