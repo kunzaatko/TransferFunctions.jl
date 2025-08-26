@@ -80,7 +80,7 @@ Compute the encircled energy of the Gaussian PSF `tf` for a circle of radius `R`
 
 An isotropic Gaussian has a closed from encircled energy of ``E(R) = 1 - exp{-R² / 2σ²}``.
 
-See also [`energy_radius`](@ref `energy_radius(::IsotropicGaussian{2}, ::Real)`)
+See also [`energy_radius`](@ref energy_radius(::IsotropicGaussian{2}, ::Real))
 """
 encircled_energy(tf::IsotropicGaussian{2}, R::Length) = 1 - exp(-R^2 / (2σ_xy(tf)^2))
 
@@ -90,7 +90,7 @@ Calculate the energy radius of the Gaussian PSF `tf` for a given error term `ε`
 
 An isotropic Gaussian has a closed form energy radius of ``R(ε) = σ √(2 ln(1/ε))``.
 
-See also [`encircled_energy`](@ref `encircled_energy(::IsotropicGaussian{2}, ::Length)`)
+See also [`encircled_energy`](@ref encircled_energy(::IsotropicGaussian{2}, ::Length))
 """
 energy_radius(tf::IsotropicGaussian{2}, ε::Real) = σ_xy(tf)*√(2log(1/ε))
 

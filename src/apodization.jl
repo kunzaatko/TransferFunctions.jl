@@ -45,22 +45,22 @@ Broadcast.broadcastable(a::ApodizationFunction) = Ref(a)
 # FIX: There are multiple Triangular types of apodization that are based on where the zero is... See
 # https://en.wikipedia.org/w/index.php?title=Window_function&oldid=1237444898#Triangular_window <10-09-24>. These could
 # be implemented as constants of the Triangular window similar to how PowerCosine and SineSum are defined.
-"""
+@doc raw"""
     Triangular{T} <: ApodizationFunction{T}
 Formulas:
-+ zero-phase function: ``w₀(r) = 1-|r|``
-+ instrument function: ``I(k) = sinc²(π k)``
+_zero-phase function_ --``w₀(r) = 1-|r|`` \\
+_instrument function_ -- ``I(k) = \mathrm{sinc}²(π k)``
 """
 struct Triangular{T} <: ApodizationFunction{T} end
 apodization(::Triangular{T}, r::Real) where {T} = oneunit(T) - abs(r)
-instrument(::Triangular{T}, k::Real)where {T} = sinc(π * k)^2
+instrument(::Triangular{T}, k::Real) where {T} = sinc(π * k)^2
 
 # TODO: This should be instead implemented as a polynomial with some set parameters. It could even be by using the
 # B-Splines type. <10-09-24> 
 
 """
     Welch{T} <: ApodizationFunction{T}
-+ zero-phase function: ``w₀(r) = 1 - r²``
+_zero-phase function_ -- ``w₀(r) = 1 - r²``
 """
 struct Welch{T} <: ApodizationFunction{T} end
 apodization(::Welch{T}, r::Real) where {T} = convert(T, 1 - r^2)
@@ -81,7 +81,7 @@ end
 
 """
     PowerCosine{T} <: ApodizationFunction{T}
-+ zero-phase function: ``w₀(r) = cos(πr/2)^α``
+_zero-phase function_ -- ``w₀(r) = \\cos(πr/2)^α``
 
 Instances: [`Cosine`](@ref) and [`Hann`](@ref)
 """
@@ -96,15 +96,15 @@ Base.convert(::Type{ApodizationFunction{S}}, apo::PowerCosine{T,α}) where {S,T,
 
 """
     Cosine{T} == PowerCosine{T, 1} <: ApodizationFunction{T}
-+ zero-phase function: ``w₀(r) = cos(πr/2)``
-+ instrument function: ``I(k) = 4cos(2k)/(π(1 - 16k²))``
+_zero-phase function_ -- ``w₀(r) = \\cos(πr/2)`` \\
+_instrument function_ -- ``I(k) = 4\\cos(2k)/(π(1 - 16k²))``
 """
 const Cosine{T} = PowerCosine{T, 1}
 
 """
     Hann{T} == PowerCosine{T,2} <: ApodizationFunction{T}
 Formulas:
-+ zero-phase function: ``w₀(r) = cos²(πr/2)``
+_zero-phase function_ -- ``w₀(r) = \\cos²(πr/2)``
 """
 const Hann{T} = PowerCosine{T,2}
 # instrument(apo::Hann, k::Real) = sinc(2π *  k) / (1 - 4*k^2)
@@ -113,7 +113,7 @@ const Hann{T} = PowerCosine{T,2}
     SineSum{T,Cs} <: ApodizationFunction{T}
 Sum of sines with coefficients `Cs` with output type of `T`
 
-+ zero-phase function: ``w₀(r) = ∑ᴺₖ₌₀ (-1)ᵏ Cs[k] cos(πk(r + 1))``
+_zero-phase function_ -- ``w₀(r) = ∑ᴺₖ₌₀ (-1)ᵏ Cs[k] \\cos(πk(r + 1))``
 
 Instances: [`Hamming`](@ref), [`Nuttall`](@ref), [`BlackmanNuttall`](@ref), [`BlackmanHarris`](@ref), [`FlatTop`](@ref), [`Blackman`](@ref) and [`ExactBlackman`](@ref)
 """
@@ -200,7 +200,7 @@ const ExactBlackman{T} = Blackman{T,683 // 4652}
     Gaussian{T} <: ApodizationFunction{T}
 Gaussian apodization function with a given standard deviation `σ`.
 
-+ zero-phase function: ``w₀(r) = e^{-r²/2σ²}``
+_zero-phase function_ -- ``w₀(r) = e^{-r²/2σ²}``
 """
 struct Gaussian{T} <: ApodizationFunction{T}
     σ::T

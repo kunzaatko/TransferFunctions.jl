@@ -49,14 +49,14 @@ function intensity(tf::AiryDisc{<:Any,T}, r::Length) where {T}
     return iszero(r) ? oneunit(T) : (2 * besselj1(α * r) / (α * r))^2
 end
 
-"""
+@doc raw"""
     axialintensity(tf::AiryDisc{3}, z::Length)
 Calculate the axial intensity of an [`AiryDisc`](@ref) PSF at the ``z``-offset `z`.
 
-Axial intensity of the Airy disc is given by ``h(r) = sinc(ϕ_z)²``  where ``ϕ_z = π NA²z/λn``.
+Axial intensity of the Airy disc is given by ``h(r) = \mathrm{sinc}(ϕ_z)²``  where ``ϕ_z = NA²z/λn``.
 """
 function axialintensity(tf::AiryDisc{3,T}, z::Length) where {T}
-    ϕ_z = (π * tf.NA^2 * z) / (tf.λ * tf.n) # normalized axial phase
+    ϕ_z = (tf.NA^2 * z) / (tf.λ * tf.n) # normalized axial phase
     return iszero(z) ? oneunit(T) : sinc(ϕ_z)^2
 end
 
@@ -64,8 +64,8 @@ end
     intensity(tf::AiryDisc{3}, r::Length, z::Length)
 Compute the intensity of the [`AiryDisc`](@ref) PSF at a distance `r` from its center and ``z``-offset `z`.
 
-It is defined as the product of the [lateral intensity](@ref `intensity(::AiryDisc{<:Any,T}, r::Length) where {T}`) and
-the [axial intensity](@ref `axialintensity(::AiryDisc{3,T}, z::Length) where {T}`).
+It is defined as the product of the [lateral intensity](@ref intensity(::AiryDisc{<:Any,T}, ::Length) where {T}) and
+the [axial intensity](@ref axialintensity(::AiryDisc{3,T}, ::Length) where {T}).
 """
 function intensity(tf::AiryDisc{3}, r::Length, z::Length)
     intensity(tf, r) * axialintensity(tf, z)
@@ -79,7 +79,7 @@ An Airy disc has a closed from encircled energy of ``E(R) = 1 - J₀²(αR) - J�
 ``J₁`` are the zeroth and first order Bessel functions of the first kind respectively.[Born - Principles of
 Optics §8.5.2](@cite born2019a)
 
-See also [`energy_radius`](@ref `energy_radius(::AiryDisc{2}, ::Real)`)
+See also [`energy_radius`](@ref energy_radius(::AiryDisc{2}, ::Real))
 """
 encircled_energy(tf::AiryDisc{2}, R::Length) = 1 - besselj0(2π*tf.NA*R/tf.λ)^2 - besselj1(2π*tf.NA*R/tf.λ)^2
 
@@ -88,7 +88,7 @@ encircled_energy(tf::AiryDisc{2}, R::Length) = 1 - besselj0(2π*tf.NA*R/tf.λ)^2
 Calculate the energy radius of the Airy disc PSF `tf` for a given error term `ε`.
 
 An Airy disc has an closed form encircled energy formula. The energy radius is computed by finding a root through
-[bisection](@extref Roots `Bisection`).
+[bisection](@extref `Roots.Bisection`).
 """
 energy_radius(tf::AiryDisc{2}, ε::Real) = find_zero(R -> encircled_energy(tf, R) - 1 + ε, (0.0u"nm", Inf*u"nm"), Bisection())
 

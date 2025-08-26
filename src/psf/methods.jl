@@ -121,9 +121,8 @@ error of the output.
     # TODO: https://chatgpt.com/share/68a77e88-a55c-8013-baf9-8e87fc4000e3 <21-08-25> 
 end
 
-
 """
-    psf(tf::PointSpreadFunction, Δ, wh::Dims{2}; normalize=true)
+    psf(tf::PointSpreadFunction, Δ, wh::Dims; normalize=true)
 Generate a PSF array size `wh` for the model `tf` with  the pixel size `Δ`.
 """
 function psf(
@@ -136,22 +135,6 @@ function psf(
     return SpatialMatrix(data, Δ)
 end
 psf( tf::PointSpreadFunction{N}, Δ::Length, wh::Dims{N}; kwargs...) where {N}= psf(tf, fillsize(Δ, N), wh; kwargs...)
-
-radius_window(Δ::PixelSize, R::Length) = map(x -> 2 * round(Int, R / x, RoundUp) + 1, Δ)
-
-"""
-    psf(tf::PointSpreadFunction{2}, Δ, ε::Real; <kwargs>)
-Sample the PSF `tf` with a pixel size `Δ` over a window such that the energy error is less than `ε`.
-
-`kwargs` are passed to the final [`psf` function](@ref `psf(::PointSpreadFunction{2}, ::PixelSize{2}, ::Dims{2})`).
-"""
-psf(tf::PointSpreadFunction{2}, Δ::PixelSize{2}, ε::Real; kwargs...) = psf(tf, Δ, radius_window(Δ, energy_radius(tf, ε)); kwargs...)
-psf(tf::PointSpreadFunction{2}, Δ::Length, ε::Real; kwargs...) = psf(tf, fillsize(Δ, 2), ε; kwargs...)
-
-"""
-    psf(tf::PointSpreadFunction, Δ::PixelSize{3}, whd::Dims{3}; normalize=true)
-Generate a 3D PSF array of size `whd` for the model `tf` with  the voxel size `Δ`.
-"""
 function psf(
     tf::PointSpreadFunction{3},
     Δ::PixelSize{3},
@@ -164,6 +147,18 @@ function psf(
     return SpatialArray(data, Δ)
 end
 psf(tf::PointSpreadFunction, Δ::Length, wh::Dims{3}; kwargs...) = psf(tf, fillsize(Δ, 3), wh; kwargs...)
+
+radius_window(Δ::PixelSize, R::Length) = map(x -> 2 * round(Int, R / x, RoundUp) + 1, Δ)
+
+"""
+    psf(tf::PointSpreadFunction{2}, Δ, ε::Real; <kwargs>)
+Sample the PSF `tf` with a pixel size `Δ` over a window such that the energy error is less than `ε`.
+
+`kwargs` are passed to the final [`psf` function](@ref psf(::PointSpreadFunction{N}, ::PixelSize{N}, ::Dims{N}) where {N}).
+"""
+psf(tf::PointSpreadFunction{2}, Δ::PixelSize{2}, ε::Real; kwargs...) = psf(tf, Δ, radius_window(Δ, energy_radius(tf, ε)); kwargs...)
+psf(tf::PointSpreadFunction{2}, Δ::Length, ε::Real; kwargs...) = psf(tf, fillsize(Δ, 2), ε; kwargs...)
+
 
 # TODO: Specify the details `ε`, border etc. <21-08-25> 
 """
