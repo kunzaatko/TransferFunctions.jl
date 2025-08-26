@@ -21,7 +21,6 @@ const Coordinate{N,T} = NTuple{N,T} where {T<:Real}
 """
 const Size{N} = NTuple{N,Int}
 
-include("types/extension-interface.jl")
 """
     OneEdge
 Alias for `Tuple{Int,Int}`.
