@@ -38,3 +38,5 @@ function GibsonLanni(λ::Length{A}, NA::B, n_i::C, n_s::D, n_g::E, t_i::F, t_g::
     λ = convert(T, ustrip(λ)) * unit(λ)
 end
 symmtery(::GibsonLanni) = ZAxisRadialSymmetry()
+
+export GibsonLanni

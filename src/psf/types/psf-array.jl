@@ -10,5 +10,6 @@ struct PSFArray{T, N, P<:SpatialArray{T, N}} <: PointSpreadFunction{N}
         new{eltype(data),ndims(data),typeof(data)}(data)
     end
 end
+Base.parent(tf::PSFArray) = tf.data
 
 export PSFArray

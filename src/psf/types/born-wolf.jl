@@ -40,3 +40,5 @@ function intensity(tf::BornWolf{T}, r::Length)::T where {T}
     k₀ = k / tf.n
     return r == zero(r) ? oneunit(T) : (2besselj1(k₀ * r * tf.NA) / (k₀ * r * tf.NA))^2
 end
+
+export BornWolf
