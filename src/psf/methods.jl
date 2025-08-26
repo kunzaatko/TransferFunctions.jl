@@ -38,7 +38,7 @@ intensity(psf, x::Length, y::Length, z::Length) = # ...
         psfresponse = Fix{1}(response, psf)
         halfmax = maximum(psf) / 2
         fixed = Tuple(setdiff(1:N, dim))
-        axis_response = mapfoldr(F -> Fix{F}, (a,b) -> a(b,0u"nm"), fixed; init = psfresponse)
+        axis_response = mapfoldr(F -> Fix{F}, (a, b) -> a(b, 0u"nm"), fixed; init=psfresponse)
         return x -> axis_response(x) - halfmax
     end
 else
@@ -52,13 +52,13 @@ else
     @inline function axis_HWHM_closure(psf::PointSpreadFunction{3}, dim::Int)
         psfresponse = (args...) -> response(psf, args...)
         halfmax = maximum(psf) / 2
-        axis_response = if dim == 1 
-                x -> psfresponse(x, 0u"nm", 0u"nm") 
-            elseif dim == 2 
-                x -> psfresponse(0u"nm", x, 0u"nm") 
-            else 
+        axis_response = if dim == 1
+            x -> psfresponse(x, 0u"nm", 0u"nm")
+        elseif dim == 2
+            x -> psfresponse(0u"nm", x, 0u"nm")
+        else
             x -> psfresponse(0u"nm", 0u"nm", x)
-            end
+        end
         return x -> axis_response(x) - halfmax
     end
 end
@@ -79,7 +79,7 @@ julia> TransferFunctions.HWHM(tf)
 @interface function HWHM(psf::PointSpreadFunction{N}) where {N}
     ntuple(Val(N)) do n
         hwhm_closure = axis_HWHM_closure(psf, n)
-        Tuple(find_zero(hwhm_closure, lr, Bisection()) for lr in ((-Inf * u"nm",  0.0u"nm"), (0.0u"nm", Inf * u"nm")))
+        Tuple(find_zero(hwhm_closure, lr, Bisection()) for lr in ((-Inf * u"nm", 0.0u"nm"), (0.0u"nm", Inf * u"nm")))
     end
 end
 
