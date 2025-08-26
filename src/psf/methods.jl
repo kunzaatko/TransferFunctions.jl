@@ -102,28 +102,58 @@ julia> TF.FWHM(tf)
     end
 end
 
+# TODO: Should be a better system for handling the support on which the PSF is sampled. Instead of only having the
+# energy radius or the circle on which the energy is supported, it should be returned as a general window on which the
+# PSF is sampled. An elipse may also be a valid support option. The window then is the bounding box of the shape. It
+# should by implemented as some trait on the PSF type that determines the dispatch of the support function. The support
+# function should always hold a parameter `ε` which is the energy error that is allowed in the sampling. <22-08-25>  
+@doc raw"""
+    energy_radius(psf::PointSpreadFunction, ε::Real)::Length
+Find the radius ``R`` such that the [encircled energy](https://en.wikipedia.org/wiki/Encircled_energy) is more than 
+``1 - ε``. 
+
+I.e. find ``R`` such that ``∫_ℬ PSF ≤ 1 - ε`` where ``ℬ`` is the ball of radius ``R``.
+
+Useful for finding the correct PSF support to sample the PSF at for a filtering operation while guaranteeing a bounded
+error of the output.
+"""
+@interface function energy_radius(psf::PointSpreadFunction{2}, Δ, ε::Real; oversampling=8)
+    # TODO: https://chatgpt.com/share/68a77e88-a55c-8013-baf9-8e87fc4000e3 <21-08-25> 
+end
+
 
 """
-    psf(tf::PointSpreadFunction, Δ::PixelSize{2}, wh::Dims{2}; normalize=true)
+    psf(tf::PointSpreadFunction, Δ, wh::Dims{2}; normalize=true)
 Generate a PSF array size `wh` for the model `tf` with  the pixel size `Δ`.
 """
 function psf(
-    tf::PointSpreadFunction,
-    Δ::PixelSize{2},
-    wh::Dims{2}; normalize=true
-)
+    tf::PointSpreadFunction{N},
+    Δ::PixelSize{N},
+    wh::Dims{N}; normalize=true
+) where {N}
     data = OriginAt(roundupcenter(wh))(response.(tf, posgrid(wh, Δ)...))
     normalize && (data ./= sum(data))
     return SpatialMatrix(data, Δ)
 end
-psf(tf::PointSpreadFunction, Δ::Length, wh::Dims{2}; kwargs...) = psf(tf, fillsize(Δ, 2), wh; kwargs...)
+psf( tf::PointSpreadFunction{N}, Δ::Length, wh::Dims{N}; kwargs...) where {N}= psf(tf, fillsize(Δ, N), wh; kwargs...)
+
+radius_window(Δ::PixelSize, R::Length) = map(x -> 2 * round(Int, R / x, RoundUp) + 1, Δ)
+
+"""
+    psf(tf::PointSpreadFunction{2}, Δ, ε::Real; <kwargs>)
+Sample the PSF `tf` with a pixel size `Δ` over a window such that the energy error is less than `ε`.
+
+`kwargs` are passed to the final [`psf` function](@ref `psf(::PointSpreadFunction{2}, ::PixelSize{2}, ::Dims{2})`).
+"""
+psf(tf::PointSpreadFunction{2}, Δ::PixelSize{2}, ε::Real; kwargs...) = psf(tf, Δ, radius_window(Δ, energy_radius(tf, ε)); kwargs...)
+psf(tf::PointSpreadFunction{2}, Δ::Length, ε::Real; kwargs...) = psf(tf, fillsize(Δ, 2), ε; kwargs...)
 
 """
     psf(tf::PointSpreadFunction, Δ::PixelSize{3}, whd::Dims{3}; normalize=true)
 Generate a 3D PSF array of size `whd` for the model `tf` with  the voxel size `Δ`.
 """
 function psf(
-    tf::PointSpreadFunction,
+    tf::PointSpreadFunction{3},
     Δ::PixelSize{3},
     whd::Dims{3}; normalize=true
 )
