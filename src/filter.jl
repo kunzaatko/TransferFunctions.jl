@@ -15,8 +15,8 @@ border is not specified, no border is added, which for the `FFT` behaves the sam
 
 See also [`conv!`](@ref), [`corr`](@ref), [`corr!`](@ref)
 """
-conv(img::AbstractArray, kernel::AbstractArray, args...) = corr(img, reflect(kernel), args...)
-conv(::Type{T}, img::AbstractArray, kernel::AbstractArray, args...) where {T} = corr(T, img, reflect(kernel), args...)
+conv(A::AbstractArray, K::AbstractArray, args...) = corr(A, reflect(K), args...)
+conv(::Type{T}, A::AbstractArray, K::AbstractArray, args...) where {T} = corr(T, A, reflect(K), args...)
 
 """
     conv!(out, A, K, [border])
@@ -24,7 +24,7 @@ Mutating version of [`conv`](@ref).
 
 See [`conv`](@ref) for details.
 """
-conv!(out::AbstractArray, img::AbstractArray, kernel::AbstractArray, args...) = corr!(out, img, reflect(kernel), args...)
+conv!(out::AbstractArray, A::AbstractArray, K::AbstractArray, args...) = corr!(out, A, reflect(K), args...)
 
 """
     corr([T], A, K, [border])
@@ -35,11 +35,11 @@ border is not specified, no border is added, which for the `FFT` behaves the sam
 
 See also [`corr!`](@ref), [`conv`](@ref), [`conv!`](@ref)
 """
-@inline function corr(img::AbstractArray, kernel, args...)
-    corr(corr_outputtype(img, kernel), img, kernel, args...)
+@inline function corr(A::AbstractArray, K, args...)
+    corr(corr_outputtype(A, K), A, K, args...)
 end
-@inline function corr(::Type{T}, img::AbstractArray, kernel::AbstractArray, args...) where {T}
-    corr!(similar(img, T), img, kernel, args...)
+@inline function corr(::Type{T}, A::AbstractArray, K::AbstractArray, args...) where {T}
+    corr!(similar(A, T), A, K, args...)
 end
 
 """
@@ -48,8 +48,8 @@ Mutating version of [`corr`](@ref).
 
 See [`corr`](@ref) for details.
 """
-@inline function corr!(out::AbstractArray, img::AbstractArray, kernel::AbstractArray, border)
-    corr!(out, border_array(img, border, kern_padding(kernel)), kernel)
+@inline function corr!(out::AbstractArray, A::AbstractArray, K::AbstractArray, border)
+    corr!(out, border_array(A, border, kern_padding(K)), K)
 end
 function corr!(out::AbstractArray{S,N}, A::AbstractArray{T,N}, K::AbstractArray) where {S,T,N}
     krn = FFTView(zeros(eltype(K), map(length, axes(A))))
