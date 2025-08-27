@@ -1,3 +1,4 @@
+using Base: Indices
 using Roots, InterfaceFunctions
 using TransferFunctions.Apodization
 
@@ -128,33 +129,24 @@ Generate a PSF array size `wh` for the model `tf` with  the pixel size `Δ`.
 function psf(
     tf::PointSpreadFunction{N},
     Δ::PixelSize{N},
-    wh::Dims{N}; normalize=true
+    inds::Indices{N}; normalize=true
 ) where {N}
-    data = OriginAt(roundupcenter(wh))(response.(tf, posgrid(wh, Δ)...))
-    normalize && (data ./= sum(data))
-    return SpatialMatrix(data, Δ)
-end
-psf( tf::PointSpreadFunction{N}, Δ::Length, wh::Dims{N}; kwargs...) where {N}= psf(tf, fillsize(Δ, N), wh; kwargs...)
-function psf(
-    tf::PointSpreadFunction{3},
-    Δ::PixelSize{3},
-    whd::Dims{3}; normalize=true
-)
-    center = CartesianIndex(Tuple(roundupcenter(whd[1:2]))..., 1)
-    grid = posgrid(whd, Δ; center)
-    data = OriginAt(center)(response.(tf, grid...))
+    origin = CartesianIndex(findfirst.(==(0), inds))
+    data = OriginAt(origin)(response.(tf, posgrid(inds, Δ)...))
     normalize && (data ./= sum(data))
     return SpatialArray(data, Δ)
 end
-psf(tf::PointSpreadFunction, Δ::Length, wh::Dims{3}; kwargs...) = psf(tf, fillsize(Δ, 3), wh; kwargs...)
+psf(tf::PointSpreadFunction{N}, Δ::Length, args...; kwargs...) where {N}= psf(tf, fillsize(Δ, N), args...; kwargs...)
+psf(tf::PointSpreadFunction{2}, Δ::PixelSize{2}, wh::Dims{2}; kwargs...) = psf(tf, Δ, aroundorigin(wh); kwargs...)
+psf(tf::PointSpreadFunction{3}, Δ::PixelSize{3}, whd::Dims{3}; kwargs...) = psf(tf, Δ, aroundorigin(whd, (0,0,whd[3] ÷ 2 - 1)); kwargs...)
 
-radius_window(Δ::PixelSize, R::Length) = map(x -> 2 * round(Int, R / x, RoundUp) + 1, Δ)
+radius_window(Δ::PixelSize, R::Length) = aroundorigin(map(x -> 2 * round(Int, R / x, RoundUp) + 1, Δ))
 
 """
     psf(tf::PointSpreadFunction{2}, Δ, ε::Real; <kwargs>)
 Sample the PSF `tf` with a pixel size `Δ` over a window such that the energy error is less than `ε`.
 
-`kwargs` are passed to the final [`psf` function](@ref psf(::PointSpreadFunction{N}, ::PixelSize{N}, ::Dims{N}) where {N}).
+`kwargs` are passed to the final [`psf` function](@ref psf(::PointSpreadFunction{N}, ::PixelSize{N}, ::Indices{N}) where {N}).
 """
 psf(tf::PointSpreadFunction{2}, Δ::PixelSize{2}, ε::Real; kwargs...) = psf(tf, Δ, radius_window(Δ, energy_radius(tf, ε)); kwargs...)
 psf(tf::PointSpreadFunction{2}, Δ::Length, ε::Real; kwargs...) = psf(tf, fillsize(Δ, 2), ε; kwargs...)

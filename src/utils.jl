@@ -92,6 +92,7 @@ aroundorigin(inds::Indices{N}) where {N} = aroundorigin(inds, ntuple(_ -> 0, Val
 aroundorigin(inds::Indices{N}, o::Coordinate{N,<:Integer}) where {N} = map(aroundorigin, inds, o)
 aroundorigin(s::Integer, o::Integer=0) = aroundorigin(OneTo(s) .- rounddowncenter(OneTo(s)), o)
 aroundorigin(s::AbstractUnitRange, o::Integer=0) = s .+ o
+aroundorigin(s, o::CartesianIndex) = aroundorigin(s, Tuple(o))
 
 # TODO: Use the same calling stack as in the previous methods. <05-05-25> 
 """
