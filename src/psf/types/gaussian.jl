@@ -1,4 +1,4 @@
-using Roots, SpecialFunctions
+using Roots, SpecialFunctions, ComponentArrays
 
 @doc raw"""
     const C_AiryDisc_lateral
@@ -24,9 +24,9 @@ Airy disc scalar diffraction point spread function model for a circular aperture
 struct IsotropicGaussian{N,T<:Real} <: PSFModel{N}
     λ::Length{T}
     NA::T
-    n::T
+    n::T # only relevant for 3D
     C_lateral::T
-    C_axial::T
+    C_axial::T # only relevant for 3D
     function IsotropicGaussian{N,T}(λ::Length{T}, NA::T, n::T, C_lateral::T, C_axial::T) where {T,N}
         N ∈ (2, 3) || throw(ArgumentError("`IsotropicGaussian` model can only be used for 2D and 3D PSFs. Got `N == $N`."))
         check_emission_wavelength(λ)
@@ -37,9 +37,9 @@ struct IsotropicGaussian{N,T<:Real} <: PSFModel{N}
         return new{N,T}(λ, NA, n, C_lateral, C_axial)
     end
 end
-IsotropicGaussian{N}(;λ, NA, n = 4 // 3, C_lateral=C_AiryDisc_lateral, C_axial=C_AiryDisc_axial) where {N} = IsotropicGaussian{N}(λ, NA, n, C_lateral, C_axial)
-IsotropicGaussian{N}(λ::Length, NA::Real; kwargs...) where {N} = IsotropicGaussian{N}(;λ, NA, kwargs...)
-IsotropicGaussian(args...;kwargs...) = IsotropicGaussian{3}(args...;kwargs...)
+IsotropicGaussian{N,T}(; λ::Length{T}, NA::T, n::T=T(4 // 3), C_lateral::T=T(C_AiryDisc_lateral), C_axial::T=T(C_AiryDisc_axial)) where {N,T} = IsotropicGaussian{N,T}(λ, NA, n, C_lateral, C_axial) # final 1
+IsotropicGaussian{2,T}(params::ComponentVector) where {T} = IsotropicGaussian{2,T}(;λ=params.λ, NA=T(params.NA), C_lateral=T(params.C_lateral)) # -> final 1
+IsotropicGaussian{3,T}(params::ComponentVector) where {T} = IsotropicGaussian{3,T}(;λ=params.λ, NA=T(params.NA), n=T(params.n), C_lateral=T(params.C_lateral), C_axial=T(params.C_axial)) # -> final 1
 
 # TODO: Document the FWHM coefficients <18-08-25> 
 """
@@ -47,12 +47,16 @@ IsotropicGaussian(args...;kwargs...) = IsotropicGaussian{3}(args...;kwargs...)
 [`IsotropicGaussian`](@ref) model point spread function with emission wavelength `λ`, numerical aperture `NA` and
 immersion medium refractive index `n`.
 """
-function IsotropicGaussian{N}(λ::Length{A}, NA::Real, n::Real, C_lateral::Real, C_axial::Real) where {A<:Real,N}
+function IsotropicGaussian{N}(λ::Length{A}, NA::Real, n::Real, C_lateral::Real, C_axial::Real) where {A<:Real,N} # final 2
     T = promote_type(A, typeof(NA), typeof(n), typeof(C_lateral), typeof(C_axial))
     λ = convert(T, ustrip(λ)) * unit(λ)
     NA, n, C_lateral, C_axial = convert(T, NA), convert(T, n), convert(T, C_lateral), convert(T, C_axial)
     return IsotropicGaussian{N,T}(λ, NA, n, C_lateral, C_axial) # inner
 end
+IsotropicGaussian{N}(; λ, NA, n=4 // 3, C_lateral=C_AiryDisc_lateral, C_axial=C_AiryDisc_axial) where {N} = IsotropicGaussian{N}(λ, NA, n, C_lateral, C_axial) # -> final 2
+IsotropicGaussian{N}(λ::Length, NA::Real; kwargs...) where {N} = IsotropicGaussian{N}(; λ, NA, kwargs...) # -> final 2
+IsotropicGaussian(args...; kwargs...) = IsotropicGaussian{3}(args...; kwargs...) # -> final 2
+
 
 symmetry(::IsotropicGaussian) = ZAxisRadialSymmetry()
 
@@ -63,7 +67,7 @@ function intensity(tf::IsotropicGaussian, r::Length)
     return exp(-r^2 / (2σ^2)) / w_xy
 end
 
-@inline σ_z(tf::IsotropicGaussian) =  tf.C_axial * (tf.λ * tf.n / tf.NA^2) / √(2log(2))
+@inline σ_z(tf::IsotropicGaussian) = tf.C_axial * (tf.λ * tf.n / tf.NA^2) / √(2log(2))
 function axialintensity(tf::IsotropicGaussian{3}, z::Length)
     σ = σ_z(tf)
     w_z = ustrip(√(2π) * σ) # NOTE: dimension gets integrated out from the normalization factor
@@ -92,6 +96,9 @@ An isotropic Gaussian has a closed form energy radius of ``R(ε) = σ √(2 ln(1
 
 See also [`encircled_energy`](@ref encircled_energy(::IsotropicGaussian{2}, ::Length))
 """
-energy_radius(tf::IsotropicGaussian{2}, ε::Real) = σ_xy(tf)*√(2log(1/ε))
+energy_radius(tf::IsotropicGaussian{2}, ε::Real) = σ_xy(tf) * √(2log(1 / ε))
+
+params(tf::IsotropicGaussian{2}) = ComponentVector(λ=tf.λ, NA=tf.NA, C_lateral=tf.C_lateral)
+params(tf::IsotropicGaussian{3}) = ComponentVector(λ=tf.λ, NA=tf.NA, n=tf.n, C_lateral=tf.C_lateral, C_axial=tf.C_axial)
 
 export IsotropicGaussian

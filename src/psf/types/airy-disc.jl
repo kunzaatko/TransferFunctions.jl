@@ -19,21 +19,24 @@ struct AiryDisc{N,T<:Real} <: PSFModel{N}
         return new{N,T}(λ, NA, n)
     end
 end
-AiryDisc{N}(; λ, NA, n=float(4 // 3)) where {N} = AiryDisc{N}(λ, NA, n)
-AiryDisc{N}(λ::Length, NA::Real; kwargs...) where {N} = AiryDisc{N}(; λ, NA, kwargs...)
-AiryDisc(args...; kwargs...) = AiryDisc{3}(args...; kwargs...) # default to the 3D full model
+AiryDisc{N,T}(; λ::Length{T}, NA::T, n::T=T(4 // 3)) where {N,T} = AiryDisc{N,T}(λ, NA, n) # final 1
+AiryDisc{2,T}(params::ComponentVector) where {T} = AiryDisc{2,T}(;λ=params.λ, NA=T(params.NA)) # -> final 1
+AiryDisc{3,T}(params::ComponentVector) where {T} = AiryDisc{3,T}(;λ=params.λ, NA=T(params.NA), n=T(params.n)) # -> final 1
 
 """
     AiryDisc{N}(λ::Length, NA, n=4//3)
 [`AiryDisc`](@ref) model point spread function with emission wavelength `λ`, numerical aperture `NA` and immersion
 medium refractive index `n`.
 """
-function AiryDisc{N}(λ::Length{A}, NA::Real, n::Real) where {A<:Real,N}
+function AiryDisc{N}(λ::Length{A}, NA::Real, n::Real) where {A<:Real,N} # final 2
     T = promote_type(A, typeof(NA), typeof(n))
     λ = convert(T, ustrip(λ)) * unit(λ)
     NA, n = convert(T, NA), convert(T, n)
     return AiryDisc{N,T}(λ, NA, n) # inner
 end
+AiryDisc{N}(; λ, NA, n=float(4 // 3)) where {N} = AiryDisc{N}(λ, NA, n) # -> final 2
+AiryDisc{N}(λ::Length, NA::Real; kwargs...) where {N} = AiryDisc{N}(; λ, NA, kwargs...) # -> final 2
+AiryDisc(args...; kwargs...) = AiryDisc{3}(args...; kwargs...) # -> final 2 (default to 3D)
 
 symmetry(::AiryDisc) = ZAxisRadialSymmetry()
 
@@ -92,4 +95,11 @@ An Airy disc has an closed form encircled energy formula. The energy radius is c
 """
 energy_radius(tf::AiryDisc{2}, ε::Real) = find_zero(R -> encircled_energy(tf, R) - 1 + ε, (0.0u"nm", Inf*u"nm"), Bisection())
 
+params(tf::AiryDisc{2}) = ComponentArray(λ=tf.λ, NA=tf.NA)
+params(tf::AiryDisc{3}) = ComponentArray(λ=tf.λ, NA=tf.NA, n=tf.n)
+
+function Base.show(io::IO, tf::AiryDisc{2})
+    Base.showarg(io, tf, true) 
+    print(io, "(λ=$(tf.λ), NA=$(tf.NA))")
+end
 export AiryDisc

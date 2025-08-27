@@ -7,7 +7,7 @@ f = 1.3
 
 PSF_radially_symmetric = [AiryDisc, IsotropicGaussian] #, BornWolf]
 
-PSF_2D = [AiryDisc{2}(λ, NA), IsotropicGaussian{2}(λ, NA), BornWolf{2}(λ, NA, f)]
+PSF_2D = [AiryDisc{2}(λ, NA), IsotropicGaussian{2}(λ, NA), BornWolf{2}(λ, NA, f), ScaledPSF(AiryDisc{2}, λ, NA; xscale=0.8, yscale=1.2), RotatedPSF(AiryDisc{2}, λ, NA; θ=π / 3)]
 @testset "Blanket tests 2D PSF model: $(nameof(typeof(tf)))" for tf in PSF_2D
   @test tf isa TF.PointSpreadFunction{2}
   @test tf isa TF.TransferFunction{2}
@@ -25,7 +25,7 @@ PSF_2D = [AiryDisc{2}(λ, NA), IsotropicGaussian{2}(λ, NA), BornWolf{2}(λ, NA,
   end
 end
 
-PSF_3D = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA)] # , BornWolf(λ, NA, n)]
+PSF_3D = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA), ScaledPSF(AiryDisc{3}, λ, NA; xscale=0.8, yscale=1.2, zscale=0.5), RotatedPSF(AiryDisc{3}, λ, NA; α=0.1, β=0.2, γ=0.3)] # , BornWolf(λ, NA, n)]
 @testset "Blanket tests 3D PSF model: $(nameof(typeof(tf)))" for tf in PSF_3D
   @test tf isa TF.PointSpreadFunction{3}
   @test tf isa TF.TransferFunction{3}
@@ -41,6 +41,10 @@ PSF_3D = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA)] # , BornWolf(λ, NA, n)]
       @test allequal(TF.FWHM(tf)[1:2]) # same FWHM
     end
   end
+end
+
+@testset "Blanket test for PSF model: $(nameof(typeof(tf)))" for tf in vcat(PSF_2D, PSF_3D)
+  @test typeof(tf)(TF.params(tf)) == tf
 end
 
 @testset "Airy" begin
@@ -104,13 +108,13 @@ end
     end
 
     using Rotations
-    x, y = 300u"nm", 200u"nm"
+    x, y, z = 300u"nm", 200u"nm", 0u"nm"
 
     rot_scaled_airy3d = TF.RotatedPSF(ScaledPSF{3}, AiryDisc{3}, λ, NA; α=π / 3, xscale=0.8)
     scaled_airy3d = ScaledPSF(AiryDisc{3}, λ, NA; xscale=0.8)
     rot_scaled_airy3d_rotation = RotXYZ(π / 3, 0, 0)
     @test rot_scaled_airy3d isa TF.RotatedPSF{3}
-    @test response(rot_scaled_airy3d, x, y) == response(scaled_airy3d, (rot_scaled_airy3d_rotation * [x, y, 0u"nm"])...)
+    @test response(rot_scaled_airy3d, x, y, z) == response(scaled_airy3d, (rot_scaled_airy3d_rotation * [x, y, z])...)
 
     rot_scaled_airy2d = TF.RotatedPSF(ScaledPSF{2}, AiryDisc{2}, λ, NA; θ=π / 3, yscale=0.3)
     scaled_airy2d = ScaledPSF(AiryDisc{2}, λ, NA; yscale=0.3)

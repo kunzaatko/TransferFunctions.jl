@@ -1,5 +1,6 @@
 using Base: Indices
 using Roots, InterfaceFunctions
+using ComponentArrays
 using TransferFunctions.Apodization
 
 # TODO: Should be handled by interface functions whether the trait is implemented <20-08-25> 
@@ -178,7 +179,7 @@ Get the parameters of the PSF model `psf` as a [`ComponentVector`](@extref `Comp
 
 This is useful for fitting the model to data.
 """
-@interface params(psf::PSFModel)
+@interface params(psf::PSFModel)::ComponentVector
 
 """
     fit(::PSFModel, ::SpatialArray)
