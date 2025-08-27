@@ -11,8 +11,8 @@ Broadcast.broadcastable(tf::OpticalTransferFunction) = Ref(tf)
 
 _fft_conv(otf_arr::AbstractArray, img::AbstractArray) = ifft(otf_arr .* fft(img))
 
-conv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _fft_conv(otf(tf, img), img)
-deconv(tf::OpticalTransferFunction, img::SpatialArray{<:Real,2}) = _wiener_deconv(otf(tf, img), img)
+conv(img::SpatialArray{<:Real,2}, tf::OpticalTransferFunction) = _fft_conv(otf(tf, img), img)
+deconv(img::SpatialArray{<:Real,2}, tf::OpticalTransferFunction) = _wiener_deconv(otf(tf, img), img)
 """
     attenuation(otf::OpticalTransferFunction, ::Frequency, ::Frequency)
 """ # TODO: Docs <24-04-25> 

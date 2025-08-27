@@ -14,16 +14,20 @@ See also [`LinearShiftInvariantTransferFunction`](@ref), [`ImpulseResponseMappin
 """
 abstract type TransferFunction{N} end
 
+# TODO: When it is possible to mark the non-first argument as the interfacing type, it should be done with interfaces
+# again <27-08-25> 
 """
-    transfer(t::TransferFunction, A::SpatialMatrix)
+    transfer(A::SpatialMatrix, t::TransferFunction)
 The forward pass of the transfer function operator `t` on the image `A`.
 
 See also [`restore`](@ref)
 """
-@interface transfer(t::TransferFunction, ::SpatialMatrix{<:Real})
+function transfer(::SpatialMatrix{<:Real}, ::TransferFunction) end
 
+# TODO: When it is possible to mark the non-first argument as the interfacing type, it should be done with interfaces
+# again <27-08-25> 
 """
-    restore(t::TransferFunction, A::SpatialMatrix)
+    restore(A::SpatialMatrix, t::TransferFunction)
 The reverse pass of the transfer function operator `t` on the image `A`.
 
 It is always inherently an estimation because `A` is always noisy and `t` is often not well conditioned (especially in
@@ -31,7 +35,7 @@ the non-linear case).
 
 See also [`transfer`](@ref)
 """
-@interface restore(t::TransferFunction, ::SpatialMatrix{<:Real})
+function restore(::SpatialMatrix{<:Real}, t::TransferFunction) end
 
 # NOTE: Taken from Distributions.jl <kunzaatko> 
 for func in (:(==), :isequal, :isapprox)

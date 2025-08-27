@@ -57,8 +57,8 @@ end
         @testset "`LinearShiftInvariantTransferFunction` interface" begin
             A = SpatialArray(rand(Float64, 10, 10), 60u"nm")
 
-            @test_broken TF.conv(tf, A) isa SpatialArray
-            @test_broken TF.deconv(tf, TF.conv(tf, A)) isa SpatialArray
+            @test_broken conv(A, tf) isa SpatialArray
+            @test_broken deconv(conv(tf, A), tf) isa SpatialArray
             # FIX: @test attenuation(Float32, tf, 1 // 250u"nm") isa Float32
             # FIX: @test attenuation(ComplexF32, tf, 1 // 250u"nm") isa ComplexF32
         end

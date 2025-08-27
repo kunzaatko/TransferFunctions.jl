@@ -21,11 +21,11 @@ NonLinearTransferFunction
 Any fully prescribed transfer function can be used to perform the forward pass (i.e. optical transfer)
 
 ```@docs
-TransferFunctions.transfer(::TransferFunction, ::SpatialMatrix{<:Real})
+transfer(::SpatialMatrix{<:Real}, ::TransferFunction)
 ```
 
 The reverse is much harder and we need estimation and inverse modeling methods for it
 
 ```@docs
-restore(::TransferFunction, ::SpatialMatrix{<:Real})
+restore(::SpatialMatrix{<:Real}, ::TransferFunction)
 ```

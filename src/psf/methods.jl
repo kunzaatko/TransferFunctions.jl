@@ -154,15 +154,15 @@ psf(tf::PointSpreadFunction{2}, Δ::Length, ε::Real; kwargs...) = psf(tf, fills
 
 # TODO: Specify the details `ε`, border etc. <21-08-25> 
 """
-    conv(tf::PointSpreadFunction, img::SpatialArray{<:Real,2}, [border=:reflect]; <kwargs>)
+    conv(img::SpatialArray{<:Real,2}, tf::PointSpreadFunction, [border=:reflect]; <kwargs>)
 Convolve the image `img` with the PSF `tf`. Additional arguments are passed to `imfilter`.
 """
-function conv(tf::PointSpreadFunction{2}, img::SpatialMatrix{<:Real}, border=:reflect; ε=0.01)
+function conv(img::SpatialMatrix{<:Real}, tf::PointSpreadFunction{2}, border=:reflect; ε=0.01)
     Δ = sampling(img)
     psf_array = psf(tf, Δ, ε)
     return conv(img, psf_array, border)
 end
-deconv(tf::PointSpreadFunction, img::SpatialArray) = _wiener_deconv(fft(psf(tf, sampling(img), size(img))), img.parent)
+deconv(img::SpatialArray, tf::PointSpreadFunction) = _wiener_deconv(fft(psf(tf, sampling(img), size(img))), img.parent)
 
 # function HWHM(psf::RadialPSF{N}) where {N}
 #     ntuple(Val(N)) do n

@@ -1,16 +1,18 @@
 using TransferFunctions: TransferFunctions as TF
 
+# FIX: When there is an way to specify the interfacing type in the `InterfaceFunctions` package, I should test for these
+# again <27-08-25> 
 C_4D = SpatialArray(ones(40, 40), 20u"nm")
 
 struct TF_1 <: TF.TransferFunction{2} end
 tf_1 = TF_1()
-@test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialMatrix.*)"] transfer(tf_1, C_4D)
-@test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialMatrix.*)"] restore(tf_1, C_4D)
+@test_skip(@test_throws ["does not implement", r"transfer(.*::TransferFunction, .*::SpatialMatrix.*)"] transfer(C_4D, tf_1))
+@test_skip(@test_throws ["does not implement", r"restore(.*::TransferFunction, .*::SpatialMatrix.*)"] restore(C_4D, tf_1))
 
 struct LTF_1 <: TF.LinearShiftInvariantTransferFunction{2} end
 ltf_1 = LTF_1()
-@test_throws ["does not implement", r"conv(.*::LinearShiftInvariantTransferFunction, .*::SpatialMatrix.*)"] TF.conv(ltf_1, C_4D)
-@test_throws ["does not implement", r"deconv(.*::LinearShiftInvariantTransferFunction, .*::SpatialMatrix.*)"] TF.deconv(ltf_1, C_4D)
+@test_skip(@test_throws ["does not implement", r"conv(.*::LinearShiftInvariantTransferFunction, .*::SpatialMatrix.*)"] conv(C_4D, ltf_1))
+@test_skip(@test_throws ["does not implement", r"deconv(.*::LinearShiftInvariantTransferFunction, .*::SpatialMatrix.*)"] deconv(C_4D, ltf_1))
 
 struct PSF_1 <: TF.PointSpreadFunction{2} end
 psf_1 = PSF_1()

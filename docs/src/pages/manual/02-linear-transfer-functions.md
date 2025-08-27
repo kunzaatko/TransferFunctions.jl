@@ -31,8 +31,8 @@ OpticalTransferFunction
 ```
 
 ```@docs
-conv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
-deconv(::LinearShiftInvariantTransferFunction, ::SpatialMatrix{<:Real})
+conv(::SpatialMatrix{<:Real}, ::LinearShiftInvariantTransferFunction)
+deconv(::SpatialMatrix{<:Real}, ::LinearShiftInvariantTransferFunction)
 ```
 
 ## Point Spread Functions
@@ -51,7 +51,7 @@ response(::PointSpreadFunction, args...)
 ```
 
 ```@docs
-conv(::PointSpreadFunction{2}, ::SpatialMatrix{<:Real}, ::Any)
+conv(::SpatialMatrix{<:Real}, ::PointSpreadFunction{2}, ::Any)
 ```
 
 # Estimation
