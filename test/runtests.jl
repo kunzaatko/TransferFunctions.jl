@@ -101,6 +101,10 @@ end
         include("reflected-arrays.jl")
     end
 
+    @cond_testset "fft" begin
+        include("fft.jl")
+    end
+
     @cond_testset "filter" begin
         include("filter.jl")
     end
