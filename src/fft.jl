@@ -26,25 +26,31 @@ The module automatically selects the appropriate optimization based on input typ
 
 If you use it on a complex array, then the wrapper [`FFTOut`](@ref) is used and no optimizations are applied.
 
-```jldoctest fft_module
+```jldoctest fft_module; output=false
 A_complex = rand(ComplexF64, 64, 64)     # Array{ComplexF64} of size 64×64
 FA_complex = TF.FFT.fft(A_complex)       # FFTOut of size 64×64
 A_complex_ifft = TF.FFT.ifft(FA_complex) # Array{ComplexF64} of size 64×64
 @assert A_complex_ifft ≈ A_complex
+
+# output
+
 ```
 
 On real arrays, conjugate symmetry is exploited and the wrapper [`RFFTOut`](@ref) of half the size is returned.
 
-```jldoctest fft_module
+```jldoctest fft_module; output=false
 A_real = rand(64, 64)                 # Array{Float64} of size 64×64
 FA_real = TF.FFT.fft(A_real)          # RFFTOut of size 33×64
 A_real_ifft = TF.FFT.ifft(FA_real)    # Array{Float64} of size 64×64
 @assert A_real_ifft ≈ A_real          # size of the array is restored
+
+# output 
+
 ```
 
 So half of the computations are shaved off.
 
-```jldoctest fft_module
+```jldoctest fft_module; filter = f"\\s.*\\d.*"
 julia> @btime TF.FFT.fft(A_real);
   13.225 μs (13 allocations: 33.60 KiB)
 
@@ -55,8 +61,10 @@ julia> @btime FFTW.fft(A_real);
 These two types play together nicely though. Broadcasting works on the full array sizes if necessary (i.e. `FFTOut` and
 `RFFTOut` are interacting).
 
-```jldoctest fft_module
-FA_real .* FA_complex # FFTOut of size 64×64
+```jldoctest fft_module; output=false
+@assert size(FA_real .* FA_complex) == (64, 64) # FFTOut of size 64×64
+
+# output
 ```
 """
 module FFT
@@ -123,10 +131,10 @@ BroadcastStyle(::RFFTOutStyle{N,d}, ::RFFTOutStyle{N,d}) where {N,d} = RFFTOutSt
 BroadcastStyle(a::RFFTOutStyle{N,d}, ::DefaultArrayStyle{0}) where {N,d} = a
 BroadcastStyle(::RFFTOutStyle{N,d}, b::DefaultArrayStyle) where {N,d} = ArrayStyle{FFTOut}()
 
-broadcast_args(args::Tuple) = (broadcast_args(args[1]), broadcast_args(Base.tail(args))...)
-broadcast_args(args::NTuple{1}) = (broadcast_args(args[1]),)
-broadcast_args(a) = a
-broadcast_args(a::RFFTOut) = parent(a)
+@inline broadcast_args(args::Tuple) = (broadcast_args(args[1]), broadcast_args(Base.tail(args))...)
+@inline broadcast_args(args::NTuple{1}) = (broadcast_args(args[1]),)
+@inline broadcast_args(a) = a
+@inline broadcast_args(a::RFFTOut) = parent(a)
 
 function Base.copy(bc::Broadcasted{<:RFFTOutStyle{<:Any, d}}) where {d}
     RFFTOut(Broadcast.broadcast(bc.f, broadcast_args(bc.args)...), d)

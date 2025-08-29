@@ -23,7 +23,7 @@ end
 if VERSION >= v"1.12-rc"
     @testset "JET: filter $(typeof(A)), $(typeof(B))" for (A, B) in map(Tuple, combinations((ones(3, 3), fill(1 + 1im, (3, 3)), OA(ones(3, 3), -1, -1), OA(fill(1 + 1im, (3, 3)), -1, -1)), 2))
         function fn_filter(@nospecialize f)
-            f !== Base.materialize && f !== Base.broadcasted && f !== conj!
+            f !== Base.materialize
         end
         @test_opt target_modules = (TransferFunctions,) function_filter = fn_filter TF.conv(A, B)
         @test_opt target_modules = (TransferFunctions,) function_filter = fn_filter TF.corr(A, B)
