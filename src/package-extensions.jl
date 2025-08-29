@@ -13,9 +13,11 @@ Typically, `scale` is a `Unitful` quantity that defines the size of one plot uni
 For example, `scalebar!(1u"mm")` means that the plot units are millimetres.
 
 ```jldoctest; setup=:(using Makie, CairoMakie)
-julia> scalebar(84u"nm");
+julia> scalebar(84u"nm")
+FigureAxisPlot()
 
 julia> scalebar(84u"nm"; format=q -> q >= 1000u"nm" ? TF.scalebarformat(uconvert(u"μm",q)) : TF.scalebarformat(q))
+FigureAxisPlot()
 ```
 """
 function scalebar end
