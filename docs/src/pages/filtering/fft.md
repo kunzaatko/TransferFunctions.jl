@@ -16,4 +16,6 @@ defining multiplication on `FFTOut` and `RFFTOut` types.
 FFT
 FFTOut
 RFFTOut
+fft
+ifft
 ```

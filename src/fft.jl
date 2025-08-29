@@ -166,11 +166,19 @@ end
     
 """
     fft(A::AbstractArray)
-Compute the FFT while exploiting the conjugate symmetry of real arrays and using the usual FFT for
-complex arrays.
+Compute the FFT while exploiting the conjugate symmetry of real arrays and using the usual FFT for complex arrays.
+
+Returns either an [`RFFTOut`](@ref) or a [`FFTOut`](@ref) depending on the `eltype` of the array. These types are smart
+when broadcasted, i.e. if possible `RFFTOut` preserves its symmetry and if not possible, it materializes into the full
+`FFTOut`.
 """
 @inline fft(A::AbstractArray{T}) where {T<:Real} = RFFTOut(FFTW.rfft(A), length(axes(A, 1)))
 @inline fft(A::AbstractArray{T}) where {T<:Complex} = FFTOut(FFTW.fft(A))
+"""
+    ifft(A::RFFTOut)
+    ifft(A::FFTOut)
+Computes the iFFT while using the conjugate symmetry that was exploited during the [`fft`](@ref) operation.
+"""
 @inline ifft(A::RFFTOut) = FFTW.irfft(parent(A), firstdim(A))
 @inline ifft(A::FFTOut) = FFTW.ifft(parent(A))
 
