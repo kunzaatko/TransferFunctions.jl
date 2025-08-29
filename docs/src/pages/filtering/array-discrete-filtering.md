@@ -22,3 +22,5 @@ conv!
 corr
 corr!
 ```
+
+<!-- TODO: Fill the docs when transfer functions are implemented in full <14-08-25> -->

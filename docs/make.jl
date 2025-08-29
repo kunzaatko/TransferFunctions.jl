@@ -26,6 +26,8 @@ bib = CitationBibliography(
     joinpath(@__DIR__, "src", "refs.bib");
 )
 
+# TODO: Add indexes/introductions of the various sections and use `hide` for the parts I do not want to show in the
+# sidebar  <28-08-25> 
 makedocs(;
     modules=[TransferFunctions],
     authors="Martin Kunz <martinkunz@email.cz> and contributors",
@@ -67,12 +69,16 @@ makedocs(;
             "pages/arrays/filtering-matrices.md"
             "pages/arrays/reflected-arrays.md"
         ],
-        "Filtering" => "pages/filter.md",
-        "Apodization" => "pages/apodization.md",
-        "Synthetic Data" => "pages/synthetic-data.md",
+        "Filtering" => [
+            "Discrete Filtering" => "pages/filtering/array-discrete-filtering.md",
+            "FFT" => "pages/filtering/fft.md",
+        ],
+        "Apodization" => [
+            "Types" => "pages/apodization.md"
+        ],
+        "Synthetic Data" => ["pages/synthetic-data.md"],
         "Developer Documentation" => [
             "Point Spread Functions" => "pages/devdocs/point-spread-functions.md"
-            "Filtering" => "pages/devdocs/filtering.md"
             "Array Types" => "pages/devdocs/array-types.md"
         ],
         "Reference" => [

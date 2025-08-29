@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = TransferFunctions
+CurrentModule = TransferFunctions.FFT
 CollapsedDocStrings = true
 ```
 
@@ -13,6 +13,7 @@ half the number of operations by using [`rfft`](@extref `AbstractFFTs.rfft`) ins
 defining multiplication on `FFTOut` and `RFFTOut` types.
 
 ```@docs
-TransferFunctions.FFTOut
-TransferFunctions.RFFTOut
+FFT
+FFTOut
+RFFTOut
 ```
