@@ -25,20 +25,20 @@ abstract type LinearShiftInvariantTransferFunction{N} <: LinearTransferFunction{
 # TODO: When it is possible to mark the non-first argument as the interfacing type, it should be done with interfaces
 # again <27-08-25> 
 """
-    conv(img::SpatialArray{<:Real,2}, ltf::LinearShiftInvariantTransferFunction)
+    conv(img::SpatialMatrix, ltf::LinearShiftInvariantTransferFunction)
 Transfer the image `img` using the linear transfer function `ltf`, i.e. convolve the image with the equivalent PSF.
 """
-function conv(::SpatialMatrix{<:Real}, t::LinearShiftInvariantTransferFunction) end
+function conv(::SpatialMatrix, t::LinearShiftInvariantTransferFunction) end
 
 # TODO: When it is possible to mark the non-first argument as the interfacing type, it should be done with interfaces
 # again <27-08-25> 
 """
-    deconv(img::SpatialArray{<:Real,2}, ltf::LinearShiftInvariantTransferFunction)
+    deconv(img::SpatialArray, ltf::LinearShiftInvariantTransferFunction)
 Deconvolve the image `img` that was transferred using the linear transfer function `ltf` using the specified algorithm.
 """
-function deconv(::SpatialMatrix{<:Real}, t::LinearShiftInvariantTransferFunction) end
-transfer(img::SpatialMatrix{<:Real}, t::LinearShiftInvariantTransferFunction) = conv(img, t)
-restore(img::SpatialMatrix{<:Real}, t::LinearShiftInvariantTransferFunction) = deconv(img, t)
+function deconv(::SpatialMatrix, t::LinearShiftInvariantTransferFunction) end
+transfer(img::SpatialMatrix, t::LinearShiftInvariantTransferFunction) = conv(img, t)
+restore(img::SpatialMatrix, t::LinearShiftInvariantTransferFunction) = deconv(img, t)
 
 function _wiener_deconv(otf_arr::AbstractArray, img::SpatialMatrix{<:Real}; snr=100.0)
     # Convert blurred image to frequency domain

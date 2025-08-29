@@ -158,7 +158,7 @@ psf(tf::PointSpreadFunction{2}, Δ::Length, ε::Real; kwargs...) = psf(tf, fills
     conv(img::SpatialArray{<:Real,2}, tf::PointSpreadFunction, [border=:reflect]; <kwargs>)
 Convolve the image `img` with the PSF `tf`. Additional arguments are passed to `imfilter`.
 """
-function conv(img::SpatialMatrix{<:Real}, tf::PointSpreadFunction{2}, border=:reflect; ε=0.01)
+function conv(img::SpatialMatrix, tf::PointSpreadFunction{2}, border=:reflect; ε=0.01)
     Δ = sampling(img)
     psf_array = psf(tf, Δ, ε)
     return conv(img, psf_array, border)
