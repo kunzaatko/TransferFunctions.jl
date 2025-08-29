@@ -1,5 +1,6 @@
 [deps]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 CompatHelperLocal = "5224ae11-6099-4aaa-941d-3aab004bd678"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
