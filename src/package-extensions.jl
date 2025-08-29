@@ -25,11 +25,11 @@ function scalebar! end
     scalebarformat(qty; sigdigits=3)
 Function used to format the quantity length of the scale-bar to a string.
 
-```jldoctest
-julia> TransferFunctions.scalebarformat(700.4u"nm")
+```jldoctest setup=:(using Makie, GLMakie)
+julia> TF.scalebarformat(700.4u"nm")
 "700 nm"
 
-julia> TransferFunctions.scalebarformat(70.4u"nm")
+julia> TF.scalebarformat(70.4u"nm")
 "70.4 nm"
 ```
 """
