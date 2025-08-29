@@ -61,7 +61,7 @@ Fill{T}() where {T} = Fill(zero(T))
         b.value
     end
 end
-validextension(b::Fill, A::AbstractArray) = ntuple(_ -> (typemax(Int), typemax(Int)), ndims(A))
+validextension(::Fill, A::AbstractArray) = ntuple(_ -> (typemax(Int), typemax(Int)), ndims(A))
 Base.convert(::Type{Fill{S}}, f::Fill{T}) where {S,T} = Fill{S}(convert(S, f.value))
 Base.convert(::Type{AbstractBorder{S}}, f::Fill{T}) where {S,T} = Base.convert(Fill{S}, f)
 Base.showarg(io::IO, b::Fill, toplevel) = print(io, "fill($(b.value))")
@@ -162,7 +162,7 @@ struct Replicate{T} <: IndexMapBorder{T} end
     ind > last(ax) && return last(ax)
     ind < first(ax) && return first(ax)
 end
-validextension(b::Replicate, A::AbstractArray) = ntuple(_ -> (typemax(Int), typemax(Int)), ndims(A))
+validextension(::Replicate, A::AbstractArray) = ntuple(_ -> (typemax(Int), typemax(Int)), ndims(A))
 
 """
     Circular{T} <: IndexMapBorder{T}

@@ -63,7 +63,7 @@ module FFT
 using Base: @propagate_inbounds
 using Base.Broadcast: Broadcasted, ArrayStyle, AbstractArrayStyle, DefaultArrayStyle
 import Base.Broadcast.BroadcastStyle
-using FFTW
+using FFTW: FFTW
 
 # PERF: parity of the arrays first dimension stored in the type for specialization on indexing
 """
@@ -123,9 +123,17 @@ BroadcastStyle(::RFFTOutStyle{N,d}, ::RFFTOutStyle{N,d}) where {N,d} = RFFTOutSt
 BroadcastStyle(a::RFFTOutStyle{N,d}, ::DefaultArrayStyle{0}) where {N,d} = a
 BroadcastStyle(::RFFTOutStyle{N,d}, b::DefaultArrayStyle) where {N,d} = ArrayStyle{FFTOut}()
 
+broadcast_args(args::Tuple) = (broadcast_args(args[1]), broadcast_args(Base.tail(args))...)
+broadcast_args(args::NTuple{1}) = (broadcast_args(args[1]),)
+broadcast_args(a) = a
+broadcast_args(a::RFFTOut) = parent(a)
+
 function Base.copy(bc::Broadcasted{<:RFFTOutStyle{<:Any, d}}) where {d}
-    args = map(A -> A isa RFFTOut ? parent(A) : A , bc.args)
-    RFFTOut(Broadcast.broadcast(bc.f, args...), d)
+    RFFTOut(Broadcast.broadcast(bc.f, broadcast_args(bc.args)...), d)
+end
+function Base.copyto!(dest::RFFTOut, bc::Broadcasted{<:RFFTOutStyle{<:Any, d}}) where {d}
+    copyto!(parent(dest), Broadcast.broadcast(bc.f, broadcast_args(bc.args)...))
+    return dest
 end
 
 """
@@ -143,18 +151,24 @@ BroadcastStyle(a::Type{<:FFTOut}) = ArrayStyle{FFTOut}()
 BroadcastStyle(a::ArrayStyle{FFTOut}, ::RFFTOutStyle) = a
 Base.similar(bc::Broadcasted{ArrayStyle{FFTOut}}, ::Type{S}) where {S} = FFTOut(similar(Array{S}, axes(bc)))
 
-    for method in (:size, :axes)
-        @eval begin
+for method in (:size, :axes)
+    @eval begin
         @inline Base.$method(a::FFTOut, args...) = $method(parent(a), args...)
     end
-    end
-    for method in (:getindex, :setindex!)
+end
+for method in (:getindex, :setindex!)
     @eval begin
         @propagate_inbounds Base.$method(a::FFTOut, I...) = $method(parent(a), I...)
     end
-    end
+end
 
 # NOTE: FFT followed by IFFT can be optimized using conjugate symmetry for real arrays
+    
+"""
+    fft(A::AbstractArray)
+Compute the FFT while exploiting the conjugate symmetry of real arrays and using the usual FFT for
+complex arrays.
+"""
 @inline fft(A::AbstractArray{T}) where {T<:Real} = RFFTOut(FFTW.rfft(A), length(axes(A, 1)))
 @inline fft(A::AbstractArray{T}) where {T<:Complex} = FFTOut(FFTW.fft(A))
 @inline ifft(A::RFFTOut) = FFTW.irfft(parent(A), firstdim(A))

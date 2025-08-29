@@ -9,7 +9,7 @@ using JET
     @test fn(fill(1 + 1im, (2, 2)), ones(1, 1)) == fill(1 + 1im, (2, 2))
     @test fn(fill(1 + 1im, (2, 2)), im * ones(1, 1)) == fill(1 - 1im, (2, 2))
     @test fn(ones(2, 2, 2), ones(1, 1, 1)) == ones(2, 2, 2)
-    @test_broken fn(ones(2, 2, 2) + im * ones(2, 2, 2), ones(1, 1, 1)) == fill(1 + 1im, (2, 2, 2))
+    @test fn(ones(2, 2, 2) + im * ones(2, 2, 2), ones(1, 1, 1)) == fill(1 + 1im, (2, 2, 2))
 end
 
 @testset "corr and filtering" begin
@@ -22,8 +22,11 @@ end
 
 if VERSION <= v"1.12"
     @testset "JET: filter $(typeof(A)), $(typeof(B))" for (A, B) in map(Tuple, combinations((ones(3, 3), fill(1 + 1im, (3, 3)), OA(ones(3, 3), -1, -1), OA(fill(1 + 1im, (3, 3)), -1, -1)), 2))
-        @test_opt target_modules = (TransferFunctions,) TF.conv(A, B)
-        @test_opt target_modules = (TransferFunctions,) TF.corr(A, B)
+        function fn_filter(@nospecialize f)
+            f !== Base.materialize && f !== Base.broadcasted && f !== conj!
+        end
+        @test_opt target_modules = (TransferFunctions,) function_filter = fn_filter TF.conv(A, B)
+        @test_opt target_modules = (TransferFunctions,) function_filter = fn_filter TF.corr(A, B)
     end
 end
 

@@ -76,6 +76,5 @@ function corrfft(A::AbstractArray{ST}, K::AbstractArray{KT}) where {ST<:Union{Re
     FFT.ifft(B .* C)
 end
 
-
 corr_outputtype(A::AbstractArray{S}, K) where {S} = corr_outputtype(S, K)
 corr_outputtype(::Type{S}, kernel::AbstractArray{T}) where {S,T} = typeof(zero(S) * zero(T) + zero(S) * zero(T))
