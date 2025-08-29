@@ -44,13 +44,13 @@ FA_real = TF.FFT.fft(A_real)          # RFFTOut of size 33×64
 A_real_ifft = TF.FFT.ifft(FA_real)    # Array{Float64} of size 64×64
 @assert A_real_ifft ≈ A_real          # size of the array is restored
 
-# output 
+# output
 
 ```
 
 So half of the computations are shaved off.
 
-```jldoctest fft_module; filter = f"\\s.*\\d.*"
+```jldoctest fft_module; filter = r"\\s.*\\d.*"
 julia> @btime TF.FFT.fft(A_real);
   13.225 μs (13 allocations: 33.60 KiB)
 
