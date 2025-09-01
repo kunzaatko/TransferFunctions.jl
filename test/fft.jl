@@ -1,11 +1,15 @@
 using TransferFunctions.FFT
 using FFTW
 
-const real_arrays = [rand(10), rand(11), rand(10, 10), rand(11, 11), rand(10, 10, 10), rand(11, 11, 11)]
+const arrays = [rand(10), rand(11), rand(10, 10), rand(11, 11), rand(10, 10, 10), rand(11, 11, 11)]
 
-@testset "RFFT for size $(size(A))" for A in real_arrays
+const real_arrays = arrays
+const cmplx_arrays = map(x -> ComplexF64.(x), arrays)
+
+@testset "RFFT for size $(size(A))" for (A, cA) in zip(real_arrays, cmplx_arrays)
     @test FFT.fft(A) isa FFT.RFFTOut
     @test size(FFT.fft(A)) == size(A)
+    @test FFT.fft(A) ≈ FFT.fft(cA)
     @test fft(A) ≈ FFT.fft(A)
     @test collect(Base.broadcastable(FFT.fft(A))) == collect(FFT.fft(A))
 end
@@ -22,5 +26,33 @@ end
         cout = FFT.fft(CA)
         @test rout .* cout isa FFT.FFTOut
         @test FFT.ifft(rout .* cout) ≈ ifft(fft(A) .* fft(CA))
+    end
+    @testset "Broadcasting Operators: $(nameof(typeof(A)))" for (A, cA) in zip(real_arrays, cmplx_arrays)
+        fA = FFT.fft(A)
+        fcA = FFT.fft(cA)
+        @test conj!(fA) ≈ conj!(fcA)
+    end
+end
+
+@testset "RFFTOut getindex/setindex!" begin
+    @testset "setindex! for size $(size(A))" for A in real_arrays
+        rout = FFT.fft(A)
+        original_parent = deepcopy(parent(rout))
+        # Attempt to set an index within the stored part
+        rout[ones(Int, ndims(A))...] = 100.0 + 100.0im
+        @test parent(rout)[ones(Int, ndims(A))...] ≈ 100.0 + 100.0im
+        # Ensure other elements are unchanged
+        @test parent(rout)[2, ones(Int, ndims(A) - 1)...] ≈ original_parent[2, ones(Int, ndims(A) - 1)...]
+
+        # Attempt to set an index outside the stored part (should not modify anything or error)
+        # The current implementation of setindex! only checks bounds of parent(a), so this will error if I is out of bounds of parent(a)
+        # This is the correct behavior, as we only want to modify the stored data.
+        if ndims(A) == 2
+            first_dim_orig = FFT.firstdim(rout)
+            if first_dim_orig > size(parent(rout), 1)
+                # This should throw a bounds error, as setindex! only operates on the parent array
+                @test_throws BoundsError rout[size(parent(rout), 1)+1, 1] = 1.0 + 1.0im
+            end
+        end
     end
 end
