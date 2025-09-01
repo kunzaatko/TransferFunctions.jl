@@ -1,4 +1,5 @@
 using TransferFunctions: TransferFunctions as TF
+using TestImages, ImageCore
 using OffsetArrays: OffsetArrays as OAs
 
 A = ones(100, 100)
@@ -22,6 +23,20 @@ PSF_2D = [AiryDisc{2}(λ, NA), IsotropicGaussian{2}(λ, NA), BornWolf{2}(λ, NA,
         let psf_array = psf(tf, (Δx, Δy), (11, 11))
             @test psf_array isa SpatialMatrix{<:Any,<:OAs.OffsetMatrix}
             @test sampling(psf_array) == (Δx, Δy)
+        end
+    end
+    @testset "`conv` method" begin
+        let img = SampledArray(testimage("mandril_gray"), Δ)
+            if tf isa BornWolf
+                @test_broken begin
+                    flt_img = conv(img, tf)
+                    flt_img isa AbstractMatrix{<:ImageCore.AbstractGray} && isapprox(sum(flt_img) / sum(img), one(eltype(img)); rtol=0.001)
+                end
+            else
+                flt_img = conv(img, tf)
+                @test flt_img isa AbstractMatrix{<:ImageCore.AbstractGray}
+                @test isapprox(sum(flt_img) / sum(img), one(eltype(img)); rtol=0.001)
+            end
         end
     end
 end
@@ -48,6 +63,15 @@ PSF_3D = [AiryDisc(λ, NA), IsotropicGaussian(λ, NA)] # , BornWolf(λ, NA, n)]
         let psf_array = psf(tf, (Δx, Δy, Δz), (11, 11, 11))
             @test psf_array isa SpatialArray{<:Any,3,<:OAs.OffsetArray}
             @test sampling(psf_array) == (Δx, Δy, Δz)
+        end
+    end
+    @testset "`conv` method" begin
+        img2d = testimage("mandril_gray")
+        let img = SampledArray(stack(img2d for _ in 1:20), Δ)
+            @test_broken begin
+                flt_img = conv(img, tf)
+                flt_img isa SpatialArray{<:ImageCore.AbstractGray,3} && isapprox(sum(flt_img) / sum(img), one(eltype(img)); rtol=0.001)
+            end
         end
     end
 end
