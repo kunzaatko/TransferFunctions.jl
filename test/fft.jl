@@ -14,6 +14,11 @@ const cmplx_arrays = map(x -> ComplexF64.(x), arrays)
     @test collect(Base.broadcastable(FFT.fft(A))) == collect(FFT.fft(A))
 end
 
+@testset "similar" begin
+    fA = FFT.fft(rand(10))
+    @test typeof(similar(fA)) == typeof(fA)
+end
+
 @testset "Broadcasting" begin
     @testset "Broadcasting RFFT" for A in real_arrays
         rout = FFT.fft(A)
@@ -30,7 +35,12 @@ end
     @testset "Broadcasting Operators: $(nameof(typeof(A)))" for (A, cA) in zip(real_arrays, cmplx_arrays)
         fA = FFT.fft(A)
         fcA = FFT.fft(cA)
+        @test Broadcast.combine_styles(FFT.fft(A), FFT.fft(cA)) isa Broadcast.ArrayStyle{<:FFT.FFTOut}
         @test conj!(fA) ≈ conj!(fcA)
+        @test abs2.(fA) .+ 1 == begin
+            A_fA = abs2.(fA)
+            A_fA .+ 1
+        end
     end
 end
 

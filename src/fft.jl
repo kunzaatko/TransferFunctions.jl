@@ -70,7 +70,7 @@ These two types play together nicely though. Broadcasting works on the full arra
 module FFT
 using Base: @propagate_inbounds
 using Base.Broadcast: Broadcasted, ArrayStyle, AbstractArrayStyle, DefaultArrayStyle
-import Base.Broadcast.BroadcastStyle
+import Base.Broadcast
 using FFTW: FFTW
 
 # PERF: parity of the arrays first dimension stored in the type for specialization on indexing
@@ -88,7 +88,7 @@ struct RFFTOut{T,N,AA<:AbstractArray{T,N},d,Odd}  <: AbstractArray{T,N}
     parent::AA
     RFFTOut(parent::AA, d::Int) where {T,N,AA<:AbstractArray{T,N}} = new{T,N,AA,d,isodd(d)}(parent)
 end
-@inline firstdim(a::Type{<:RFFTOut{<:Any, <:Any, <:Any, d}}) where {d} = d
+@inline firstdim(::Type{<:RFFTOut{<:Any, <:Any, <:Any, d}}) where {d} = d
 @inline firstdim(a::RFFTOut) = firstdim(typeof(a))
 Base.parent(a::RFFTOut) = (@inline; a.parent)
 Base.size(a::RFFTOut) = (@inline; (firstdim(a), size(a.parent)[2:end]...))
@@ -122,25 +122,28 @@ end
 
 Base.similar(a::RFFTOut) = RFFTOut(similar(parent(a)), firstdim(a))
 Base.similar(a::RFFTOut, ::Type{S}) where {S} = RFFTOut(similar(parent(a), S), firstdim(a))
+Base.similar(a::Type{T}, ::Type{S}, sz) where {T <: RFFTOut,S} = RFFTOut(similar(Array{S}, sz), firstdim(T))
 
-struct RFFTOutStyle{N, d} <: AbstractArrayStyle{N} end
-RFFTOutStyle{N,d}(::Val{M}) where {N,M,d} = RFFTOutStyle{max(N, M),d}()
+Broadcast.BroadcastStyle(a::Type{T}) where {T<:RFFTOut} = ArrayStyle{T}()
+# TODO: Add some methods to specialize or throw an error when `N`s are different or `d`s are different <02-09-25> 
+Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {B<:RFFTOut, A<:RFFTOut} = ArrayStyle{promote_type(A,B)}()
+Broadcast.BroadcastStyle(a::ArrayStyle{S}, ::DefaultArrayStyle{0}) where {T,N,S<:RFFTOut{T, N}} = a # NOTE: T,N need to be here for disambiguation <02-09-25> 
+Broadcast.BroadcastStyle(::ArrayStyle{S}, b::DefaultArrayStyle{N}) where {T,N,S<:RFFTOut{T, N}} = Broadcast.BroadcastStyle(ArrayStyle{FFTOut{T, N}}(), b)
+Broadcast.BroadcastStyle(::ArrayStyle{S}, b::AbstractArrayStyle{N}) where {T,N,S<:RFFTOut{T, N}} = Broadcast.BroadcastStyle(ArrayStyle{FFTOut{T, N}}(), b)
 
-BroadcastStyle(a::Type{<:RFFTOut{<:Any, N}}) where {N} = RFFTOutStyle{N, firstdim(a)}()
-BroadcastStyle(::RFFTOutStyle{N,d}, ::RFFTOutStyle{N,d}) where {N,d} = RFFTOutStyle{N,d}()
-BroadcastStyle(a::RFFTOutStyle{N,d}, ::DefaultArrayStyle{0}) where {N,d} = a
-BroadcastStyle(::RFFTOutStyle{N,d}, b::DefaultArrayStyle) where {N,d} = ArrayStyle{FFTOut}()
+# FIX: Define conjugate stable functions. I.e. functions that where fn(conj(x)) == fn(x). On these functions, it is
+# possible to use create a broadcasted with the `RFFTOut` style. For others it should promote to the `FFTOut` style.
+# <02-09-25> 
 
 @inline broadcast_args(args::Tuple) = (broadcast_args(args[1]), broadcast_args(Base.tail(args))...)
 @inline broadcast_args(args::NTuple{1}) = (broadcast_args(args[1]),)
 @inline broadcast_args(a) = a
 @inline broadcast_args(a::RFFTOut) = parent(a)
 
-function Base.copy(bc::Broadcasted{<:RFFTOutStyle{<:Any, d}}) where {d}
-    RFFTOut(Broadcast.broadcast(bc.f, broadcast_args(bc.args)...), d)
-end
-function Base.copyto!(dest::RFFTOut, bc::Broadcasted{<:RFFTOutStyle{<:Any, d}}) where {d}
-    copyto!(parent(dest), Broadcast.broadcast(bc.f, broadcast_args(bc.args)...))
+Base.similar(bc::Broadcasted{<:ArrayStyle{T}}, ::Type{S}) where {T<:RFFTOut, S} = similar(T, S, Broadcast.combine_axes(broadcast_args(bc.args)...))
+
+function Base.copyto!(dest::RFFTOut, bc::Broadcasted{<:ArrayStyle{<:RFFTOut{<:Any, N}}}) where {N}
+    copyto!(parent(dest), Broadcast.Broadcasted(bc.f, broadcast_args(bc.args)))
     return dest
 end
 
@@ -155,19 +158,22 @@ struct FFTOut{T,N,AA<:AbstractArray{T,N}}  <: AbstractArray{T,N}
     parent::AA
 end
 Base.parent(a::FFTOut) = (@inline; a.parent)
-BroadcastStyle(a::Type{<:FFTOut}) = ArrayStyle{FFTOut}()
-BroadcastStyle(a::ArrayStyle{FFTOut}, ::RFFTOutStyle) = a
-Base.similar(bc::Broadcasted{ArrayStyle{FFTOut}}, ::Type{S}) where {S} = FFTOut(similar(Array{S}, axes(bc)))
+
+
+Broadcast.BroadcastStyle(T::Type{<:FFTOut}) = ArrayStyle{T}()
+
+# TODO: Consider instead using a `promote_rule` definition to promote `RFFTOut` to `FFTOut` <02-09-25> 
+Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {T1,T2,M,N,A<:FFTOut{T1, M}, B<:RFFTOut{T2,N}} = ArrayStyle{FFTOut{promote_type(T1, T2), max(N,M)}}()
+Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::DefaultArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
+Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::AbstractArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
+
+Base.similar(bc::Broadcasted{<:ArrayStyle{<:FFTOut}}, ::Type{S}) where {S} = FFTOut(similar(Array{S}, axes(bc)))
 
 for method in (:size, :axes)
-    @eval begin
-        @inline Base.$method(a::FFTOut, args...) = $method(parent(a), args...)
-    end
+    @eval @inline Base.$method(a::FFTOut, args...) = $method(parent(a), args...)
 end
 for method in (:getindex, :setindex!)
-    @eval begin
-        @propagate_inbounds Base.$method(a::FFTOut, I...) = $method(parent(a), I...)
-    end
+    @eval @propagate_inbounds Base.$method(a::FFTOut, I...) = $method(parent(a), I...)
 end
 
 # NOTE: FFT followed by IFFT can be optimized using conjugate symmetry for real arrays
@@ -182,6 +188,7 @@ when broadcasted, i.e. if possible `RFFTOut` preserves its symmetry and if not p
 """
 @inline fft(A::AbstractArray{T}) where {T<:Real} = RFFTOut(FFTW.rfft(A), length(axes(A, 1)))
 @inline fft(A::AbstractArray{T}) where {T<:Complex} = FFTOut(FFTW.fft(A))
+
 """
     ifft(A::RFFTOut)
     ifft(A::FFTOut)
