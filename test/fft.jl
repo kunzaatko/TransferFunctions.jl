@@ -24,8 +24,19 @@ end
         rout = FFT.fft(A)
         @test rout .* 1 isa FFT.RFFTOut
         @test rout .* rand(size(A)...) isa FFT.FFTOut
+        for T in (Float64, Float32, Int32, Int64, ComplexF64, ComplexF32)
+            @test eltype(rout .* rand(T, size(A)...)) == promote_type(eltype(rout), T)
+        end
     end
-    @testset "Broadcasting Combination" for A in real_arrays
+    @testset "Broadcasting FFTOut" for A in cmplx_arrays
+        cout = FFT.fft(A)
+        @test cout .* 1 isa FFT.FFTOut
+        @test cout .* rand(size(A)...) isa FFT.FFTOut
+        for T in (Float64, Float32, Int32, Int64, ComplexF64, ComplexF32)
+            @test eltype(cout .* rand(T, size(A)...)) == promote_type(eltype(cout), T)
+        end
+    end
+    @testset "Broadcasting RFFTOut with FFTOut" for A in real_arrays
         rout = FFT.fft(A)
         CA = rand(ComplexF64, size(A)...)
         cout = FFT.fft(CA)
@@ -54,13 +65,13 @@ end
         # Ensure other elements are unchanged
         @test parent(rout)[2, ones(Int, ndims(A) - 1)...] ≈ original_parent[2, ones(Int, ndims(A) - 1)...]
 
-        # Attempt to set an index outside the stored part (should not modify anything or error)
-        # The current implementation of setindex! only checks bounds of parent(a), so this will error if I is out of bounds of parent(a)
-        # This is the correct behavior, as we only want to modify the stored data.
+        # Attempt to set an index outside the stored part (should not modify anything and error)
+        # The current implementation of `setindex!` only checks bounds of parent(a), so this will error if I is out of bounds of parent(a)
+        # This is the correct behaviour, as we only want to modify the stored data.
         if ndims(A) == 2
             first_dim_orig = FFT.firstdim(rout)
             if first_dim_orig > size(parent(rout), 1)
-                # This should throw a bounds error, as setindex! only operates on the parent array
+                # throws a bounds error, as `setindex!` is allowed to operate only within the bounds of the parent array
                 @test_throws BoundsError rout[size(parent(rout), 1)+1, 1] = 1.0 + 1.0im
             end
         end
