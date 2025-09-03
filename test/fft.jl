@@ -20,7 +20,7 @@ end
 end
 
 @testset "Broadcasting" begin
-    @testset "Broadcasting RFFT" for A in real_arrays
+    @testset "Broadcasting RFFTOut" for A in real_arrays
         rout = FFT.fft(A)
         @test rout .* 1 isa FFT.RFFTOut
         @test rout .* rand(size(A)...) isa FFT.FFTOut
@@ -76,4 +76,11 @@ end
             end
         end
     end
+end
+
+@testset "ImageCore ext" begin
+    using ImageCore, TestImages
+    img = testimage("mandril_gray")
+    @test FFT.fft(img) isa FFT.RFFTOut
+    @test FFT.fft(img) == FFT.fft(float.(gray.(img)))
 end

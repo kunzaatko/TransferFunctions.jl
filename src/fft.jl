@@ -159,7 +159,6 @@ struct FFTOut{T,N,AA<:AbstractArray{T,N}}  <: AbstractArray{T,N}
 end
 Base.parent(a::FFTOut) = (@inline; a.parent)
 
-
 Broadcast.BroadcastStyle(T::Type{<:FFTOut}) = ArrayStyle{T}()
 
 # TODO: Consider instead using a `promote_rule` definition to promote `RFFTOut` to `FFTOut` <02-09-25> 
@@ -196,5 +195,7 @@ Computes the iFFT while using the conjugate symmetry that was exploited during t
 """
 @inline ifft(A::RFFTOut) = FFTW.irfft(parent(A), firstdim(A))
 @inline ifft(A::FFTOut) = FFTW.ifft(parent(A))
+
+# FIX: Add support for `fft` on only selected dims <03-09-25> 
 
 end # module FFT

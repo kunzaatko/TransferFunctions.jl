@@ -1,3 +1,5 @@
+# TODO: Make ModelPSF a trait instead of a subtype. This would allow the augmentations to be models if the parents are
+# a model <28-08-25> 
 # TODO: Try to define with [DensityInterface](https://juliamath.github.io/DensityInterface.jl/dev/) <21-08-25> 
 using InterfaceFunctions
 
