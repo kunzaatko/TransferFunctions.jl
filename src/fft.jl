@@ -166,8 +166,10 @@ Broadcast.BroadcastStyle(T::Type{<:FFTOut}) = ArrayStyle{T}()
 
 # TODO: Consider instead using a `promote_rule` definition to promote `RFFTOut` to `FFTOut` <02-09-25> 
 Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {T1,T2,M,N,A<:FFTOut{T1, M}, B<:RFFTOut{T2,N}} = ArrayStyle{FFTOut{promote_type(T1, T2), max(N,M)}}()
+Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {T1,T2,M,N,A<:FFTOut{T1, M}, B<:FFTOut{T2,N}} = ArrayStyle{FFTOut{promote_type(T1, T2), max(N,M)}}()
 Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::DefaultArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
 Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::AbstractArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
+Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {B<:FFTOut, A<:FFTOut} = ArrayStyle{promote_type(A,B)}()
 
 Base.similar(bc::Broadcasted{<:ArrayStyle{<:FFTOut}}, ::Type{S}) where {S} = FFTOut(similar(Array{S}, axes(bc)))
 
