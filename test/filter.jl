@@ -11,9 +11,14 @@ using JET
     @test fn(fill(1 + 1im, (2, 2)), im * ones(1, 1)) == fill(1 - 1im, (2, 2))
     @test fn(ones(2, 2, 2), ones(1, 1, 1)) == ones(2, 2, 2)
     @test fn(ones(2, 2, 2) + im * ones(2, 2, 2), ones(1, 1, 1)) == fill(1 + 1im, (2, 2, 2))
+    for T in (Float64, ComplexF64)
+        let A = rand(T, 10, 10)
+            @test fn(A, OA(ones(1, 1), -1, -1)) ≈ A
+        end
+    end
 end
 
-@testset "corr and filtering" begin
+@testset "corr and filtering_matrix" begin
     A = reshape(1:16, (4, 4))
     A_fm = filtering_matrix(A, (-1:1, -1:1), :circular)
     fA_fm = reshape(A_fm' * ones(9), size(A))
