@@ -43,7 +43,7 @@ nothing # hide
 ```
 
 ```@makie synthetic-data; basename="synthetic_data_beads"
-f,ax,_ = Recipes.image(GT)
+f,ax,_ = Recipes.image(Makie.convert_arguments(Makie.ImageLike(), GT)...)
 scalebar!(ax,GT)
 f
 ```
