@@ -127,7 +127,10 @@ Base.similar(a::Type{T}, ::Type{S}, sz) where {T <: RFFTOut,S} = RFFTOut(similar
 Broadcast.BroadcastStyle(a::Type{T}) where {T<:RFFTOut} = ArrayStyle{T}()
 # TODO: Add some methods to specialize or throw an error when `N`s are different or `d`s are different <02-09-25> 
 Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {B<:RFFTOut, A<:RFFTOut} = ArrayStyle{promote_type(A,B)}()
+# NOTE: Necessary because we want to dispatch on the other dimensionalities <03-09-25> 
 Broadcast.BroadcastStyle(a::ArrayStyle{S}, ::DefaultArrayStyle{0}) where {T,N,S<:RFFTOut{T, N}} = a # NOTE: T,N need to be here for disambiguation <02-09-25> 
+# TODO: Instead of constructing the type of the FFTOut, this should be delegated to a subfunction that converts the type
+# of RFFTOut to the matching FFTOut <03-09-25> 
 Broadcast.BroadcastStyle(::ArrayStyle{S}, b::DefaultArrayStyle{N}) where {T,N,S<:RFFTOut{T, N}} = Broadcast.BroadcastStyle(ArrayStyle{FFTOut{T, N}}(), b)
 Broadcast.BroadcastStyle(::ArrayStyle{S}, b::AbstractArrayStyle{N}) where {T,N,S<:RFFTOut{T, N}} = Broadcast.BroadcastStyle(ArrayStyle{FFTOut{T, N}}(), b)
 
@@ -142,7 +145,7 @@ Broadcast.BroadcastStyle(::ArrayStyle{S}, b::AbstractArrayStyle{N}) where {T,N,S
 
 Base.similar(bc::Broadcasted{<:ArrayStyle{T}}, ::Type{S}) where {T<:RFFTOut, S} = similar(T, S, Broadcast.combine_axes(broadcast_args(bc.args)...))
 
-function Base.copyto!(dest::RFFTOut, bc::Broadcasted{<:ArrayStyle{<:RFFTOut{<:Any, N}}}) where {N}
+function Base.copyto!(dest::RFFTOut, bc::Broadcasted{<:ArrayStyle{<:RFFTOut}})
     copyto!(parent(dest), Broadcast.Broadcasted(bc.f, broadcast_args(bc.args)))
     return dest
 end
