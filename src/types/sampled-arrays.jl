@@ -33,9 +33,13 @@ Base.similar(A::SampledArray) = SampledArray(similar(parent(A)), sampling(A))
 Base.similar(A::SampledArray, ::Type{S}, dims::Dims) where {S} = SampledArray(similar(parent(A), S, dims), sampling(A))
 # NOTE: These two overloads are here, because we want an OffsetArray to be a parent of the SampledArray and not the
 # other way around <05-09-25> 
-Base.similar(A::SampledArray{<:Any,<:Any, N}, ::Type{S}, oax::NTuple{N, <:AbstractUnitRange}) where {S,N} = SampledArray(similar(parent(A), S, oax), sampling(A))
-Base.similar(A::SampledArray, ::Type{S}, oax::Tuple{AbstractUnitRange, Vararg{AbstractUnitRange}}) where {S} = SampledArray(similar(parent(A), oax), sampling(A))
-Base.similar(A::SampledArray, oax::Tuple{AbstractUnitRange, Vararg{AbstractUnitRange}})  = SampledArray(similar(parent(A),  oax), sampling(A))
+for DimType in  (Integer,AbstractUnitRange, OneTo)
+    @eval begin
+        Base.similar(A::SampledArray{<:Any,<:Any, N}, ::Type{S}, oax::NTuple{N, $DimType}) where {S,N} = SampledArray(similar(parent(A), S, oax), sampling(A))
+        Base.similar(A::SampledArray, ::Type{S}, oax::Tuple{$DimType, Vararg{$DimType}}) where {S} = SampledArray(similar(parent(A), oax), sampling(A))
+        Base.similar(A::SampledArray, oax::Tuple{$DimType, Vararg{$DimType}})  = SampledArray(similar(parent(A),  oax), sampling(A))
+    end
+end
 
 @propagate_inbounds Base.getindex(a::SampledArray, I...) = getindex(parent(a), I...)
 @propagate_inbounds Base.setindex!(A::SampledArray, v, I...) = setindex!(parent(A), v, I...)
