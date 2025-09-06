@@ -3,13 +3,13 @@
 Gibson & Lanni model point spread function
 
 # Fields
-    + `λ::Length{T}`: emission wavelength
-    + `NA::T`: numerical aperture of the objective
-    + `n_i::T`: refractive index of the immersion medium
-    + `n_s::T`: refractive index of the sample
-    + `n_g::T`: refractive index of the coverslip
-    + `t_i::Length{T}`: working distance of the objective
-    + `t_g::Length{T}`: coverslip thickness
+- `λ::Length{T}`: emission wavelength
+- `NA::T`: numerical aperture of the objective
+- `n_i::T`: refractive index of the immersion medium
+- `n_s::T`: refractive index of the sample
+- `n_g::T`: refractive index of the coverslip
+- `t_i::Length{T}`: working distance of the objective
+- `t_g::Length{T}`: coverslip thickness
 """
 @kwdef struct GibsonLanni{T<:Real} <: PSFModel{2}
     λ::Length{T}
