@@ -26,7 +26,7 @@ julia> SyntheticData.bead(95u"nm", (30.5u"nm", 25u"nm"));
 julia> SyntheticData.bead(Float32, 0.1u"μm", 30.5u"nm");
 
 julia> SyntheticData.bead(0.1u"μm", 30.5u"nm"; α=0.01u"nm^-1")
-5×5 SampledArray{Float64, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 2, OffsetArrays.OffsetMatrix{Float64, Matrix{Float64}}} with indices -2:2×-2:2:
+5×5 SampledArray{Float64, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 2, OffsetArrays.OffsetMatrix{Float64, Matrix{Float64}}, (30.5 nm, 30.5 nm)} with indices -2:2×-2:2:
  0.0        0.0       0.0705075  0.0       0.0
  0.0        0.606779  0.892914   0.606779  0.0
  0.0705075  0.892914  1.0        0.892914  0.0705075
@@ -34,13 +34,13 @@ julia> SyntheticData.bead(0.1u"μm", 30.5u"nm"; α=0.01u"nm^-1")
  0.0        0.0       0.0705075  0.0       0.0
 
 julia> SyntheticData.bead(0.1u"μm", 50.5u"nm"; position=(-0.3,-0.2))
-3×3 SampledArray{Float64, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 2, OffsetArrays.OffsetMatrix{Float64, Matrix{Float64}}} with indices -1:1×-1:1:
+3×3 SampledArray{Float64, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 2, OffsetArrays.OffsetMatrix{Float64, Matrix{Float64}}, (50.5 nm, 50.5 nm)} with indices -1:1×-1:1:
  0.333333  0.737374  0.0808081
  0.59596   1.0       0.20202
  0.020202  0.141414  0.0
 
 julia> SyntheticData.bead(0.1u"μm", 50.5u"nm"; intensity=0.5)
-3×3 SampledArray{Float64, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 2, OffsetArrays.OffsetMatrix{Float64, Matrix{Float64}}} with indices -1:1×-1:1:
+3×3 SampledArray{Float64, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 2, OffsetArrays.OffsetMatrix{Float64, Matrix{Float64}}, (50.5 nm, 50.5 nm)} with indices -1:1×-1:1:
  0.03  0.23  0.03
  0.23  0.5   0.23
  0.03  0.23  0.03
