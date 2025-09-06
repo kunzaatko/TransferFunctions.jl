@@ -1,5 +1,8 @@
+using Base.Broadcast
+using Base.Broadcast: ArrayStyle, Broadcasted
 using Base: CartesianIndices, @propagate_inbounds, OneTo
 
+# TODO: Update the type signature <03-09-25> 
 # TODO: This should instead be defined in some package like MicroscopyCore.jl or similar <30-07-25> 
 """
     SampledArray{T,ST,N,AA<:AbstractArray} <: AbstractArray{T,N}
@@ -11,26 +14,36 @@ different dimensions in each direction.
 
 See also [`SampledMatrix`](@ref), [`SampledVector`](@ref), [`SpatialArray`](@ref)
 """
-struct SampledArray{T,ST,N,AA<:AbstractArray{T}} <: AbstractArray{T,N}
+struct SampledArray{T,ST,N,AA<:AbstractArray{T},S} <: AbstractArray{T,N}
     parent::AA
-    sampling::NTuple{N,ST}
     function SampledArray(parent::AbstractArray{T,N}, sampling::NTuple{N,Number}) where {T,N}
         # PERF: defined on `Number` but it promotes to a concrete type stored in the field
         sampling = promote(sampling...)
-        return new{T,eltype(sampling),ndims(parent),typeof(parent)}(parent, sampling)
+        return new{T,eltype(sampling),ndims(parent),typeof(parent), sampling}(parent)
     end
-    SampledArray(parent::AbstractArray{<:Any,0}, sampling::NTuple{0}) = new{eltype(parent),Any,0,typeof(parent)}(parent, sampling)
+    SampledArray(parent::AbstractArray{<:Any,0}, sampling::NTuple{0}) = new{eltype(parent),Any,0,typeof(parent),sampling}(parent)
 end
 SampledArray(parent::AbstractArray{<:Any,N}, sampling::Number) where {N} = SampledArray(parent, ntuple(_ -> sampling, Val(N)))
 
 Base.size(a::SampledArray) = (@inline; size(a.parent))
 Base.axes(a::SampledArray) = (@inline; axes(a.parent))
 Base.parent(a::SampledArray) = a.parent
-Base.similar(a::SampledArray{T,ST,N}, ::Type{S}, dims::Dims{N}) where {T,ST,N,S} = SampledArray(similar(parent(a), S, dims), a.sampling)
-@propagate_inbounds Base.getindex(a::SampledArray, i) = getindex(parent(a), i)
-@propagate_inbounds Base.setindex!(A::SampledArray, v, i) = setindex!(parent(A), v, i)
+
+Base.similar(A::SampledArray) = SampledArray(similar(parent(A)), sampling(A))
+Base.similar(A::SampledArray, ::Type{S}, dims::Dims) where {S} = SampledArray(similar(parent(A), S, dims), sampling(A))
+# NOTE: These two overloads are here, because we want an OffsetArray to be a parent of the SampledArray and not the
+# other way around <05-09-25> 
+Base.similar(A::SampledArray{<:Any,<:Any, N}, ::Type{S}, oax::NTuple{N, <:AbstractUnitRange}) where {S,N} = SampledArray(similar(parent(A), S, oax), sampling(A))
+Base.similar(A::SampledArray, ::Type{S}, oax::Tuple{AbstractUnitRange, Vararg{AbstractUnitRange}}) where {S} = SampledArray(similar(parent(A), oax), sampling(A))
+Base.similar(A::SampledArray, oax::Tuple{AbstractUnitRange, Vararg{AbstractUnitRange}})  = SampledArray(similar(parent(A),  oax), sampling(A))
+
+@propagate_inbounds Base.getindex(a::SampledArray, I...) = getindex(parent(a), I...)
+@propagate_inbounds Base.setindex!(A::SampledArray, v, I...) = setindex!(parent(A), v, I...)
 Base.IndexStyle(::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = IndexStyle(AA)
-@inline sampling(a::SampledArray) = a.sampling
+@inline sampling(a::Type{<:SampledArray{<:Any,<:Any,<:Any,<:Any,S}}) where {S} = S
+@inline sampling(a::SampledArray) = sampling(typeof(a))
+@inline parent_type(a::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = AA
+@inline parent_type(a::SampledArray) = typeof(a)
 
 """
     SampledMatrix{T,ST,AM} <: AbstractMatrix{T}
@@ -148,9 +161,33 @@ Construct a `SpatialVector` with values `V` and sampling `Δ`.
 """
 SpatialVector(A::AbstractVector, Δ::Length) = SpatialArray(A, (Δ,))
 
-const DimOrInd = Union{Integer, AbstractUnitRange}
-const DimOrOneTo = Union{Integer, OneTo} # NOTE: Without this type, there is an ambiguity <25-08-25> 
-Base.similar(sa::SampledArray, ::Type{T}, dims_or_inds::Tuple{DimOrInd, Vararg{DimOrInd}}) where {T}  = SampledArray(similar(parent(sa), T, dims_or_inds), sampling(sa))
-Base.similar(sa::SampledArray, ::Type{T}, dims_or_inds::Tuple{DimOrOneTo, Vararg{DimOrOneTo}}) where {T}  = SampledArray(similar(parent(sa), T, dims_or_inds), sampling(sa))
+# TODO: Indexing should return a sampled matrix... An issue in the `similar` method probably. <27-08-25> 
+# julia> A3 = psf(tf, 30u"nm", (30, 30, 10));
+#
+# julia> tf = IsotropicGaussian(λ, NA);
+#
+# julia> A3 = psf(tf, 30u"nm", (30, 30, 10));
+#
+# julia> A3[:,:,1]
+# 30×30 OffsetArray(::Matrix{Float64}, -14:15, -14:15) with eltype Float64 with indices -14:15×-14:15:
+#  ....
+
+# TODO: When one wants to construct a 3D similar to a 2D sampled, what to fill in in the 3rd dimension? This should be
+# a non-method. Does it work with classical arrays? <27-08-25> 
+# TODO: There was an error that `similar` with a type argument did not return an array of the correct eltype. This
+# has to tested for all of the `similar` overloads. <05-09-25>
+
+Broadcast.BroadcastStyle(a::Type{T}) where {T<:SampledArray} = ArrayStyle{T}()
+Base.similar(bc::Broadcasted{<:ArrayStyle{T}}, ::Type{S}) where {T<:SampledArray, S} = similar(Array{S}, axes(bc))
+
+@inline broadcast_args(args::Tuple) = (broadcast_args(args[1]), broadcast_args(Base.tail(args))...)
+@inline broadcast_args(args::NTuple{1}) = (broadcast_args(args[1]),)
+@inline broadcast_args(a) = a
+@inline broadcast_args(a::SampledArray) = parent(a)
+
+function Base.copyto!(dest::SampledArray, bc::Broadcasted{<:ArrayStyle{<:SampledArray}})
+    copyto!(parent(dest), Broadcast.Broadcasted(bc.f, broadcast_args(bc.args)))
+    return dest
+end
 
 export SpatialArray, SpatialMatrix, SpatialVector, SampledArray, sampling

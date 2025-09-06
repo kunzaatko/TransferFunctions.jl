@@ -35,7 +35,7 @@ end
         @test let ss = similar(s)
             eltype(ss) == Float64 && sampling(ss) == sampling(s) && size(ss) == (10, 10) && ss isa SpatialArray && ss.parent.offsets == s.parent.offsets
         end
-        @testset "SpatialArray wrapper is preserved: $(nameof(typeof(ss)))" for ss in (similar(s, (10, 10)), similar(s, (-10:10, -10:10)))
+        @testset "SpatialArray wrapper is preserved: $(nameof(typeof(ss)))" for ss in (similar(s, Float32), similar(s, Float32, (10, 10)), similar(s, Float32, (-10:10, -10:10)))
             @test ss isa SpatialArray
         end
     end
