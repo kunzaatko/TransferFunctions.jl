@@ -75,12 +75,14 @@ which you can check by
 
 ```@example airy-disc
 FWHM_lateral = TF.FWHM(airypsf_3d)[1]
+round(typeof(1.0u"nm"), FWHM_lateral; digits=2) # hide
 ```
 
 which gives
 
 ```@example airy-disc
 FWHM_lateral * NA / λ 
+round(FWHM_lateral * NA / λ; digits=3) # hide
 ```
 
 The Axial FWHM (along the optical axis) is approximately given by
@@ -93,12 +95,14 @@ and can be obtained with
 
 ```@example airy-disc
 FWHM_axial = TF.FWHM(airypsf_3d)[3]
+round(typeof(1.0u"nm"), FWHM_axial; digits = 2) # hide
 ```
 
 which gives
 
 ```@example airy-disc
 FWHM_axial * NA^2 / (λ * n)
+round(FWHM_axial * NA^2 / (λ * n); digits = 3) # hide
 ```
 
 The energy for a given radius of the Airy disc has a closed form expression and can be computed using the method
@@ -108,6 +112,7 @@ TransferFunctions.encircled_energy(::AiryDisc{2}, ::Length)
 
 ```@example airy-disc
 TF.encircled_energy(airypsf_2d, 300u"nm") 
+round(TF.encircled_energy(airypsf_2d, 300u"nm"); digits=3) # hide
 ```
 
 For a desired contained energy the correct radius can be found by [bisection](@extref `Roots.Bisection`) which and can be computed using
@@ -119,4 +124,5 @@ TransferFunctions.energy_radius(::AiryDisc{2}, ::Real)
 
 ```@example airy-disc
 TF.energy_radius(airypsf_2d, 0.05)
+round(typeof(1.0u"nm"), TF.energy_radius(airypsf_2d, 0.05); digits = 2) # hide
 ```
