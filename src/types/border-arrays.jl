@@ -34,15 +34,9 @@ julia> TF.validextension(TF.Fill(0), ones(40,40))
 ```
 """
 @interface validextension(b::AbstractBorder, A::AbstractArray)
-function AbstractBorder{T}(s::Symbol) where {T}
-    s == :replicate && return Replicate{T}()
-    s == :reflect && return Reflect{T}()
-    s == :circular && return Circular{T}()
-    s == :fill && return Fill{T}(0)
-    s == :symmetric && return Symmetric{T}()
-    throw(ArgumentError("Unknown border type $s"))
-end
-AbstractBorder(s::Symbol) = AbstractBorder{Any}(s)
+AbstractBorder{T}(s::Symbol) where {T} = AbstractBorder{T}(Val(s))
+AbstractBorder{T}(s::String) where {T} = AbstractBorder{T}(Val(Symbol(s)))
+AbstractBorder(s) = AbstractBorder{Any}(s)
 
 """
     Fill{T} <: AbstractBorder{T} 
@@ -54,6 +48,9 @@ struct Fill{T} <: AbstractBorder{T}
     Fill{T}(value::T) where {T} = new{T}(value)
 end
 Fill{T}() where {T} = Fill(zero(T)) 
+Fill{Any}() = Fill{Any}(0.0) 
+AbstractBorder{T}(::Val{:fill}) where {T} = Fill{T}()
+AbstractBorder{T}(::Val{:Fill}) where {T} = Fill{T}()
 @propagate_inbounds function Base.getindex(b::Fill{T}, A::AbstractArray{T,N}, I::Vararg{Int,N}) where {T,N} 
     if all(I .∈ axes(A)) 
         @inbounds A[I...] 
@@ -200,6 +197,10 @@ for subtype in IndexMapBorder_subtypes
             toplevel && print(io, " with output type ", eltype(b))
         end
     end
+    for x in (Symbol(lowercase(string(subtype))), subtype)
+        v = Val{x}
+        @eval AbstractBorder{S}(::$v) where S = $subtype{S}()
+    end
 end
 
 
@@ -247,7 +248,7 @@ struct BorderArray{T,N,AA<:AbstractArray{T,N},AB<:AbstractBorder{T}} <: Abstract
         new{T,ndims(parent),typeof(parent),typeof(border)}(parent, border, padding)
     end
 end
-BorderArray(parent::AbstractArray, border::Symbol, padding) = BorderArray(parent, AbstractBorder(border), padding)
+BorderArray(parent::AbstractArray, border::Union{Symbol, String}, padding) = BorderArray(parent, AbstractBorder(border), padding)
 BorderArray(parent::AbstractArray{T}, border::Type{Fill}, padding) where {T} = BorderArray{T}(parent, Fill{T}(), padding)
 BorderArray(parent::AbstractArray, border::Type{<:AbstractBorder}, padding) = BorderArray(parent, border(), padding)
 BorderArray(parent::AbstractArray{S}, border::AbstractBorder{T}, padding) where {S,T} = BorderArray{S}(parent, convert(AbstractBorder{S}, border), padding)
