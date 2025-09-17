@@ -29,6 +29,14 @@ Base.size(a::SampledArray) = (@inline; size(a.parent))
 Base.axes(a::SampledArray) = (@inline; axes(a.parent))
 Base.parent(a::SampledArray) = a.parent
 
+check_sampling(A::Type{<:SampledArray}, B::Type{<:SampledArray}) = sampling(A) == sampling(B) || throw(DimensionMismatch("Cannot broadcast arrays with different sampling rates. Got $(sampling(A)) and $(sampling(B))"))
+function Base.promote_rule(A::Type{<:SampledArray{T1,ST1,N, AA,S1}}, B::Type{<:SampledArray{T2,ST2,N,BB,S2}}) where {N,T1,ST1,AA,S1,T2,ST2,BB,S2}
+    check_sampling(A, B)
+    s1, s2 = promote(S1, S2)
+    @assert s1 == s2
+    S = s1
+    return SampledArray{promote_type(T1, T2), promote_type(ST1, ST2), N, promote_type(AA, BB), S}
+end
 Base.similar(A::SampledArray) = SampledArray(similar(parent(A)), sampling(A))
 Base.similar(A::SampledArray, ::Type{S}, dims::Dims) where {S} = SampledArray(similar(parent(A), S, dims), sampling(A))
 # NOTE: These two overloads are here, because we want an OffsetArray to be a parent of the SampledArray and not the
@@ -180,8 +188,13 @@ SpatialVector(A::AbstractVector, Δ::Length) = SpatialArray(A, (Δ,))
 # TODO: There was an error that `similar` with a type argument did not return an array of the correct eltype. This
 # has to tested for all of the `similar` overloads. <05-09-25>
 
-Broadcast.BroadcastStyle(a::Type{T}) where {T<:SampledArray} = ArrayStyle{T}()
-Base.similar(bc::Broadcasted{<:ArrayStyle{T}}, ::Type{S}) where {T<:SampledArray, S} = similar(Array{S}, axes(bc))
+Broadcast.BroadcastStyle(::Type{T}) where {T<:SampledArray} = ArrayStyle{T}()
+function Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {A<:SampledArray, B<:SampledArray}
+    check_sampling(A, B)
+    return ArrayStyle{promote_type(A, B)}()
+end
+
+Base.similar(bc::Broadcasted{ArrayStyle{T}}, ::Type{S}) where {T<:SampledArray, S} = SampledArray(similar(Array{S}, axes(bc)), sampling(T))
 
 @inline broadcast_args(args::Tuple) = (broadcast_args(args[1]), broadcast_args(Base.tail(args))...)
 @inline broadcast_args(args::NTuple{1}) = (broadcast_args(args[1]),)

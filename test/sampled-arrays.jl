@@ -40,3 +40,27 @@ end
         end
     end
 end
+
+@testset "broadcasting" begin
+    let s1 = SpatialArray(rand(10, 10), 20u"nm")
+        @testset "broadcasting with scalar" begin
+            @test s1 .* 1 == s1
+        end
+        @testset "broadcasting with array" begin
+            @testset "broadcasting with sampled array" begin
+                @test s1 .* s1 isa typeof(s1)
+                s2 = SpatialArray(rand(10, 10), 20u"nm")
+                @test s1 .* s2 isa promote_type(typeof(s1), typeof(s2))
+                s3 = SpatialArray(rand(10, 10), 10u"nm")
+                @test_throws DimensionMismatch s1 .* s3
+                s4 = SpatialArray(round.(Int, 10 .* rand(10, 10)), 20u"nm")
+                # FIX: Conflicting broadcast rules <17-09-25> 
+                @test s1 .* s4 isa SpatialArray
+                @test s1 .* float.(s4) isa SpatialArray
+                # Promoting Int to Float64
+                @test s4 .* π isa SpatialArray
+            end
+            @test s1 .* rand(size(s1)...) isa SpatialArray
+        end
+    end
+end
