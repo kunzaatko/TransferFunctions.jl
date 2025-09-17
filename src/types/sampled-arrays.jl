@@ -1,6 +1,7 @@
 using Base.Broadcast
 using Base.Broadcast: ArrayStyle, Broadcasted
 using Base: CartesianIndices, @propagate_inbounds, OneTo
+using DomainSets: ×
 
 # TODO: Update the type signature <03-09-25> 
 # TODO: This should instead be defined in some package like MicroscopyCore.jl or similar <30-07-25> 
@@ -102,9 +103,7 @@ distance `Δ` in every direction.
 SpatialArray(A::AbstractArray, Δ) = SampledArray(A, Δ)
 SpatialArray(A::AbstractArray{<:Any,N}, Δ::Length) where {N} = SampledArray(A, fillsize(Δ, N))
 
-# FIX: Should also be a method for SampledArray <26-08-25> 
-# FIX: Instead should be `location_bins` which give a vector of rectangles that are the bin location corners of the
-# samples <30-07-25> 
+# FIX: Should also be a method for SampledArray <26-08-25>
 """
     posaxes(a::SampledArray)
 Returns the positions of the axes of samples in `a`.
@@ -117,34 +116,70 @@ julia> TF.posaxes(sa)
 ((61:61:244) nm, (61:61:244) nm)
 
 julia> TF.posgrid(sa)[1]
-4×4 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
-  61.0 nm   61.0 nm   61.0 nm   61.0 nm
- 122.0 nm  122.0 nm  122.0 nm  122.0 nm
- 183.0 nm  183.0 nm  183.0 nm  183.0 nm
- 244.0 nm  244.0 nm  244.0 nm  244.0 nm
+4×4 Matrix{Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+  61 nm   61 nm   61 nm   61 nm
+ 122 nm  122 nm  122 nm  122 nm
+ 183 nm  183 nm  183 nm  183 nm
+ 244 nm  244 nm  244 nm  244 nm
 ```
 """
-@inline posaxes(a::SpatialArray) = posaxes(axes(a), sampling(a))
+@inline posaxes(a::SpatialArray, args...) = posaxes(axes(a), sampling(a), args...)
+@inline intervalaxes(a::SpatialArray) = intervalaxes(axes(a), sampling(a))
 
 """
-    sample_vertices(a::SampledArray)
-Returns the vertices of the samples of `a` as tuples.
+    sample_vertices(a::SampledArray, [pos])
+Returns the vertices of the samples of `a` as `SVector{2}` equivalent to `[x, y]`.
 
 ```jldoctest
 julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
 
 julia> TF.sample_vertices(sa)
-4×4 Matrix{Tuple{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}:
- (61.0 nm, 61.0 nm)   (61.0 nm, 122.0 nm)   (61.0 nm, 183.0 nm)   (61.0 nm, 244.0 nm)
- (122.0 nm, 61.0 nm)  (122.0 nm, 122.0 nm)  (122.0 nm, 183.0 nm)  (122.0 nm, 244.0 nm)
- (183.0 nm, 61.0 nm)  (183.0 nm, 122.0 nm)  (183.0 nm, 183.0 nm)  (183.0 nm, 244.0 nm)
- (244.0 nm, 61.0 nm)  (244.0 nm, 122.0 nm)  (244.0 nm, 183.0 nm)  (244.0 nm, 244.0 nm)
+4×4 Matrix{StaticArraysCore.SVector{2, Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}:
+ [61 nm, 61 nm]   [61 nm, 122 nm]   [61 nm, 183 nm]   [61 nm, 244 nm]
+ [122 nm, 61 nm]  [122 nm, 122 nm]  [122 nm, 183 nm]  [122 nm, 244 nm]
+ [183 nm, 61 nm]  [183 nm, 122 nm]  [183 nm, 183 nm]  [183 nm, 244 nm]
+ [244 nm, 61 nm]  [244 nm, 122 nm]  [244 nm, 183 nm]  [244 nm, 244 nm]
+
+julia> TF.sample_vertices(sa, TF.mid)
+4×4 Matrix{StaticArraysCore.SVector{2, Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}:
+ [91.5 nm, 91.5 nm]   [91.5 nm, 152.5 nm]   [91.5 nm, 213.5 nm]   [91.5 nm, 274.5 nm]
+ [152.5 nm, 91.5 nm]  [152.5 nm, 152.5 nm]  [152.5 nm, 213.5 nm]  [152.5 nm, 274.5 nm]
+ [213.5 nm, 91.5 nm]  [213.5 nm, 152.5 nm]  [213.5 nm, 213.5 nm]  [213.5 nm, 274.5 nm]
+ [274.5 nm, 91.5 nm]  [274.5 nm, 152.5 nm]  [274.5 nm, 213.5 nm]  [274.5 nm, 274.5 nm]
+
+julia> TF.sample_vertices(sa, TF.right)
+4×4 Matrix{StaticArraysCore.SVector{2, Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}:
+ [122 nm, 122 nm]  [122 nm, 183 nm]  [122 nm, 244 nm]  [122 nm, 305 nm]
+ [183 nm, 122 nm]  [183 nm, 183 nm]  [183 nm, 244 nm]  [183 nm, 305 nm]
+ [244 nm, 122 nm]  [244 nm, 183 nm]  [244 nm, 244 nm]  [244 nm, 305 nm]
+ [305 nm, 122 nm]  [305 nm, 183 nm]  [305 nm, 244 nm]  [305 nm, 305 nm]
 ```
 """
-@inline sample_vertices(a::SpatialArray) =
-    map(posgrid(a)...) do x, y
-        (x, y)
+@inline sample_vertices(a::SpatialArray, args...) =
+    map(posgrid(a, args...)...) do x, y
+        SVector{2}([x, y])
     end
+
+"""
+    sample_cells(a::SampledArray)
+Returns the cell hyper rectangles of the samples of `a` as `DomainSets.Rectagle` equivalent to `X × Y`.
+
+```jldoctest
+julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
+
+julia> TF.sample_cells(sa)
+4×4 Matrix{DomainSets.Rectangle{StaticArraysCore.SVector{2, Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}}:
+ (61 nm .. 122 nm) × (61 nm .. 122 nm)   (61 nm .. 122 nm) × (122 nm .. 183 nm)   …  (61 nm .. 122 nm) × (244 nm .. 305 nm)
+ (122 nm .. 183 nm) × (61 nm .. 122 nm)  (122 nm .. 183 nm) × (122 nm .. 183 nm)     (122 nm .. 183 nm) × (244 nm .. 305 nm)
+ (183 nm .. 244 nm) × (61 nm .. 122 nm)  (183 nm .. 244 nm) × (122 nm .. 183 nm)     (183 nm .. 244 nm) × (244 nm .. 305 nm)
+ (244 nm .. 305 nm) × (61 nm .. 122 nm)  (244 nm .. 305 nm) × (122 nm .. 183 nm)     (244 nm .. 305 nm) × (244 nm .. 305 nm)
+```
+"""
+@inline function sample_cells(a::SpatialArray) 
+    map(intervalgrid(a)...) do x, y 
+        x × y
+    end
+end
 
 """
     SpatialMatrix{T,AM} <: AbstractMatrix{T}

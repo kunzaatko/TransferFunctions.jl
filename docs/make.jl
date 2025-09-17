@@ -15,6 +15,7 @@ links = InterLinks(
     "Rotations" => "https://juliageometry.github.io/Rotations.jl/dev/",
     "ComponentArrays" => "https://docs.sciml.ai/ComponentArrays/stable/",
     "Roots" => "https://juliamath.github.io/Roots.jl/stable/",
+    "DomainSets" => "https://juliaapproximation.github.io/DomainSets.jl/stable/",
     "Distributions" => "https://juliastats.github.io/Distributions.jl/stable/"
 )
 

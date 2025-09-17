@@ -123,14 +123,31 @@ julia> y_f
 @inline fftfreqs(sz::Size{2}, Δ::PixelSize{2}) = (fftfreq(sz[1], 1 / Δ[1]) * ones(sz[2])', ones(sz[1]) * fftfreq(sz[2], 1 / Δ[2])')
 fftfreqs(sz::Size{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, 2))
 
-@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}) where {N} = map(axes, Δ) do ax, Δax
+@enum CellPosition left mid right 
+
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, c::CellPosition = left) where {N} = posaxes(axes, Δ, Val(c))
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{left}) where {N} = map(axes, Δ) do ax, Δax
   ax .* Δax
 end
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{right}) where {N} = map(axes, Δ) do ax, Δax
+    (ax .+ step(ax)) .* Δax
+end
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{mid}) where {N} = map(axes, Δ) do ax, Δax
+    (2ax .+ step(ax)) ./ 2 .* Δax
+end
+
 const SizeSpec{N} = Union{Size{N}, Indices{N}}
-@inline posaxes(sz::Size{N}, Δ::PixelSize{N}; center=roundupcenter(sz)) where {N} = posaxes(Tuple(OneTo(s) .- c for (s,c) in zip(sz, Tuple(center))), Δ)
-@inline posaxes(sz::SizeSpec{N}, Δ::Length; kwargs...) where {N} = @inline posaxes(sz, fillsize(Δ, N); kwargs...)
+@inline posaxes(sz::Size{N}, Δ::PixelSize{N}, args...; center=roundupcenter(sz)) where {N} = posaxes(Tuple(OneTo(s) .- c for (s,c) in zip(sz, Tuple(center))), Δ, args...)
+@inline posaxes(sz::SizeSpec{N}, Δ::Length, args...; kwargs...) where {N} = @inline posaxes(sz, fillsize(Δ, N), args...; kwargs...)
 
 # TODO: Generalize for n dims and define a single function for this <18-08-25> 
+@inline togrid(axes::NTuple{2}) = ([x for x in axes[1], _ in axes[2]], [y for _ in axes[1], y in axes[2]])
+@inline function togrid(axes::NTuple{3})
+  xs = [x for x in axes[1], _ in axes[2], _ in axes[3]]
+  ys = [y for _ in axes[1], y in axes[2], _ in axes[3]]
+  zs = [z for _ in axes[1], _ in axes[2], z in axes[3]]
+  return xs, ys, zs
+end
 """
     posgrid(axes::Indices, Δ)
     posgrid(sz::Size, Δ; center=roundupcenter(sz))
@@ -186,14 +203,14 @@ julia> TF.posgrid((3,3,3), 50u"nm")[3]
  50 nm  50 nm  50 nm
 ```
 """
-@inline posgrid(posaxes::NTuple{2}) = ((posaxes[1] * ones(length(posaxes[2]))'), ones(length(posaxes[1])) * (posaxes[2])')
-@inline function posgrid(posaxes::NTuple{3})
-  xs = [x for x in posaxes[1], _ in posaxes[2], _ in posaxes[3]]
-  ys = [y for _ in posaxes[1], y in posaxes[2], _ in posaxes[3]]
-  zs = [z for _ in posaxes[1], _ in posaxes[2], z in posaxes[3]]
-  return xs, ys, zs
+posgrid(args...; kwargs...) = togrid(posaxes(args...; kwargs...))
+
+intervalaxes(args...; kwargs...) = map(posaxes(args..., Val(left); kwargs...), posaxes(args..., Val(right); kwargs...)) do startax, endax
+    map(startax, endax) do s,e 
+        s..e
+    end
 end
-posgrid(args...; kwargs...) = posgrid(posaxes(args...; kwargs...))
+intervalgrid(args...; kwargs...) = togrid(intervalaxes(args...; kwargs...))
 
 ## OffsetArray helpers ##
 
