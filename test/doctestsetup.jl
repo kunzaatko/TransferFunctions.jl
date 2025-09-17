@@ -1,3 +1,4 @@
+if !isdefined(@__MODULE__, :LOADED_HASH) || LOADED_HASH != hash(readlines(@__FILE__))
 using TransferFunctions
 using TransferFunctions: TransferFunctions as TF
 using TransferFunctions.Apodization
@@ -35,4 +36,10 @@ setup_params!() = @eval begin
     nothing
 end
 
-return nothing
+LOADED_HASH = hash(readlines(@__FILE__))
+
+return    nothing
+
+else
+    @info "Skipping doctest setup... Same hash"
+end
