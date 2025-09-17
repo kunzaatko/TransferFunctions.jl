@@ -99,6 +99,9 @@ nothing # hide
 ```
 
 ```@makie filtering-matrices; formats=:png, basename="filtering_matrix_column"
-f,_,_ = Recipes.mosaic(Recipes.image!, reshape(A_col, (:, 1))', K_A_col'; axis=(;title=["Column", "Filtering Matrix"], yreversed=true), linkaxes=false)
+f,ax,_ = Recipes.mosaic(Recipes.image!, reshape(A_col, (:, 1))', K_A_col'; axis=(;title=["Column", "Filtering Matrix"], yreversed=true), linkaxes=false)
+ax[1].xticklabelsvisible = true
+ax[1].xticksvisible = true
+ax[1].xticks = ([0.5], ["13"])
 f
 ```
