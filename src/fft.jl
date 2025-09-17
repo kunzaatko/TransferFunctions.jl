@@ -120,6 +120,8 @@ end
     setindex!(parent(a), v, I...)
 end
 
+Base.promote_rule(A::Type{<:RFFTOut{T1, N, AA, d, P}}, B::Type{<:RFFTOut{T2, N, BB, d, P}}) where {T1, N, AA, T2, BB, d, P} = RFFTOut{promote_type(T1, T2), N, promote_type(AA, BB), d, P}
+
 Base.similar(a::RFFTOut) = RFFTOut(similar(parent(a)), firstdim(a))
 Base.similar(a::RFFTOut, ::Type{S}) where {S} = RFFTOut(similar(parent(a), S), firstdim(a))
 Base.similar(a::Type{T}, ::Type{S}, sz) where {T <: RFFTOut,S} = RFFTOut(similar(Array{S}, sz), firstdim(T))
@@ -161,15 +163,15 @@ struct FFTOut{T,N,AA<:AbstractArray{T,N}}  <: AbstractArray{T,N}
     parent::AA
 end
 Base.parent(a::FFTOut) = (@inline; a.parent)
+Base.promote_rule(A::Type{<:FFTOut{T1, N, AA}}, B::Type{<:FFTOut{T2, N, BB}}) where {T1, N, AA, T2, BB} = FFTOut{promote_type(T1, T2), N, promote_type(AA, BB)}
 
 Broadcast.BroadcastStyle(T::Type{<:FFTOut}) = ArrayStyle{T}()
 
 # TODO: Consider instead using a `promote_rule` definition to promote `RFFTOut` to `FFTOut` <02-09-25> 
-Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {T1,T2,M,N,A<:FFTOut{T1, M}, B<:RFFTOut{T2,N}} = ArrayStyle{FFTOut{promote_type(T1, T2), max(N,M)}}()
-Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {T1,T2,M,N,A<:FFTOut{T1, M}, B<:FFTOut{T2,N}} = ArrayStyle{FFTOut{promote_type(T1, T2), max(N,M)}}()
+Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {A<:FFTOut, B<:FFTOut} = ArrayStyle{promote_type(A, B)}()
+Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {T,M,A<:FFTOut{T, M},N,B<:RFFTOut{T,N}} = ArrayStyle{FFTOut{T, max(N,M)}}()
 Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::DefaultArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
 Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::AbstractArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
-Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {B<:FFTOut, A<:FFTOut} = ArrayStyle{promote_type(A,B)}()
 
 Base.similar(bc::Broadcasted{<:ArrayStyle{<:FFTOut}}, ::Type{S}) where {S} = FFTOut(similar(Array{S}, axes(bc)))
 
