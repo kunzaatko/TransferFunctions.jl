@@ -11,7 +11,7 @@ ENV["COLUMNS"] = 100
 ENV["LINES"] = 80
 
 using TestImages
-filenames = ["moonsurface.tiff"]; # NOTE: This is a fix for failing doctests since on download, there is a print-out <19-12-24> 
+filenames = ["moonsurface", "mandril_gray"]; # NOTE: This is a fix for failing doctests since on download, there is a print-out <19-12-24> 
 testimage.(filenames; download_only=false);
 
 setup_makiemaestro!() = @eval begin
