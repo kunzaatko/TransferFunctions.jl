@@ -162,28 +162,28 @@ is a single length, then it is used for all dimensions.
 julia> x_p, y_p = TF.posgrid((-3:5, -1:3), (50u"nm", 20u"nm"));
 
 julia> x_p
-9×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
- -150.0 nm  -150.0 nm  -150.0 nm  -150.0 nm  -150.0 nm
- -100.0 nm  -100.0 nm  -100.0 nm  -100.0 nm  -100.0 nm
-  -50.0 nm   -50.0 nm   -50.0 nm   -50.0 nm   -50.0 nm
-    0.0 nm     0.0 nm     0.0 nm     0.0 nm     0.0 nm
-   50.0 nm    50.0 nm    50.0 nm    50.0 nm    50.0 nm
-  100.0 nm   100.0 nm   100.0 nm   100.0 nm   100.0 nm
-  150.0 nm   150.0 nm   150.0 nm   150.0 nm   150.0 nm
-  200.0 nm   200.0 nm   200.0 nm   200.0 nm   200.0 nm
-  250.0 nm   250.0 nm   250.0 nm   250.0 nm   250.0 nm
+9×5 Matrix{Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ -150 nm  -150 nm  -150 nm  -150 nm  -150 nm
+ -100 nm  -100 nm  -100 nm  -100 nm  -100 nm
+  -50 nm   -50 nm   -50 nm   -50 nm   -50 nm
+    0 nm     0 nm     0 nm     0 nm     0 nm
+   50 nm    50 nm    50 nm    50 nm    50 nm
+  100 nm   100 nm   100 nm   100 nm   100 nm
+  150 nm   150 nm   150 nm   150 nm   150 nm
+  200 nm   200 nm   200 nm   200 nm   200 nm
+  250 nm   250 nm   250 nm   250 nm   250 nm
 
 julia> y_p
-9×5 Matrix{Quantity{Float64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
- -20.0 nm  0.0 nm  20.0 nm  40.0 nm  60.0 nm
+9×5 Matrix{Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}:
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
+ -20 nm  0 nm  20 nm  40 nm  60 nm
 
 julia> TF.posgrid((3,3,3), 50u"nm")[3]
 3×3×3 Array{Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 3}:

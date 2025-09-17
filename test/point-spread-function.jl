@@ -25,6 +25,12 @@ PSF_2D = [AiryDisc{2}(λ, NA), IsotropicGaussian{2}(λ, NA), BornWolf{2}(λ, NA,
             @test sampling(psf_array) == (Δx, Δy)
         end
     end
+    if !(tf isa BornWolf) # TODO: Must implement `energy_radius` for BornWolf before testing <15-09-25> 
+        @testset "`otf` method" begin
+            A_sm = SpatialMatrix(A, Δ)
+            @test otf(tf, A_sm) isa AbstractMatrix{<:Real}
+        end
+    end
     @testset "`conv` method" begin
         let img = SampledArray(testimage("mandril_gray"), Δ)
             if tf isa BornWolf

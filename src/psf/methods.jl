@@ -1,7 +1,8 @@
 using Base: Indices
 using Roots, InterfaceFunctions
+using FFTViews
 using ComponentArrays
-using TransferFunctions.Apodization
+using TransferFunctions: Apodization, FFT
 
 # TODO: Should be handled by interface functions whether the trait is implemented <20-08-25> 
 """
@@ -126,6 +127,23 @@ end
 """
     psf(tf::PointSpreadFunction, Δ, wh::Dims; normalize=true)
 Generate a PSF array size `wh` for the model `tf` with  the pixel size `Δ`.
+
+```jldoctest; filter = r"(\\d*)\\.(\\d{4})\\d+" => s"\\1.\\2***"
+julia> tf = AiryDisc{2}(λ=488u"nm", NA=1.4);
+
+julia> A_psf = psf(tf, 61u"nm", (-3:3, -3:3))
+7×7 SampledArray{Float64, Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}, 2, OffsetArrays.OffsetMatrix{Float64, Matrix{Float64}}, (61 nm, 61 nm)} with indices -3:3×-3:3:
+ 0.00154644   7.98472e-5  0.000815467  0.00205246  0.000815467  7.98472e-5  0.00154644
+ 7.98472e-5   0.00416274  0.0194095    0.0291836   0.0194095    0.00416274  7.98472e-5
+ 0.000815467  0.0194095   0.0602568    0.0836632   0.0602568    0.0194095   0.000815467
+ 0.00205246   0.0291836   0.0836632    0.1141      0.0836632    0.0291836   0.00205246
+ 0.000815467  0.0194095   0.0602568    0.0836632   0.0602568    0.0194095   0.000815467
+ 7.98472e-5   0.00416274  0.0194095    0.0291836   0.0194095    0.00416274  7.98472e-5
+ 0.00154644   7.98472e-5  0.000815467  0.00205246  0.000815467  7.98472e-5  0.00154644
+
+julia> sum(A_psf) ≈ 1
+true
+```
 """
 function psf(
     tf::PointSpreadFunction{N},
@@ -151,6 +169,46 @@ Sample the PSF `tf` with a pixel size `Δ` over a window such that the energy er
 """
 psf(tf::PointSpreadFunction{2}, Δ::PixelSize{2}, ε::Real; kwargs...) = psf(tf, Δ, radius_window(Δ, energy_radius(tf, ε)); kwargs...)
 psf(tf::PointSpreadFunction{2}, Δ::Length, ε::Real; kwargs...) = psf(tf, fillsize(Δ, 2), ε; kwargs...)
+
+"""
+    otf(tf::PointSpreadFunction{2}, A::SpatialMatrix; ε=0.01)
+Sample an OTF from the transfer function `tf` for the image `A` using the energy error `ε`.
+
+See also [`psf`](@ref)
+
+```jldoctest otf_from_psf; setup=:(setup_params!())
+julia> tf = AiryDisc{2}(λ=488u"nm", NA=1.4);
+
+julia> A = SpatialMatrix(testimage("mandril_gray"), Δ);
+
+julia> A_otf = otf(tf, A; ε=0.05);
+```
+
+!!! warning "Inclusion of the energy (1 - ε) is not enforced"
+    If the allowed energy error is too small that the sampled PSF does not fit into the array size that is Fourier
+    transformed, then the resulting OTF may not be accurate to the specified error. In that case a warning is printed.
+
+```jldoctest otf_from_psf
+julia> A_otf_bad = otf(tf, SampledArray(ones(5,5), 61u"nm")); # prints a warning
+
+julia> A_otf_bad[1,1] ≈ 1 # OTF should be 1 at the origin but this is not enforced
+false
+
+julia> A_otf[1,1] ≈ 1 # For it to be true array `A` must be large enough to hold the PSF with the specified error
+true
+```
+"""
+function otf(tf::PointSpreadFunction{2}, A::SpatialMatrix; ε=0.01)
+    Δ = sampling(A)
+    K = psf(tf, Δ, ε)
+    Kv = FFTView(zeros(eltype(K), map(length, axes(A))))
+    all(length.(axes(K)) .< length.(axes(Kv))) || @warn "sampled PSF does not fit the OTF array size"
+    for I in CartesianIndices(axes(K))
+        Kv[I] = K[I]
+    end
+    # FIX: This real is only valid for some types of symmetries. This should be disambiguated and removed by dispatch <15-09-25> 
+    return collect(real(FFT.fft(Kv)))
+end
 
 
 # TODO: Specify the details `ε`, border etc. <21-08-25> 

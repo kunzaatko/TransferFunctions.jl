@@ -79,4 +79,4 @@ include("./types/psf-array.jl")
 
 include("./estimation.jl")
 
-export response, psf
+export response, psf, otf

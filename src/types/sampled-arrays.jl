@@ -169,10 +169,10 @@ julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
 
 julia> TF.sample_cells(sa)
 4×4 Matrix{DomainSets.Rectangle{StaticArraysCore.SVector{2, Quantity{Int64, 𝐋, Unitful.FreeUnits{(nm,), 𝐋, nothing}}}}}:
- (61 nm .. 122 nm) × (61 nm .. 122 nm)   (61 nm .. 122 nm) × (122 nm .. 183 nm)   …  (61 nm .. 122 nm) × (244 nm .. 305 nm)
- (122 nm .. 183 nm) × (61 nm .. 122 nm)  (122 nm .. 183 nm) × (122 nm .. 183 nm)     (122 nm .. 183 nm) × (244 nm .. 305 nm)
- (183 nm .. 244 nm) × (61 nm .. 122 nm)  (183 nm .. 244 nm) × (122 nm .. 183 nm)     (183 nm .. 244 nm) × (244 nm .. 305 nm)
- (244 nm .. 305 nm) × (61 nm .. 122 nm)  (244 nm .. 305 nm) × (122 nm .. 183 nm)     (244 nm .. 305 nm) × (244 nm .. 305 nm)
+ (61 nm .. 122 nm) × (61 nm .. 122 nm)   …  (61 nm .. 122 nm) × (244 nm .. 305 nm)
+ (122 nm .. 183 nm) × (61 nm .. 122 nm)     (122 nm .. 183 nm) × (244 nm .. 305 nm)
+ (183 nm .. 244 nm) × (61 nm .. 122 nm)     (183 nm .. 244 nm) × (244 nm .. 305 nm)
+ (244 nm .. 305 nm) × (61 nm .. 122 nm)     (244 nm .. 305 nm) × (244 nm .. 305 nm)
 ```
 """
 @inline function sample_cells(a::SpatialArray) 
