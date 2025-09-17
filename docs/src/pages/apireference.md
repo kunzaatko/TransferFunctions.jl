@@ -40,7 +40,7 @@ TransferFunctions.aroundorigin
 TransferFunctions.contained
 TransferFunctions.interior
 
-TransferFunctions.fftfreqs
+TransferFunctions.freqgrid
 TransferFunctions.posgrid
 TransferFunctions.posaxes
 

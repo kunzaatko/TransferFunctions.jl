@@ -1,4 +1,4 @@
-using TransferFunctions: fillsize, roundupcenter, exactcenter, fftfreqs, posgrid, contained, interior, rounddowncenter, roundcenter, aroundorigin
+using TransferFunctions: fillsize, roundupcenter, exactcenter, freqgrid, posgrid, contained, interior, rounddowncenter, roundcenter, aroundorigin
 using TransferFunctions: PixelSize, Coordinate, Frequency, Length, OriginAt
 using OffsetArrays: OffsetArray as OA
 using Base: CartesianIndex as CI
@@ -28,9 +28,9 @@ end
     @test posgrid((11, 11), 31u"nm") == posgrid((11, 11), (31u"nm", 31u"nm"))
     @test_throws MethodError posgrid((11, 11, 11), (31u"nm", 31u"nm"))
 
-    @test (fftfreqs((11, 11), (31u"nm", 31u"nm")) |> first |> first) isa Frequency
-    @test fftfreqs((11, 11), 31u"nm") == fftfreqs((11, 11), (31u"nm", 31u"nm"))
-    @test_throws MethodError fftfreqs((11, 11, 11), (31u"nm", 31u"nm"))
+    @test (freqgrid((11, 11), (31u"nm", 31u"nm")) |> first |> first) isa Frequency
+    @test freqgrid((11, 11), 31u"nm") == freqgrid((11, 11), (31u"nm", 31u"nm"))
+    @test_throws MethodError freqgrid((11, 11, 11), (31u"nm", 31u"nm"))
 
     @test roundcenter(RoundFromZero, ones(3, 4, 2)) == CI(2, 3, 2)
 

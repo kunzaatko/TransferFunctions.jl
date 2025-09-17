@@ -94,14 +94,24 @@ aroundorigin(s::Integer, o::Integer=0) = aroundorigin(OneTo(s) .- rounddowncente
 aroundorigin(s::AbstractUnitRange, o::Integer=0) = s .+ o
 aroundorigin(s, o::CartesianIndex) = aroundorigin(s, Tuple(o))
 
+
+# TODO: Generalize for n dims and define a single function for this <18-08-25> 
+@inline togrid(axes::NTuple{2}) = ([x for x in axes[1], _ in axes[2]], [y for _ in axes[1], y in axes[2]])
+@inline function togrid(axes::NTuple{3})
+  xs = [x for x in axes[1], _ in axes[2], _ in axes[3]]
+  ys = [y for _ in axes[1], y in axes[2], _ in axes[3]]
+  zs = [z for _ in axes[1], _ in axes[2], z in axes[3]]
+  return xs, ys, zs
+end
+
 # TODO: Use the same calling stack as in the previous methods. <05-05-25> 
 """
-    fftfreqs(sz::Size{2}, Δ::PixelSize{2})
-    fftfreqs(sz::Size{2}, Δ::Length)
-Generate a frequency grid for 2D FFTs with the pixel size `Δ`
+    freqgrid(s::Size, Δ)
+Generate a frequency grid for multidimensional FFTs of the signal of size `s` with the pixel size `Δ` (i.e. sampling
+rate `1/Δ`)
 
 ```jldoctest
-julia> x_f, y_f = TF.fftfreqs((5,5), 50u"nm");
+julia> x_f, y_f = TF.freqgrid((5,5), 50u"nm");
 
 julia> x_f
 5×5 Matrix{Quantity{Float64, 𝐋^-1, Unitful.FreeUnits{(nm^-1,), 𝐋^-1, nothing}}}:
@@ -111,17 +121,34 @@ julia> x_f
  -0.008 nm^-1  -0.008 nm^-1  -0.008 nm^-1  -0.008 nm^-1  -0.008 nm^-1
  -0.004 nm^-1  -0.004 nm^-1  -0.004 nm^-1  -0.004 nm^-1  -0.004 nm^-1
 
-julia> y_f
-5×5 Matrix{Quantity{Float64, 𝐋^-1, Unitful.FreeUnits{(nm^-1,), 𝐋^-1, nothing}}}:
- 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
- 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
- 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
- 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
- 0.0 nm^-1  0.004 nm^-1  0.008 nm^-1  -0.008 nm^-1  -0.004 nm^-1
+julia> y_f' == x_f
+true
+
+julia> _,_,z_f = TF.freqgrid((4,4,3), (50u"nm", 30u"nm", 15u"nm"));
+
+julia> z_f
+4×4×3 Array{Quantity{Float64, 𝐋^-1, Unitful.FreeUnits{(nm^-1,), 𝐋^-1, nothing}}, 3}:
+[:, :, 1] =
+ 0.0 nm^-1  0.0 nm^-1  0.0 nm^-1  0.0 nm^-1
+ 0.0 nm^-1  0.0 nm^-1  0.0 nm^-1  0.0 nm^-1
+ 0.0 nm^-1  0.0 nm^-1  0.0 nm^-1  0.0 nm^-1
+ 0.0 nm^-1  0.0 nm^-1  0.0 nm^-1  0.0 nm^-1
+
+[:, :, 2] =
+ 0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1
+ 0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1
+ 0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1
+ 0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1  0.0222222 nm^-1
+
+[:, :, 3] =
+ -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1
+ -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1
+ -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1
+ -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1
 ```
 """
-@inline fftfreqs(sz::Size{2}, Δ::PixelSize{2}) = (fftfreq(sz[1], 1 / Δ[1]) * ones(sz[2])', ones(sz[1]) * fftfreq(sz[2], 1 / Δ[2])')
-fftfreqs(sz::Size{2}, Δ::Length) = fftfreqs(sz, fillsize(Δ, 2))
+@inline freqgrid(sz::Size, Δ::PixelSize) = togrid(fftfreq.(sz, 1 ./ Δ))
+freqgrid(sz::Size{N}, Δ::Length) where {N} = freqgrid(sz, fillsize(Δ, N))
 
 @enum CellPosition left mid right 
 
@@ -140,20 +167,12 @@ const SizeSpec{N} = Union{Size{N}, Indices{N}}
 @inline posaxes(sz::Size{N}, Δ::PixelSize{N}, args...; center=roundupcenter(sz)) where {N} = posaxes(Tuple(OneTo(s) .- c for (s,c) in zip(sz, Tuple(center))), Δ, args...)
 @inline posaxes(sz::SizeSpec{N}, Δ::Length, args...; kwargs...) where {N} = @inline posaxes(sz, fillsize(Δ, N), args...; kwargs...)
 
-# TODO: Generalize for n dims and define a single function for this <18-08-25> 
-@inline togrid(axes::NTuple{2}) = ([x for x in axes[1], _ in axes[2]], [y for _ in axes[1], y in axes[2]])
-@inline function togrid(axes::NTuple{3})
-  xs = [x for x in axes[1], _ in axes[2], _ in axes[3]]
-  ys = [y for _ in axes[1], y in axes[2], _ in axes[3]]
-  zs = [z for _ in axes[1], _ in axes[2], z in axes[3]]
-  return xs, ys, zs
-end
 """
-    posgrid(axes::Indices, Δ)
-    posgrid(sz::Size, Δ; center=roundupcenter(sz))
-Generate a position grid for 2D sampled images with the pixel size `Δ`.
+    posgrid(a::Indices, Δ)
+    posgrid(s::Size, Δ; center=roundupcenter(s))
+Generate a position grid for sampled images with the pixel/voxel size `Δ`.
 
-If a size `sz` is passed generate a position grid with the given size and the center in `center`. If `Δ` is a tuple of
+If a size `s` is passed generate a position grid with the given size and the center in `center`. If `Δ` is a tuple of
 [`Length`s](@extref Unitful `Length`) then the elements are used for the sampling in the respective dimensions. If `Δ`
 is a single length, then it is used for all dimensions.
 

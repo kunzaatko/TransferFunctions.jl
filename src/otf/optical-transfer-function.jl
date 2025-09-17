@@ -33,7 +33,7 @@ otf(
     tf::OpticalTransferFunction,
     Δxy::PixelSize{2},
     wh::Dims{2}
-) = attenuation.(tf, fftfreqs(wh, Δxy)...)
+) = attenuation.(tf, freqgrid(wh, Δxy)...)
 otf(tf::OpticalTransferFunction, Δ::Length, wh::Dims{2}) = otf(tf, fillsize(Δ, 2), wh)
 otf(tf::OpticalTransferFunction, img::SpatialArray{T,2}) where {T} = otf(tf, sampling(img), size(img))
 
