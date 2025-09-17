@@ -36,7 +36,7 @@ Base.similar(A::SampledArray, ::Type{S}, dims::Dims) where {S} = SampledArray(si
 for DimType in  (Integer,AbstractUnitRange, OneTo)
     @eval begin
         Base.similar(A::SampledArray{<:Any,<:Any, N}, ::Type{S}, oax::NTuple{N, $DimType}) where {S,N} = SampledArray(similar(parent(A), S, oax), sampling(A))
-        Base.similar(A::SampledArray, ::Type{S}, oax::Tuple{$DimType, Vararg{$DimType}}) where {S} = SampledArray(similar(parent(A), oax), sampling(A))
+        Base.similar(A::SampledArray, ::Type{S}, oax::Tuple{$DimType, Vararg{$DimType}}) where {S} = SampledArray(similar(parent(A), S, oax), sampling(A))
         Base.similar(A::SampledArray, oax::Tuple{$DimType, Vararg{$DimType}})  = SampledArray(similar(parent(A),  oax), sampling(A))
     end
 end
@@ -44,9 +44,9 @@ end
 @propagate_inbounds Base.getindex(a::SampledArray, I...) = getindex(parent(a), I...)
 @propagate_inbounds Base.setindex!(A::SampledArray, v, I...) = setindex!(parent(A), v, I...)
 Base.IndexStyle(::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = IndexStyle(AA)
-@inline sampling(a::Type{<:SampledArray{<:Any,<:Any,<:Any,<:Any,S}}) where {S} = S
+@inline sampling(::Type{<:SampledArray{<:Any,<:Any,<:Any,<:Any,S}}) where {S} = S
 @inline sampling(a::SampledArray) = sampling(typeof(a))
-@inline parent_type(a::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = AA
+@inline parent_type(::Type{<:SampledArray{<:Any,<:Any,<:Any,AA}}) where {AA} = AA
 @inline parent_type(a::SampledArray) = typeof(a)
 
 """
@@ -166,18 +166,17 @@ Construct a `SpatialVector` with values `V` and sampling `Δ`.
 SpatialVector(A::AbstractVector, Δ::Length) = SpatialArray(A, (Δ,))
 
 # TODO: Indexing should return a sampled matrix... An issue in the `similar` method probably. <27-08-25> 
-# julia> A3 = psf(tf, 30u"nm", (30, 30, 10));
-#
 # julia> tf = IsotropicGaussian(λ, NA);
 #
 # julia> A3 = psf(tf, 30u"nm", (30, 30, 10));
 #
 # julia> A3[:,:,1]
 # 30×30 OffsetArray(::Matrix{Float64}, -14:15, -14:15) with eltype Float64 with indices -14:15×-14:15:
-#  ....
+#  ...
 
 # TODO: When one wants to construct a 3D similar to a 2D sampled, what to fill in in the 3rd dimension? This should be
 # a non-method. Does it work with classical arrays? <27-08-25> 
+
 # TODO: There was an error that `similar` with a type argument did not return an array of the correct eltype. This
 # has to tested for all of the `similar` overloads. <05-09-25>
 
