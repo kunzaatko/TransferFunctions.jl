@@ -22,8 +22,8 @@ struct BornWolf{N,T<:Real} <: PSFModel{N}
     end
 end
 BornWolf{N,T}(; λ::Length{T}, NA::T, f::T, n::T=T(4 // 3)) where {N,T} = BornWolf{N,T}(λ, NA, f, n) # final 1
-BornWolf{2,T}(params::ComponentVector) where {T} = BornWolf{2,T}(;λ=params.λ, NA=T(params.NA), f=T(params.f)) # -> final 1
-BornWolf{3,T}(params::ComponentVector) where {T} = BornWolf{3,T}(;λ=params.λ, NA=T(params.NA), f=T(params.f), n=T(params.n)) # -> final 1
+BornWolf{2,T}(params::ComponentVector) where {T} = BornWolf{2,T}(; λ=params.λ, NA=T(params.NA), f=T(params.f)) # -> final 1
+BornWolf{3,T}(params::ComponentVector) where {T} = BornWolf{3,T}(; λ=params.λ, NA=T(params.NA), f=T(params.f), n=T(params.n)) # -> final 1
 
 """
     BornWolf(λ::Length, NA, f, n=4//3)
@@ -36,7 +36,7 @@ function BornWolf{N}(λ::Length{A}, NA::Real, f::Real, n::Real) where {N,A<:Real
     NA, f, n = convert(T, NA), convert(T, f), convert(T, n)
     return BornWolf{N,T}(λ, NA, f, n)
 end
-BornWolf{N}(;λ, f, NA, n=float(4 // 3)) where {N} = BornWolf{N}(λ,NA,f,n) # -> final 2
+BornWolf{N}(; λ, f, NA, n=float(4 // 3)) where {N} = BornWolf{N}(λ, NA, f, n) # -> final 2
 BornWolf{N}(λ::Length, NA::Real, f::Real; kwargs...) where {N} = BornWolf{N}(; λ, f, NA, kwargs...) # -> final 2
 BornWolf(args...; kwargs...) = BornWolf{3}(args...; kwargs...) # -> final 2 (default to the 3D full model)
 

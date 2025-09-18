@@ -38,8 +38,8 @@ struct IsotropicGaussian{N,T<:Real} <: PSFModel{N}
     end
 end
 IsotropicGaussian{N,T}(; λ::Length{T}, NA::T, n::T=T(4 // 3), C_lateral::T=T(C_AiryDisc_lateral), C_axial::T=T(C_AiryDisc_axial)) where {N,T} = IsotropicGaussian{N,T}(λ, NA, n, C_lateral, C_axial) # final 1
-IsotropicGaussian{2,T}(params::ComponentVector) where {T} = IsotropicGaussian{2,T}(;λ=params.λ, NA=T(params.NA), C_lateral=T(params.C_lateral)) # -> final 1
-IsotropicGaussian{3,T}(params::ComponentVector) where {T} = IsotropicGaussian{3,T}(;λ=params.λ, NA=T(params.NA), n=T(params.n), C_lateral=T(params.C_lateral), C_axial=T(params.C_axial)) # -> final 1
+IsotropicGaussian{2,T}(params::ComponentVector) where {T} = IsotropicGaussian{2,T}(; λ=params.λ, NA=T(params.NA), C_lateral=T(params.C_lateral)) # -> final 1
+IsotropicGaussian{3,T}(params::ComponentVector) where {T} = IsotropicGaussian{3,T}(; λ=params.λ, NA=T(params.NA), n=T(params.n), C_lateral=T(params.C_lateral), C_axial=T(params.C_axial)) # -> final 1
 
 # TODO: Document the FWHM coefficients <18-08-25> 
 """
