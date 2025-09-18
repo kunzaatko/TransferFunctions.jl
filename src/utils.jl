@@ -233,9 +233,45 @@ intervalgrid(args...; kwargs...) = togrid(intervalaxes(args...; kwargs...))
 
 ## OffsetArray helpers ##
 
+# FIX: Add external link when `OffsetArrays` have `objects.inv` <18-09-25> 
+"""
+    OriginAt{N}
+A helper for `OffsetArrays` which works in a similar (partly inverse) way of `OffsetArrays.Origin` and sets the origin of the argument to the index `origin`. 
+
+
+```jldoctest
+julia> TF.OriginAt((3,3))
+TransferFunctions.OriginAt{2}(CartesianIndex(3, 3))
+
+julia> TF.OriginAt(3, 3)
+TransferFunctions.OriginAt{2}(CartesianIndex(3, 3))
+
+julia> TF.OriginAt(4)
+TransferFunctions.OriginAt{1}(CartesianIndex(4,))
+
+julia> TF.OriginAt(CartesianIndex(-1, 1, 5))
+TransferFunctions.OriginAt{3}(CartesianIndex(-1, 1, 5))
+```
+"""
 struct OriginAt{N}
-  origin::CartesianIndex{N}
+    origin::CartesianIndex{N}
 end
+OriginAt(ind...) = OriginAt(CartesianIndex(ind...))
+
+# FIX: Extref when `OffsetArrays` have `objects.inv` <18-09-25> 
+"""
+    (OAt::OriginAt{N})(A::AbstractArray{<:Any,N})
+Returns an `OffsetArray` with the parent `A` such that the origin `(0,...,0)` is at the `OAt.origin`.
+
+```jldoctest
+julia> TF.OriginAt(3, 3)(reshape(1:16, (4,4)))
+4×4 OffsetArray(reshape(::UnitRange{Int64}, 4, 4), -2:1, -2:1) with eltype Int64 with indices -2:1×-2:1:
+ 1  5   9  13
+ 2  6  10  14
+ 3  7  11  15
+ 4  8  12  16
+```
+"""
 (oat::OriginAt{N})(x::AbstractArray{<:Any,N}) where {N} = OffsetArrays.Origin(CartesianIndex{N}(ntuple(_ -> 1, Val(N))) - oat.origin)(x)
 
 ## Filtering helpers ##
