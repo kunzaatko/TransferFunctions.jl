@@ -126,6 +126,7 @@ julia> TF.posgrid(sa)[1]
 @inline posaxes(a::SpatialArray, args...) = posaxes(axes(a), sampling(a), args...)
 @inline intervalaxes(a::SpatialArray) = intervalaxes(axes(a), sampling(a))
 
+# TODO: Make it work for N dimensions. It should be easy with splatting and chumming <17-09-25> 
 """
     sample_vertices(a::SampledArray, [pos])
 Returns the vertices of the samples of `a` as `SVector{2}` equivalent to `[x, y]`.
@@ -161,8 +162,8 @@ julia> TF.sample_vertices(sa, TF.right)
     end
 
 """
-    sample_cells(a::SampledArray)
-Returns the cell hyper rectangles of the samples of `a` as `DomainSets.Rectagle` equivalent to `X × Y`.
+    sample_cells(A::SampledArray)
+Returns the cell hyper rectangles of the samples of `A` as `DomainSets.Rectagle` equivalent to `X × Y`.
 
 ```jldoctest
 julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
@@ -178,6 +179,27 @@ julia> TF.sample_cells(sa)
 @inline function sample_cells(a::SpatialArray) 
     map(intervalgrid(a)...) do x, y 
         x × y
+    end
+end
+
+"""
+    sample_freqs(A::SampledArray)
+Returns the frequencies of the samples of `a` as `SVector{2}` equivalent to `[f_x, f_y]` where `f_x` and `f_y` are the frequencies of samples under the FFT transform of `A`.
+
+```jldoctest
+julia> sa = SampledArray(reshape(1:16, (4,4)), 61u"nm");
+
+julia> TF.sample_freqs(sa)
+4×4 Matrix{StaticArraysCore.SVector{2, Quantity{Float64, 𝐋^-1, Unitful.FreeUnits{(nm^-1,), 𝐋^-1, nothing}}}}:
+ [0.0 nm^-1, 0.0 nm^-1]          [0.0 nm^-1, 0.00409836 nm^-1]          …  [0.0 nm^-1, -0.00409836 nm^-1]
+ [0.00409836 nm^-1, 0.0 nm^-1]   [0.00409836 nm^-1, 0.00409836 nm^-1]      [0.00409836 nm^-1, -0.00409836 nm^-1]
+ [-0.00819672 nm^-1, 0.0 nm^-1]  [-0.00819672 nm^-1, 0.00409836 nm^-1]     [-0.00819672 nm^-1, -0.00409836 nm^-1]
+ [-0.00409836 nm^-1, 0.0 nm^-1]  [-0.00409836 nm^-1, 0.00409836 nm^-1]     [-0.00409836 nm^-1, -0.00409836 nm^-1]
+```
+"""
+@inline function sample_freqs(A::SpatialArray)
+    map(freqgrid(size(A), sampling(A))...) do x, y
+        SVector{2}([x,y])
     end
 end
 
