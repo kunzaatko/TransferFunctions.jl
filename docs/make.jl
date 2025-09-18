@@ -14,8 +14,10 @@ links = InterLinks(
     "AbstractFFTs" => "https://juliamath.github.io/AbstractFFTs.jl/dev/",
     "Rotations" => "https://juliageometry.github.io/Rotations.jl/dev/",
     "ComponentArrays" => "https://docs.sciml.ai/ComponentArrays/stable/",
+    # FIX: When `OffsetArrays` have their `objects.inv`, add with external links: https://github.com/JuliaArrays/OffsetArrays.jl/pull/382 <18-09-25> 
+    # "OffsetArrays" => "https://juliaarrays.github.io/OffsetArrays.jl/dev/",
     "Roots" => "https://juliamath.github.io/Roots.jl/stable/",
-    "DomainSets" => "https://juliaapproximation.github.io/DomainSets.jl/stable/",
+    "DomainSets" => "https://juliaapproximation.github.io/DomainSets.jl/dev/",
     "Distributions" => "https://juliastats.github.io/Distributions.jl/stable/"
 )
 
