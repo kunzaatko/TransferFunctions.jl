@@ -98,10 +98,10 @@ aroundorigin(s, o::CartesianIndex) = aroundorigin(s, Tuple(o))
 # TODO: Generalize for n dims and define a single function for this <18-08-25> 
 @inline togrid(axes::NTuple{2}) = ([x for x in axes[1], _ in axes[2]], [y for _ in axes[1], y in axes[2]])
 @inline function togrid(axes::NTuple{3})
-  xs = [x for x in axes[1], _ in axes[2], _ in axes[3]]
-  ys = [y for _ in axes[1], y in axes[2], _ in axes[3]]
-  zs = [z for _ in axes[1], _ in axes[2], z in axes[3]]
-  return xs, ys, zs
+    xs = [x for x in axes[1], _ in axes[2], _ in axes[3]]
+    ys = [y for _ in axes[1], y in axes[2], _ in axes[3]]
+    zs = [z for _ in axes[1], _ in axes[2], z in axes[3]]
+    return xs, ys, zs
 end
 
 # TODO: Use the same calling stack as in the previous methods. <05-05-25> 
@@ -150,21 +150,24 @@ julia> z_f
 @inline freqgrid(sz::Size{N}, Δ::PixelSize{N}) where {N} = togrid(fftfreq.(sz, 1 ./ Δ))
 freqgrid(sz::Size{N}, Δ::Length) where {N} = freqgrid(sz, fillsize(Δ, N))
 
-@enum CellPosition left mid right 
+@enum CellPosition left mid right
 
-@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, c::CellPosition = left) where {N} = posaxes(axes, Δ, Val(c))
-@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{left}) where {N} = map(axes, Δ) do ax, Δax
-  ax .* Δax
-end
-@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{right}) where {N} = map(axes, Δ) do ax, Δax
-    (ax .+ step(ax)) .* Δax
-end
-@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{mid}) where {N} = map(axes, Δ) do ax, Δax
-    (2ax .+ step(ax)) ./ 2 .* Δax
-end
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, c::CellPosition=left) where {N} = posaxes(axes, Δ, Val(c))
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{left}) where {N} =
+    map(axes, Δ) do ax, Δax
+        ax .* Δax
+    end
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{right}) where {N} =
+    map(axes, Δ) do ax, Δax
+        (ax .+ step(ax)) .* Δax
+    end
+@inline posaxes(axes::Indices{N}, Δ::PixelSize{N}, ::Val{mid}) where {N} =
+    map(axes, Δ) do ax, Δax
+        (2ax .+ step(ax)) ./ 2 .* Δax
+    end
 
-const SizeSpec{N} = Union{Size{N}, Indices{N}}
-@inline posaxes(sz::Size{N}, Δ::PixelSize{N}, args...; center=roundupcenter(sz)) where {N} = posaxes(Tuple(OneTo(s) .- c for (s,c) in zip(sz, Tuple(center))), Δ, args...)
+const SizeSpec{N} = Union{Size{N},Indices{N}}
+@inline posaxes(sz::Size{N}, Δ::PixelSize{N}, args...; center=roundupcenter(sz)) where {N} = posaxes(Tuple(OneTo(s) .- c for (s, c) in zip(sz, Tuple(center))), Δ, args...)
 @inline posaxes(sz::SizeSpec{N}, Δ::Length, args...; kwargs...) where {N} = @inline posaxes(sz, fillsize(Δ, N), args...; kwargs...)
 
 """
@@ -224,11 +227,12 @@ julia> TF.posgrid((3,3,3), 50u"nm")[3]
 """
 posgrid(args...; kwargs...) = togrid(posaxes(args...; kwargs...))
 
-intervalaxes(args...; kwargs...) = map(posaxes(args..., Val(left); kwargs...), posaxes(args..., Val(right); kwargs...)) do startax, endax
-    map(startax, endax) do s,e 
-        s..e
+intervalaxes(args...; kwargs...) =
+    map(posaxes(args..., Val(left); kwargs...), posaxes(args..., Val(right); kwargs...)) do startax, endax
+        map(startax, endax) do s, e
+            s .. e
+        end
     end
-end
 intervalgrid(args...; kwargs...) = togrid(intervalaxes(args...; kwargs...))
 
 ## OffsetArray helpers ##
@@ -282,10 +286,10 @@ Determine the padding necessary to keep the input array fully contained in the i
 `kern`.
 """
 function kern_padding(K::Indices)
-  if !all(I -> 0 ∈ I, K)
-    @warn "A kernel not containing the origin may lead to unexpected filtering output sizes"
-  end
-  Tuple((max(0, abs(first(k))), max(0, abs(last(k)))) for k in K)
+    if !all(I -> 0 ∈ I, K)
+        @warn "A kernel not containing the origin may lead to unexpected filtering output sizes"
+    end
+    Tuple((max(0, abs(first(k))), max(0, abs(last(k)))) for k in K)
 end
 kern_padding(K::AbstractArray) = kern_padding(axes(K))
 
@@ -302,7 +306,7 @@ julia> TF.inner_axes(ones(100,100), OAs.OffsetArray(ones(11,11), -5:5, -3:7))
 (6:95, 4:93)
 ```
 """
-inner_axes(A::AbstractArray{<:Any, N}, edges::Edges{N}) where {N} = map((a, e) -> (first(a)+e[1]):(last(a)-e[2]), axes(A), edges)
+inner_axes(A::AbstractArray{<:Any,N}, edges::Edges{N}) where {N} = map((a, e) -> (first(a)+e[1]):(last(a)-e[2]), axes(A), edges)
 inner_axes(A::AbstractArray, K) = inner_axes(A, kern_padding(K))
 
 ## Parameter Checking ##
@@ -313,8 +317,8 @@ check_refractive_index(n) = n > zero(n) || throw(DomainError(n, "Refractive inde
 
 ## Printing helpers ##
 
-rounded(params::Vararg{Tuple{String, Any}}; kwargs...) = join([rounded(name, val; kwargs...) for (name, val) in params], ", ")
+rounded(params::Vararg{Tuple{String,Any}}; kwargs...) = join([rounded(name, val; kwargs...) for (name, val) in params], ", ")
 rounded(name::String, val; kwargs...) = name * "=" * rounded(val; kwargs...)
 rounded(val::Quantity; kwargs...) = string(round(unit(val), val; kwargs...))
 rounded(val; sigdigits=3, kwargs...) = string(round(val; sigdigits=sigdigits, kwargs...))
-rounded(vals::AbstractVector; kwargs...)  = "[" * join([rounded(val; kwargs...) for val in vals], ", ") * "]"
+rounded(vals::AbstractVector; kwargs...) = "[" * join([rounded(val; kwargs...) for val in vals], ", ") * "]"
