@@ -147,7 +147,7 @@ julia> z_f
  -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1  -0.0222222 nm^-1
 ```
 """
-@inline freqgrid(sz::Size, Δ::PixelSize) = togrid(fftfreq.(sz, 1 ./ Δ))
+@inline freqgrid(sz::Size{N}, Δ::PixelSize{N}) where {N} = togrid(fftfreq.(sz, 1 ./ Δ))
 freqgrid(sz::Size{N}, Δ::Length) where {N} = freqgrid(sz, fillsize(Δ, N))
 
 @enum CellPosition left mid right 
