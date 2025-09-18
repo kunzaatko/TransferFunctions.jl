@@ -1,6 +1,6 @@
 using TransferFunctions: Length, PixelSize, Coordinate
 using Base: OneTo, Indices
-using OffsetArrays
+using OffsetArrays, Unitful
 
 """
     fillsize(Δ::Length, N::Integer) => PixelSize{N}
@@ -274,3 +274,11 @@ inner_axes(A::AbstractArray, K) = inner_axes(A, kern_padding(K))
 check_emission_wavelength(λ) = λ > zero(λ) || throw(DomainError(λ, "Emission wavelength is a positive value. Got `λ = $λ`."))
 check_numerical_aperture(NA) = NA > zero(NA) || throw(DomainError(NA, "Numerical aperture of the objective is a positive value. Got `NA = $NA`."))
 check_refractive_index(n) = n > zero(n) || throw(DomainError(n, "Refractive index of the immersion is a positive value. Got `n = $n`."))
+
+## Printing helpers ##
+
+rounded(params::Vararg{Tuple{String, Any}}; kwargs...) = join([rounded(name, val; kwargs...) for (name, val) in params], ", ")
+rounded(name::String, val; kwargs...) = name * "=" * rounded(val; kwargs...)
+rounded(val::Quantity; kwargs...) = string(round(unit(val), val; kwargs...))
+rounded(val; sigdigits=3, kwargs...) = string(round(val; sigdigits=sigdigits, kwargs...))
+rounded(vals::AbstractVector; kwargs...)  = "[" * join([rounded(val; kwargs...) for val in vals], ", ") * "]"

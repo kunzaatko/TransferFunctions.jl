@@ -98,8 +98,13 @@ energy_radius(tf::AiryDisc{2}, ε::Real) = find_zero(R -> encircled_energy(tf, R
 params(tf::AiryDisc{2}) = ComponentArray(λ=tf.λ, NA=tf.NA)
 params(tf::AiryDisc{3}) = ComponentArray(λ=tf.λ, NA=tf.NA, n=tf.n)
 
-function Base.show(io::IO, tf::AiryDisc{2})
+function Base.show(io::IO, tf::AiryDisc)
     Base.showarg(io, tf, true) 
-    print(io, "(λ=$(tf.λ), NA=$(tf.NA))")
+    params = [("λ", tf.λ), ("NA", tf.NA)]
+    if tf isa AiryDisc{3}
+        push!(params, ("n", tf.n))
+    end
+    print(io, "(", rounded(params...; sigdigits=3),  ")")
 end
+
 export AiryDisc

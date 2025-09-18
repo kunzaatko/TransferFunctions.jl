@@ -51,4 +51,10 @@ end
 params(tf::BornWolf{2}) = ComponentArray(λ=tf.λ, NA=tf.NA, f=tf.f)
 params(tf::BornWolf{3}) = ComponentArray(λ=tf.λ, NA=tf.NA, f=tf.f, n=tf.n)
 
+function Base.show(io::IO, tf::BornWolf)
+    Base.showarg(io, tf, true)
+    params = [("λ", tf.λ), ("NA", tf.NA),("f", tf.f),("n", tf.n)]
+    print(io, "(", rounded(params...; sigdigits=3), ")")
+end
+
 export BornWolf

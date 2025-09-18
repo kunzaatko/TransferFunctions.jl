@@ -57,7 +57,6 @@ IsotropicGaussian{N}(; λ, NA, n=4 // 3, C_lateral=C_AiryDisc_lateral, C_axial=C
 IsotropicGaussian{N}(λ::Length, NA::Real; kwargs...) where {N} = IsotropicGaussian{N}(; λ, NA, kwargs...) # -> final 2
 IsotropicGaussian(args...; kwargs...) = IsotropicGaussian{3}(args...; kwargs...) # -> final 2
 
-
 symmetry(::IsotropicGaussian) = ZAxisRadialSymmetry()
 
 @inline σ_xy(tf::IsotropicGaussian) = tf.C_lateral * (tf.λ / tf.NA) / (2 * √(2log(2)))
@@ -100,5 +99,21 @@ energy_radius(tf::IsotropicGaussian{2}, ε::Real) = σ_xy(tf) * √(2log(1 / ε)
 
 params(tf::IsotropicGaussian{2}) = ComponentVector(λ=tf.λ, NA=tf.NA, C_lateral=tf.C_lateral)
 params(tf::IsotropicGaussian{3}) = ComponentVector(λ=tf.λ, NA=tf.NA, n=tf.n, C_lateral=tf.C_lateral, C_axial=tf.C_axial)
+
+
+function Base.show(io::IO, tf::IsotropicGaussian)
+    Base.showarg(io, tf, true)
+    params = [("λ", tf.λ), ("NA", tf.NA)]
+    if tf isa IsotropicGaussian{3}
+        push!(params, ("n", tf.n))
+    end
+    if tf.C_lateral != C_AiryDisc_lateral
+        push!(params, ("C_xy", tf.C_lateral))
+    end
+    if tf isa IsotropicGaussian{3} && tf.C_axial != C_AiryDisc_axial
+        push!(params, ("C_z", tf.C_axial))
+    end
+    print(io, "(", rounded(params...; sigdigits=3), ")")
+end
 
 export IsotropicGaussian
