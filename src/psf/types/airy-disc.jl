@@ -6,6 +6,16 @@ Airy disc scalar diffraction point spread function model for a circular aperture
 - `λ::Length`: emission wavelength
 - `NA::Real`: numerical aperture of the objective
 - `n::Real`: refractive index of the immersion medium (defaults to `4//3` which is the refractive index of water)
+
+# Examples
+
+```jldoctest
+julia> AiryDisc{2}(λ=488u"nm", NA=1.4)
+AiryDisc{2, Float64}(λ=488.0 nm, NA=1.4)
+
+julia> AiryDisc(λ=488u"nm", NA=1.4)
+AiryDisc{3, Float64}(λ=488.0 nm, NA=1.4, n=1.33)
+```
 """
 struct AiryDisc{N,T<:Real} <: PSFModel{N}
     λ::Length{T}

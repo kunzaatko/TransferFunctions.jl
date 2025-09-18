@@ -6,6 +6,16 @@ Born & Wolf point spread function model.
 - `λ::Length`: emission wavelength
 - `NA::Real`: numerical aperture of the objective
 - `n::Real`: refractive index of the immersion medium (defaults to `4//3` which is the refractive index of water)
+
+# Examples
+
+```jldoctest
+julia> BornWolf{2}(λ=488u"nm", NA=1.4, f=1.6)
+BornWolf{2, Float64}(λ=488.0 nm, NA=1.4, f=1.6, n=1.33)
+
+julia> BornWolf(λ=488u"nm", NA=1.4, f=1.6)
+BornWolf{3, Float64}(λ=488.0 nm, NA=1.4, f=1.6, n=1.33)
+```
 """
 struct BornWolf{N,T<:Real} <: PSFModel{N}
     λ::Length{T}
