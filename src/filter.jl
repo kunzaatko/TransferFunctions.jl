@@ -32,7 +32,7 @@ conv!(out::AbstractArray, A::AbstractArray, K::AbstractArray, args...) = corr!(o
 Discrete correlation of `A` with `K`.
 
 `A` is extended by the [`border`](@ref "Border Types"). If `T` is given, the output will have the eltype `T`. If the
-border is not specified, no border is added, which for the `FFT` behaves the same as if `:circular` border was used.
+border is not specified, no border is added, which results in the same output as if a `:circular` border was used.
 
 See also [`corr!`](@ref), [`conv`](@ref), [`conv!`](@ref)
 """

@@ -274,6 +274,7 @@ end
     border_array(A, border, padding)
 Construct a [`BorderArray`](@ref) of `A` with the border `border` and padding `padding`.
 
+See also [`padtoaxes`](@ref TransferFunctions.padtoaxes)
 ```jldoctest
 julia> border_array(reshape(1:9, (3,3)), :circular, 2)
 7×7 border_array(reshape(::UnitRange{Int64}, 3, 3), :Circular) with eltype Int64 with indices -1:5×-1:5:
@@ -288,6 +289,41 @@ julia> border_array(reshape(1:9, (3,3)), :circular, 2)
 """
 border_array(parent, border, padding) = BorderArray(parent, border, padding)
 
+"""
+    padtoaxes(A, border, target)
+Construct a [`BorderArray`](@ref) (if necessary) with the given `border` type such that the axes of the output are
+`target`.
+
+For any indices where the `target` is contained in the parent `A`, a view is taken without adding a padding.
+
+See also [`border_array`](@ref).
+```jldoctest
+julia> TF.padtoaxes(OAs.OffsetArray(rand(100,100), -30:69, -20:79), :fill, (-35:-25, -30:-15))
+11×16 border_array(view(OffsetArray(::Matrix{Float64}, -30:69, -20:79), Base.IdentityUnitRange(-30:-25), Base.IdentityUnitRange(-20:-15)), fill(0.0)) with eltype Float64 with indices -35:-25×-30:-15:
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  …  0.0       0.0       0.0       0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  …  0.452376  0.20255   0.921373  0.654289
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.727716  0.355869  0.156582  0.437704
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.52427   0.591113  0.223759  0.943134
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.709755  0.46971   0.550499  0.150776
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.575396  0.854017  0.170872  0.825171
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  …  0.962307  0.898315  0.922924  0.925127
+```
+"""
+function padtoaxes(parent, border, target)
+    padding = map(target, axes(parent)) do t, ax
+        (abs(max(0, first(ax)- first(t))), abs(max(0, last(t) - last(ax))))
+    end
+    viewaxes = map(target, axes(parent)) do t, ax
+        (max(first(ax), first(t))):(min(last(ax), last(t)))
+    end
+    A = offset_view(parent, viewaxes...)
+    return border_array(A, border, padding)
+end
+
 function Base.showarg(io::IO, A::BorderArray, toplevel)
     print(io, "border_array(")
     showarg(io, parent(A), false)
@@ -297,4 +333,4 @@ function Base.showarg(io::IO, A::BorderArray, toplevel)
     toplevel && print(io, " with eltype ", eltype(A))
 end
 
-export border_array
+export border_array, padtoaxes

@@ -309,6 +309,56 @@ julia> TF.inner_axes(ones(100,100), OAs.OffsetArray(ones(11,11), -5:5, -3:7))
 inner_axes(A::AbstractArray{<:Any,N}, edges::Edges{N}) where {N} = map((a, e) -> (first(a)+e[1]):(last(a)-e[2]), axes(A), edges)
 inner_axes(A::AbstractArray, K) = inner_axes(A, kern_padding(K))
 
+"""
+    outer_axes(A, edges)
+    outer_axes(A, K)
+Determine the outer axes of `A` with an edge extension of `edges` or when the axes of a filtering with kernel `K` should
+have the output `A` / an extent of the axes of `A`.
+
+For instance this is useful when one wants to select the indices necessary to take from some array in order to determine
+the filtered array with some kernel `K` at indices of `A` without the need for calculating for all of the indices of the
+initial array.
+
+```jldoctest
+julia> TF.outer_axes(ones(100,100), ((2,4), (1,10)))
+(-1:104, 0:110)
+
+julia> TF.outer_axes(ones(100,100), OAs.OffsetArray(ones(11,11), -5:5, -3:7))
+(-4:105, -2:107)
+```
+"""
+outer_axes(A::AbstractArray{<:Any, N}, edges::Edges{N}) where {N} = map((a, e) -> (first(a)-e[1]):(last(a)+e[2]), axes(A), edges)
+outer_axes(A::AbstractArray, K) = outer_axes(A, kern_padding(K))
+
+to_offset_range(x) = x
+to_offset_range(r::AbstractUnitRange) = Base.IdentityUnitRange(r)
+
+"""
+    offset_view(A, inds...)
+A [`Base.view`](@extref) that preserves offsets.
+
+```jldoctest
+julia> A = OAs.OffsetArray(rand(100,100), -40:59, -25:74);
+
+julia> axes(view(A, -5:5, -10:2))
+(Base.OneTo(11), Base.OneTo(13))
+
+julia> A = OAs.OffsetArray(rand(100,100), -40:59, -25:74);
+
+julia> axes(view(A, -5:5, -10:2))
+(Base.OneTo(11), Base.OneTo(13))
+
+julia> axes(TF.offset_view(A, -5:5, -10:2))
+(Base.IdentityUnitRange(-5:5), Base.IdentityUnitRange(-10:2))
+
+julia> view(A, -5:5, -10:2)[:] == TF.offset_view(A, -5:5, -10:2)[:]
+true
+```
+"""
+function offset_view(A, inds...)
+    view(A, map(to_offset_range, to_indices(A, inds))...)
+end
+
 ## Parameter Checking ##
 
 check_emission_wavelength(λ) = λ > zero(λ) || throw(DomainError(λ, "Emission wavelength is a positive value. Got `λ = $λ`."))
