@@ -80,8 +80,31 @@ end
 f
 ```
 
-If the border type does not support the extent of the padding that is given in the constructor, the [`TransferFunctions.InvalidBorderExtent`](@ref) is thrown.
+If the border type does not support the extent of the padding that is given in the constructor, the
+[`TransferFunctions.InvalidBorderExtent`](@ref) is thrown.
 
 ```@docs
 TransferFunctions.InvalidBorderExtent
+```
+
+# Functions 
+Border arrays are useful for extending the domain of an array for [filtering](@ref filtering-manual).
+
+This motivates some helper functions for sampling an extended array at given indices.
+
+To determine the padding necessary for a given kernel in filtering, you can use `kern_padding`
+
+```@docs
+TransferFunctions.kern_padding
+```
+
+For determining the indices that are necessary in the parent to facilitate a filtering, you can use `outer_axes`
+```@docs
+TransferFunctions.outer_axes
+```
+
+For extending the domain of an array to some given indices with a border strategy, you can use `padtoaxes`. This may
+also be useful if you do not want to have all the indices of the parent in the output of a filtering.
+```@docs
+padtoaxes
 ```

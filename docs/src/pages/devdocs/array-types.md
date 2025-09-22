@@ -5,12 +5,8 @@ CollapsedDocStrings = true
 
 # Filtering Arrays and Circulant Tensors
 
-- [`TransferFunctions.kern_padding`](@ref) is used to determine the padding necessary to perform the full domain
+- [`TransferFunctions.kern_padding`](@ref) is useful for determining the padding necessary to perform the full domain
   filtering of an array.
-
-```@docs
-TransferFunctions.kern_padding
-```
 
 - [`TransferFunctions.ind2sub`](@ref) is used in the [`FilteringMatrix`](@ref) to determine the "`kernel`" and
   "`parent`" indices from the index to the `FilteringMatrix`.

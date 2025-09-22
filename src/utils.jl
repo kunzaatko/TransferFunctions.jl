@@ -284,6 +284,13 @@ julia> TF.OriginAt(3, 3)(reshape(1:16, (4,4)))
     kern_padding(kern)
 Determine the padding necessary to keep the input array fully contained in the interior of the output when filtered with
 `kern`.
+
+```jldoctest
+julia> K = OAs.OffsetArray(ones(11,8) ./ (11*8), -5:5, -3:4);
+
+julia> TF.kern_padding(K)
+((5, 5), (3, 4))
+```
 """
 function kern_padding(K::Indices)
     if !all(I -> 0 ∈ I, K)
@@ -297,6 +304,8 @@ kern_padding(K::AbstractArray) = kern_padding(axes(K))
     inner_axes(A, edges)
     inner_axes(A, K)
 Determine the inner axes of the array with edges `edges` or when filtered with kernel `K`.
+
+See also [`outer_axes`](@ref).
 
 ```jldoctest
 julia> TF.inner_axes(ones(100,100), ((2,4), (1,10)))
@@ -319,6 +328,7 @@ For instance this is useful when one wants to select the indices necessary to ta
 the filtered array with some kernel `K` at indices of `A` without the need for calculating for all of the indices of the
 initial array.
 
+See also [`inner_axes`](@ref).
 ```jldoctest
 julia> TF.outer_axes(ones(100,100), ((2,4), (1,10)))
 (-1:104, 0:110)

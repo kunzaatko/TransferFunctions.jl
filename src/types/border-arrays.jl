@@ -274,7 +274,7 @@ end
     border_array(A, border, padding)
 Construct a [`BorderArray`](@ref) of `A` with the border `border` and padding `padding`.
 
-See also [`padtoaxes`](@ref TransferFunctions.padtoaxes)
+See also [`padtoaxes`](@ref)
 ```jldoctest
 julia> border_array(reshape(1:9, (3,3)), :circular, 2)
 7×7 border_array(reshape(::UnitRange{Int64}, 3, 3), :Circular) with eltype Int64 with indices -1:5×-1:5:
@@ -298,30 +298,59 @@ For any indices where the `target` is contained in the parent `A`, a view is tak
 
 See also [`border_array`](@ref).
 ```jldoctest
-julia> TF.padtoaxes(OAs.OffsetArray(rand(100,100), -30:69, -20:79), :fill, (-35:-25, -30:-15))
-11×16 border_array(view(OffsetArray(::Matrix{Float64}, -30:69, -20:79), Base.IdentityUnitRange(-30:-25), Base.IdentityUnitRange(-20:-15)), fill(0.0)) with eltype Float64 with indices -35:-25×-30:-15:
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  …  0.0       0.0       0.0       0.0
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.0       0.0       0.0       0.0
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  …  0.452376  0.20255   0.921373  0.654289
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.727716  0.355869  0.156582  0.437704
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.52427   0.591113  0.223759  0.943134
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.709755  0.46971   0.550499  0.150776
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0     0.575396  0.854017  0.170872  0.825171
- 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  …  0.962307  0.898315  0.922924  0.925127
+julia> padtoaxes(OAs.OffsetArray(reshape(1:100^2, 100, 100), -30:69, -20:79), :fill, (-35:-25, -30:-15))
+11×16 border_array(view(OffsetArray(reshape(::UnitRange{Int64}, 100, 100), -30:69, -20:79), Base.IdentityUnitRange(-30:-25), Base.IdentityUnitRange(-20:-15)), fill(0)) with eltype Int64 with indices -35:-25×-30:-15:
+ 0  0  0  0  0  0  0  0  0  0  0    0    0    0    0    0
+ 0  0  0  0  0  0  0  0  0  0  0    0    0    0    0    0
+ 0  0  0  0  0  0  0  0  0  0  0    0    0    0    0    0
+ 0  0  0  0  0  0  0  0  0  0  0    0    0    0    0    0
+ 0  0  0  0  0  0  0  0  0  0  0    0    0    0    0    0
+ 0  0  0  0  0  0  0  0  0  0  1  101  201  301  401  501
+ 0  0  0  0  0  0  0  0  0  0  2  102  202  302  402  502
+ 0  0  0  0  0  0  0  0  0  0  3  103  203  303  403  503
+ 0  0  0  0  0  0  0  0  0  0  4  104  204  304  404  504
+ 0  0  0  0  0  0  0  0  0  0  5  105  205  305  405  505
+ 0  0  0  0  0  0  0  0  0  0  6  106  206  306  406  506
 ```
+
+!!! warning "`:circular` border"
+    By default, this constructs a border array from the view into the parent array. If you use some border strategy that
+    uses indices and/or values of the other edge, you may want to have the border array constructed from the full array
+    instead and take the view into it. This can be done by setting the `outerpadding` keyword argument to `true`.
+
+
+```jldoctest
+julia> padtoaxes(reshape(1:121, 11, 11), :circular, (-1:2, -1:2))
+4×4 border_array(view(reshape(::UnitRange{Int64}, 11, 11), Base.IdentityUnitRange(1:2), Base.IdentityUnitRange(1:2)), :Circular) with eltype Int64 with indices -1:2×-1:2:
+ 1  12  1  12
+ 2  13  2  13
+ 1  12  1  12
+ 2  13  2  13
+
+julia> padtoaxes(reshape(1:121, 11, 11), :circular, (-1:2, -1:2); outerpadding=true)
+4×4 view(border_array(reshape(::UnitRange{Int64}, 11, 11), :Circular), Base.IdentityUnitRange(-1:2), Base.IdentityUnitRange(-1:2)) with eltype Int64 with indices -1:2×-1:2:
+ 109  120  10  21
+ 110  121  11  22
+ 100  111   1  12
+ 101  112   2  13
+```
+
+!!! tip "Border extent"
+    `outerpadding` may also lead to a greater extent of the border supplied since for example the `:circular` border is
+      only defined when the wrapped index is in the range of the parent view which is smaller that the parent array.
 """
-function padtoaxes(parent, border, target)
+function padtoaxes(parent, border, target; outerpadding=false)
     padding = map(target, axes(parent)) do t, ax
         (abs(max(0, first(ax)- first(t))), abs(max(0, last(t) - last(ax))))
     end
-    viewaxes = map(target, axes(parent)) do t, ax
-        (max(first(ax), first(t))):(min(last(ax), last(t)))
+    if !outerpadding
+      viewaxes = map(target, axes(parent)) do t, ax
+          (max(first(ax), first(t))):(min(last(ax), last(t)))
+      end
+      return border_array(offset_view(parent, viewaxes...), border, padding)
+    else 
+      return offset_view(border_array(parent, border, padding), target...)
     end
-    A = offset_view(parent, viewaxes...)
-    return border_array(A, border, padding)
 end
 
 function Base.showarg(io::IO, A::BorderArray, toplevel)

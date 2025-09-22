@@ -10,7 +10,7 @@ using OffsetArrays: no_offset_view
 A = testimage("mandril_color")
 ```
 
-# Filtering
+# [Filtering](@id filtering-manual)
 
 `TransferFucntions` provides some functions for discrete filtering. Both convolution and correlation have a dedicated
 function. This function accepts an image `A`, kernel `K` and an optional [border](@ref "Border Types") and an output
