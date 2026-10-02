@@ -1,8 +1,6 @@
 using TransferFunctions: TransferFunctions as TF
-using Combinatorics
-using OffsetArrays: OffsetArray as OA
-using OffsetArrays: OffsetArrays as OAs
-using JET
+using OffsetArrays: OffsetArray as OA, OffsetArrays as OAs
+using Combinatorics, JET
 
 @testset "trivia $fn" for fn in (TF.corr, TF.conv)
     @test fn(ones(2, 2), ones(2, 2)) == fill(4, (2, 2))
@@ -16,14 +14,27 @@ using JET
             @test fn(A, OA(ones(1, 1), -1, -1)) ≈ A
         end
     end
+    let A = rand(ComplexF64, 10, 10)
+        K = OA(ones(1, 1) .+ im .* ones(1, 1), -1, -1)
+        @test fn(A, K) == A .- im .* A
+    end
 end
 
-@testset "corr and filtering_matrix" begin
+@testset "filtering_matrix equivalence" begin
     A = reshape(1:16, (4, 4))
-    A_fm = filtering_matrix(A, (-1:1, -1:1), :circular)
+    A_fm = filtering_matrix(A, (-1:1, -1:1), :periodic)
     fA_fm = reshape(A_fm' * ones(9), size(A))
     fA_corr = TF.corr(A, OA(ones(3, 3), -1:1, -1:1))
     @test fA_fm == fA_corr
+end
+
+@testset "ImageFiltering equivalence" begin
+    using ImageFiltering
+    for T in (Float64, ComplexF64)
+        img = rand(T, 21, 21)
+        kernel = OAs.centered(rand(T, 3, 3))
+        @test imfilter(img, kernel, "circular") ≈ TF.corr(img, kernel)
+    end
 end
 
 if VERSION >= v"1.12-rc"

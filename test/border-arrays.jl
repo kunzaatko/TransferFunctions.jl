@@ -9,7 +9,7 @@ A3 = reshape(float.(1:27), (3, 3, 3))
     @testset "BorderArray constructor $border" for border in (
         (TF.Reflect, TF.Reflect(), :reflect, :Reflect, "reflect", "Reflect")...,
         (TF.Symmetric, TF.Symmetric(), :symmetric, :Symmetric, "symmetric", "Symmetric")...,
-        (TF.Circular, TF.Circular(), :circular, :Circular, "circular", "Circular")...,
+        (TF.Periodic, TF.Periodic(), :periodic, :Periodic, "periodic", "Periodic")...,
         (TF.Replicate, TF.Replicate(), :replicate, :Replicate, "replicate", "Replicate")...,
         (TF.Fill, TF.Fill(1.0), TF.Fill(Float32(1.0)), :fill, :Fill, "fill", "Fill")...
     )
@@ -19,7 +19,7 @@ A3 = reshape(float.(1:27), (3, 3, 3))
     end
 
     @testset "BorderArray constructor $border" for border in (
-        TF.Reflect{Float64}, TF.Symmetric{Float64}, TF.Circular{Float64}, TF.Replicate{Float64}, TF.Fill{Float64},
+        TF.Reflect{Float64}, TF.Symmetric{Float64}, TF.Periodic{Float64}, TF.Replicate{Float64}, TF.Fill{Float64},
     )
         for padding in (((2, 2), (2, 2)), (2, 2), 2)
             let BA = TF.BorderArray(A2, border, padding)
@@ -64,7 +64,7 @@ end
         ]
     ),
     (
-        TF.Circular,
+        TF.Periodic,
         [
             5.0 8.0 2.0 5.0 8.0 2.0 5.0;
             6.0 9.0 3.0 6.0 9.0 3.0 6.0;
@@ -105,15 +105,15 @@ end
 
 @testset "Exceptions" begin
     @testset "BoundsError" begin
-        let ba = TF.BorderArray(A2, TF.Circular, 2)
+        let ba = TF.BorderArray(A2, TF.Periodic, 2)
             I = (-2, -2)
             @test getindex(ba.border, ba.parent, I...) == 1.0 # Mapped index is in the parent array
             @test_throws BoundsError ba[I...] # but not in the `BorderArray`
         end
     end
     @testset "InvalidBorderExtent" begin
-        @test_throws TF.InvalidBorderExtent TF.BorderArray(A2, TF.Circular, ((3, 4), (1, 1)))
-        @test TF.BorderArray(A2, TF.Circular, 3) isa TF.BorderArray
+        @test_throws TF.InvalidBorderExtent TF.BorderArray(A2, TF.Periodic, ((3, 4), (1, 1)))
+        @test TF.BorderArray(A2, TF.Periodic, 3) isa TF.BorderArray
         @test_throws TF.InvalidBorderExtent TF.BorderArray(A2, TF.Reflect, ((3, 4), (1, 1)))
         @test TF.BorderArray(A2, TF.Reflect, 3) isa TF.BorderArray
         @test_throws TF.InvalidBorderExtent TF.BorderArray(A2, TF.Symmetric, 3)
@@ -125,7 +125,7 @@ end
 
 if VERSION <= v"1.12"
     @testset "JET: `getindex` $border" for border in (
-        TF.Reflect, TF.Symmetric, TF.Circular, TF.Replicate, TF.Fill
+        TF.Reflect, TF.Symmetric, TF.Periodic, TF.Replicate, TF.Fill
     )
         let ba = TF.BorderArray(A2, border, 2)
             @test_opt target_modules = (TransferFunctions,) getindex(ba, 0, 0) # border

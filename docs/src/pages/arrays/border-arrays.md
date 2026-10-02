@@ -45,7 +45,7 @@ For different applications, different border types are optimal.
 TransferFunctions.Replicate
 TransferFunctions.Symmetric
 TransferFunctions.Reflect
-TransferFunctions.Circular
+TransferFunctions.Periodic
 TransferFunctions.Fill
 ```
 
@@ -68,11 +68,11 @@ f
 
 If the border values are important to you, it is better to use some border scheme that relates to the values of the
 parent array in the locality of the border or the opposing edge of the array. The types of borders that are implemented
-are [`:replicate`](@ref TransferFunctions.Replicate), [`:reflect`](@ref TransferFunctions.Reflect), [`:circular`](@ref
-TransferFunctions.Circular) and [`:symmetric`](@ref TransferFunctions.Symmetric).
+are [`:replicate`](@ref TransferFunctions.Replicate), [`:reflect`](@ref TransferFunctions.Reflect), [`:periodic`](@ref
+TransferFunctions.Periodic) and [`:symmetric`](@ref TransferFunctions.Symmetric).
 
 ```@makie border-arrays; basename="border_arrays_mosaic", formats=:png, size=(1, 1)
-borders = [:replicate, :reflect, :circular, :symmetric]
+borders = [:replicate, :reflect, :periodic, :symmetric]
 f,_,_ = Recipes.mosaic(borders...; axis=(;yreversed=true, title=map(string, borders)), nrows=2) do ax,border
     ba = border_array(A, border, 30)
     Recipes.image!(ax,collect(no_offset_view(ba))')

@@ -23,7 +23,7 @@ abstract type AbstractBorder{T} end
 Returns the maximum padding extension that is valid for the border `b` and the parent array `A`.
 
 ```jldoctest
-julia> TF.validextension(TF.Circular(), ones(40,40))
+julia> TF.validextension(TF.Periodic(), ones(40,40))
 ((40, 40), (40, 40))
 
 julia> TF.validextension(TF.Symmetric(), ones(40,40))
@@ -162,11 +162,11 @@ end
 validextension(::Replicate, A::AbstractArray) = ntuple(_ -> (typemax(Int), typemax(Int)), ndims(A))
 
 """
-    Circular{T} <: IndexMapBorder{T}
+    Periodic{T} <: IndexMapBorder{T}
 A border that wraps the values around the edges of the parent array
 
 ```jldoctest
-julia> TransferFunctions.BorderArray(reshape(1:16, (4,4)), TransferFunctions.Circular, 2)
+julia> TransferFunctions.BorderArray(reshape(1:16, (4,4)), TransferFunctions.Periodic, 2)
 8×8 border_array(reshape(::UnitRange{Int64}, 4, 4), :Circular) with eltype Int64 with indices -1:6×-1:6:
  11  15  3  7  11  15  3  7
  12  16  4  8  12  16  4  8
@@ -178,15 +178,15 @@ julia> TransferFunctions.BorderArray(reshape(1:16, (4,4)), TransferFunctions.Cir
  10  14  2  6  10  14  2  6
 ```
 """
-struct Circular{T} <: IndexMapBorder{T} end
-@inline mapindex(::Circular{T}, A::AbstractArray{T,N}, I::Vararg{Int,N}) where {T,N} = map(I, axes(A)) do ind, ax
+struct Periodic{T} <: IndexMapBorder{T} end
+@inline mapindex(::Periodic{T}, A::AbstractArray{T,N}, I::Vararg{Int,N}) where {T,N} = map(I, axes(A)) do ind, ax
     ind ∈ ax && return ind
     ind > last(ax) && return (first(ax) - 1) + (ind - last(ax))
     ind < first(ax) && return (last(ax) + 1) - (first(ax) - ind)
 end
-validextension(b::Circular, A::AbstractArray) = map(ax -> (length(ax), length(ax)), axes(A))
+validextension(b::Periodic, A::AbstractArray) = map(ax -> (length(ax), length(ax)), axes(A))
 
-const IndexMapBorder_subtypes = (:Reflect, :Symmetric, :Circular, :Replicate)
+const IndexMapBorder_subtypes = (:Reflect, :Symmetric, :Periodic, :Replicate)
 for subtype in IndexMapBorder_subtypes
     @eval begin
         $subtype() = $subtype{Any}()
@@ -276,7 +276,7 @@ Construct a [`BorderArray`](@ref) of `A` with the border `border` and padding `p
 
 See also [`padtoaxes`](@ref)
 ```jldoctest
-julia> border_array(reshape(1:9, (3,3)), :circular, 2)
+julia> border_array(reshape(1:9, (3,3)), :periodic, 2)
 7×7 border_array(reshape(::UnitRange{Int64}, 3, 3), :Circular) with eltype Int64 with indices -1:5×-1:5:
  5  8  2  5  8  2  5
  6  9  3  6  9  3  6
@@ -313,21 +313,21 @@ julia> padtoaxes(OAs.OffsetArray(reshape(1:100^2, 100, 100), -30:69, -20:79), :f
  0  0  0  0  0  0  0  0  0  0  6  106  206  306  406  506
 ```
 
-!!! warning "`:circular` border"
+!!! warning "`:periodic` border"
     By default, this constructs a border array from the view into the parent array. If you use some border strategy that
     uses indices and/or values of the other edge, you may want to have the border array constructed from the full array
     instead and take the view into it. This can be done by setting the `outerpadding` keyword argument to `true`.
 
 
 ```jldoctest
-julia> padtoaxes(reshape(1:121, 11, 11), :circular, (-1:2, -1:2))
+julia> padtoaxes(reshape(1:121, 11, 11), :periodic, (-1:2, -1:2))
 4×4 border_array(view(reshape(::UnitRange{Int64}, 11, 11), Base.IdentityUnitRange(1:2), Base.IdentityUnitRange(1:2)), :Circular) with eltype Int64 with indices -1:2×-1:2:
  1  12  1  12
  2  13  2  13
  1  12  1  12
  2  13  2  13
 
-julia> padtoaxes(reshape(1:121, 11, 11), :circular, (-1:2, -1:2); outerpadding=true)
+julia> padtoaxes(reshape(1:121, 11, 11), :periodic, (-1:2, -1:2); outerpadding=true)
 4×4 view(border_array(reshape(::UnitRange{Int64}, 11, 11), :Circular), Base.IdentityUnitRange(-1:2), Base.IdentityUnitRange(-1:2)) with eltype Int64 with indices -1:2×-1:2:
  109  120  10  21
  110  121  11  22
@@ -336,7 +336,7 @@ julia> padtoaxes(reshape(1:121, 11, 11), :circular, (-1:2, -1:2); outerpadding=t
 ```
 
 !!! tip "Border extent"
-    `outerpadding` may also lead to a greater extent of the border supplied since for example the `:circular` border is
+    `outerpadding` may also lead to a greater extent of the border supplied since for example the `:periodic` border is
       only defined when the wrapped index is in the range of the parent view which is smaller that the parent array.
 """
 function padtoaxes(parent, border, target; outerpadding=false)

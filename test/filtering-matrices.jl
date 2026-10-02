@@ -40,19 +40,19 @@ end
         @test all(==(1), (F' * ones(9) ./ 9))
     end
     @test size(filtering_matrix(A, (-1:1, -1:1)))[1] == 9
-    @test size(filtering_matrix(A, (-1:1, -1:1), :circular))[1] == 9
+    @test size(filtering_matrix(A, (-1:1, -1:1), :periodic))[1] == 9
 
     K_rand = OAs.centered(rand(3, 3))
     K_rand ./= sum(K_rand)
     @testset "corr" begin
         @test let A = ones(10, 10)
-            fm_A = TF.filtering_matrix(A, K_rand, :circular)
+            fm_A = TF.filtering_matrix(A, K_rand, :periodic)
             fm_corr = reshape(fm_A' * K_rand[:], axes(A))
             fft_corr = TF.corr(A, K_rand)
             isapprox(fm_corr, fft_corr, rtol=1e-3)
         end
         @test let A = rand(10, 10)
-            fm_A = TF.filtering_matrix(A, K_rand, :circular)
+            fm_A = TF.filtering_matrix(A, K_rand, :periodic)
             fm_corr = reshape(fm_A' * K_rand[:], axes(A))
             fft_corr = TF.corr(A, K_rand)
             isapprox(fm_corr, fft_corr, rtol=1e-3)
@@ -60,7 +60,7 @@ end
     end
     @testset "conv" begin
         @test let A = rand(10, 10)
-            fm_A = TF.filtering_matrix(reflect(A), K_rand, :circular)
+            fm_A = TF.filtering_matrix(reflect(A), K_rand, :periodic)
             fm_conv = reshape(reflect(fm_A' * K_rand[:]), axes(A))
             fft_conv = TF.conv(A, K_rand)
             isapprox(fm_conv, fft_conv, rtol=1e-3)
@@ -69,9 +69,8 @@ end
 end
 
 @testset "ImageCore" begin
-    using ImageCore, TestImages
+    using ImageCore, TestImages, ImageFiltering
     using OffsetArrays: OffsetArrays as OAs
-    using ImageFiltering
 
     @testset "Array types compatibility" begin
         K_rand = OAs.centered(rand(3, 3))
@@ -80,7 +79,7 @@ end
         @testset "Gray image" begin # Gray image
             img_gray = TestImages.testimage("mandril_gray")[1:10, 1:10]
 
-            fm_img = TF.filtering_matrix(img_gray, K_rand, :circular)
+            fm_img = TF.filtering_matrix(img_gray, K_rand, :periodic)
             fm_corr = reshape(fm_img' * K_rand[:], axes(img_gray))
             fft_corr = TF.corr(img_gray, K_rand)
             isapprox(fm_corr, fft_corr, rtol=1e-3)
@@ -90,7 +89,7 @@ end
         @test begin # RGB image
             img_rgb = TestImages.testimage("mandril_color")[1:10, 1:10]
 
-            fm_img = TF.filtering_matrix(img_rgb, K_rand, :circular)
+            fm_img = TF.filtering_matrix(img_rgb, K_rand, :periodic)
             fm_corr = reshape(fm_img' * K_rand[:], axes(img_rgb))
             fft_corr = TF.corr(img_rgb, K_rand)
             isapprox(fm_corr, fft_corr, rtol=1e-3)
