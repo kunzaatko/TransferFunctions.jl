@@ -14,6 +14,20 @@ default:
 
 root-dir := justfile_directory()
 
+[doc("Run unittests for the package")]
+[group("test")]
+[script("fish")]
+[working-directory(root-dir)]
+test:
+    julia --project -e "using Pkg; Pkg.test()"
+
+[doc("Launch the Julia project REPL")]
+[group("dev")]
+[script("fish")]
+[working-directory(root-dir)]
+repl:
+    julia --project
+
 [doc("Generate and open the package documenation")]
 [group("docs")]
 [script("fish")]
@@ -59,10 +73,3 @@ pkg-resolve:
     julia --project=docs -e 'try; using Pkg; Pkg.resolve(); println("{{ ok }} Resolved."); catch e; println(stderr, "{{ fail }} Resolving failed."); exit(1); end'
     echo "{{ progress }} Resolving test packages..."
     julia --project=test -e 'try; using Pkg; Pkg.resolve(); println("{{ ok }} Resolved."); catch e; println(stderr, "{{ fail }} Resolving failed."); exit(1); end'
-
-[doc("Run unittests for the package")]
-[group("test")]
-[script("fish")]
-[working-directory(root-dir)]
-test:
-    julia --project -e "using Pkg; Pkg.test()"
