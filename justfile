@@ -30,11 +30,11 @@ docs:
 [working-directory(root-dir)]
 pkg-instantiate:
     echo "{{ progress }} Instantiating project packages..."
-    julia --project -e 'try; using Pkg; Pkg.instantiate(); println({{ ok }} Instantiated.); catch e; println(stderr, "{{ fail }} Instantiation failed."); exit(1); end'
+    julia --project -e 'try; using Pkg; Pkg.instantiate(); println("{{ ok }} Instantiated."); catch e; println(stderr, "{{ fail }} Instantiation failed."); exit(1); end'
     echo "{{ progress }} Instantiating documentation packages..."
-    julia --project=docs -e 'try; using Pkg; Pkg.instantiate(); println({{ ok }} Instantiated.); catch e; println(stderr, "{{ fail }} Instantiation failed."); exit(1); end'
+    julia --project=docs -e 'try; using Pkg; Pkg.instantiate(); println("{{ ok }} Instantiated."); catch e; println(stderr, "{{ fail }} Instantiation failed."); exit(1); end'
     echo "{{ progress }} Instantiating test packages..."
-    julia --project=test -e 'try; using Pkg; Pkg.instantiate(); println({{ ok }} Instantiated.); catch e; println(stderr, "{{ fail }} Instantiation failed."); exit(1); end'
+    julia --project=test -e 'try; using Pkg; Pkg.instantiate(); println("{{ ok }} Instantiated."); catch e; println(stderr, "{{ fail }} Instantiation failed."); exit(1); end'
 
 [doc("Update the package environments")]
 [group("dev")]
