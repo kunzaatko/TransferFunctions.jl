@@ -214,7 +214,7 @@ end
 # TODO: Specify the details `ε`, border etc. <21-08-25> 
 """
     conv(img::SpatialArray{<:Real,2}, tf::PointSpreadFunction, [border=:reflect]; <kwargs>)
-Convolve the image `img` with the PSF `tf`. Additional arguments are passed to `imfilter`.
+Convolve the image `img` with the PSF `tf`.
 """
 function conv(img::SpatialMatrix, tf::PointSpreadFunction{2}, border=:reflect; ε=0.01)
     Δ = sampling(img)
