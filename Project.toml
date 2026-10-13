@@ -21,6 +21,9 @@ StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
+[workspace]
+projects = ["docs", "test"]
+
 [weakdeps]
 ComputePipeline = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
@@ -53,4 +56,4 @@ SpecialFunctions = "^2"
 StaticArraysCore = "1.4.3"
 Statistics = "^1"
 Unitful = "^1"
-julia = "1.11,1.12"
+julia = "1.11,1.12,1.13"
