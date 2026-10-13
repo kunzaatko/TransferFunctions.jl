@@ -35,7 +35,7 @@ MakieExt = ["Makie", "ComputePipeline"]
 [compat]
 ComponentArrays = "0.15.29"
 ComputePipeline = "0.1.3"
-DimensionalData = "^0.29"
+DimensionalData = "^0.29, 0.30"
 Distributions = "0.25.120"
 DomainSets = "0.7.16"
 FFTViews = "0.3.2"
