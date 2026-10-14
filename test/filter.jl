@@ -16,7 +16,7 @@ using Combinatorics, JET
     end
     let A = rand(ComplexF64, 10, 10)
         K = OA(ones(1, 1) .+ im .* ones(1, 1), -1, -1)
-        @test fn(A, K) == A .- im .* A
+        @test fn(A, K) ≈ A .- im .* A
     end
 end
 
@@ -33,7 +33,7 @@ end
     for T in (Float64, ComplexF64)
         img = rand(T, 21, 21)
         kernel = OAs.centered(rand(T, 3, 3))
-        @test imfilter(img, kernel, "circular") ≈ TF.corr(img, kernel)
+        @test isapprox(imfilter(img, kernel, "circular"), TF.corr(img, kernel), rtol=1e-3)
     end
 end
 

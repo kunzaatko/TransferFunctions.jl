@@ -69,7 +69,7 @@ These two types play together nicely though. Broadcasting works on the full arra
 """
 module FFT
 using Base: @propagate_inbounds
-using Base.Broadcast: Broadcasted, ArrayStyle, AbstractArrayStyle, DefaultArrayStyle
+using Base.Broadcast: Broadcasted, ArrayStyle, AbstractArrayStyle, DefaultArrayStyle, BroadcastStyle
 import Base.Broadcast
 using FFTW: FFTW
 
@@ -130,15 +130,15 @@ Broadcast.BroadcastStyle(a::Type{T}) where {T<:RFFTOut} = ArrayStyle{T}()
 # TODO: Add some methods to specialize or throw an error when `N`s are different or `d`s are different <02-09-25> 
 Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {B<:RFFTOut, A<:RFFTOut} = ArrayStyle{promote_type(A,B)}()
 # NOTE: Necessary because we want to dispatch on the other dimensionalities <03-09-25> 
-Broadcast.BroadcastStyle(a::ArrayStyle{S}, ::DefaultArrayStyle{0}) where {T,N,S<:RFFTOut{T, N}} = a # NOTE: T,N need to be here for disambiguation <02-09-25> 
-# TODO: Instead of constructing the type of the FFTOut, this should be delegated to a subfunction that converts the type
-# of RFFTOut to the matching FFTOut <03-09-25> 
-Broadcast.BroadcastStyle(::ArrayStyle{S}, b::DefaultArrayStyle{N}) where {T,N,S<:RFFTOut{T, N}} = Broadcast.BroadcastStyle(ArrayStyle{FFTOut{T, N}}(), b)
-Broadcast.BroadcastStyle(::ArrayStyle{S}, b::AbstractArrayStyle{N}) where {T,N,S<:RFFTOut{T, N}} = Broadcast.BroadcastStyle(ArrayStyle{FFTOut{T, N}}(), b)
+Broadcast.BroadcastStyle(AS::ArrayStyle{S}, ::DefaultArrayStyle{0}) where {S<:RFFTOut} = AS # NOTE: T,N need to be here for disambiguation <02-09-25> 
+fftout(::Type{<:RFFTOut{T, N, AA}}) where {T,N,AA} = FFTOut{T, N, AA}
+Broadcast.BroadcastStyle(::ArrayStyle{S}, b::DefaultArrayStyle{N}) where {N,S<:RFFTOut{<:Any, N}} = BroadcastStyle(ArrayStyle{fftout(S)}(), b)
+Broadcast.BroadcastStyle(::ArrayStyle{S}, b::AbstractArrayStyle{N}) where {N,S<:RFFTOut{<:Any, N}} = BroadcastStyle(ArrayStyle{fftout(S)}(), b)
 
 # FIX: Define conjugate stable functions. I.e. functions that where fn(conj(x)) == fn(x). On these functions, it is
 # possible to use create a broadcasted with the `RFFTOut` style. For others it should promote to the `FFTOut` style.
-# <02-09-25> 
+# There is a similar implementation in linear algebra for structured matrices for functions that are structure
+# preserving <02-09-25> 
 
 @inline broadcast_args(args::Tuple) = (broadcast_args(args[1]), broadcast_args(Base.tail(args))...)
 @inline broadcast_args(args::NTuple{1}) = (broadcast_args(args[1]),)
@@ -163,15 +163,13 @@ struct FFTOut{T,N,AA<:AbstractArray{T,N}}  <: AbstractArray{T,N}
     parent::AA
 end
 Base.parent(a::FFTOut) = (@inline; a.parent)
-Base.promote_rule(A::Type{<:FFTOut{T1, N, AA}}, B::Type{<:FFTOut{T2, N, BB}}) where {T1, N, AA, T2, BB} = FFTOut{promote_type(T1, T2), N, promote_type(AA, BB)}
+Base.promote_rule(::Type{<:FFTOut{T1, N, AA}}, ::Type{<:FFTOut{T2, N, BB}}) where {T1, N, AA, T2, BB} = FFTOut{promote_type(T1, T2), N, promote_type(AA, BB)}
+Base.promote_rule(::Type{<:FFTOut{T1, N, AA}}, ::Type{<:RFFTOut{T2, N, BB}}) where {T1, N, AA, T2, BB} = FFTOut{promote_type(T1, T2), N, promote_type(AA, BB)}
 
 Broadcast.BroadcastStyle(T::Type{<:FFTOut}) = ArrayStyle{T}()
 
-# TODO: Consider instead using a `promote_rule` definition to promote `RFFTOut` to `FFTOut` <02-09-25> 
-Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {A<:FFTOut, B<:FFTOut} = ArrayStyle{promote_type(A, B)}()
-Broadcast.BroadcastStyle(a::ArrayStyle{A}, ::ArrayStyle{B}) where {T,M,A<:FFTOut{T, M},N,B<:RFFTOut{T,N}} = ArrayStyle{FFTOut{T, max(N,M)}}()
-Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::DefaultArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
-Broadcast.BroadcastStyle(a::ArrayStyle{<:FFTOut{T, M}}, ::AbstractArrayStyle{N}) where {T, M, N} = ArrayStyle{FFTOut{T, max(N,M)}}()
+Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {A<:FFTOut, B<:FFTOut} = ArrayStyle{promote_type(A, B)}()
+Broadcast.BroadcastStyle(::ArrayStyle{A}, ::ArrayStyle{B}) where {A<:FFTOut,B<:RFFTOut} = ArrayStyle{promote_type(A, B)}()
 
 Base.similar(bc::Broadcasted{<:ArrayStyle{<:FFTOut}}, ::Type{S}) where {S} = FFTOut(similar(Array{S}, axes(bc)))
 

@@ -62,6 +62,7 @@ through [`params`](@ref) and can be fitted to data.
 abstract type PSFModel{N} <: PointSpreadFunction{N} end
 
 include("methods.jl")
+include("deconv.jl")
 
 # Augmentations
 include("./types/rotated-psf.jl")
