@@ -1,0 +1,351 @@
+[apodization_blackman]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 10.3}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:30.889}
+
+    [apodization_blackman.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_blackman.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_connes]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.171}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:31.471}
+
+    [apodization_connes.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_connes.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_cosine]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.16}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:31.662}
+
+    [apodization_cosine.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_cosine.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_flat_top]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.179}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:32.887}
+
+    [apodization_flat_top.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_flat_top.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_gaussian]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.214}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:31.885}
+
+    [apodization_gaussian.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_gaussian.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_hamming]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.18}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:32.136}
+
+    [apodization_hamming.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_hamming.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_hann]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.161}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:33.051}
+
+    [apodization_hann.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_hann.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_nuttall]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.17}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:32.678}
+
+    [apodization_nuttall.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_nuttall.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_triangular]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.158}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:32.479}
+
+    [apodization_triangular.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_triangular.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[apodization_welch]
+backends = {Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Svg = 0.161}
+formats = ["Svg"]
+modified = {date = 2026-10-15, time = 13:20:32.300}
+
+    [apodization_welch.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [apodization_welch.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[border_arrays_mosaic]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 0.886}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:45.268}
+
+    [border_arrays_mosaic.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [border_arrays_mosaic.size]
+    args = {hwratio = 0.6180339887498948, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[circulant_tensors]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 1.31}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:53.144}
+
+    [circulant_tensors.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [circulant_tensors.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[circulant_tensors_patches]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 0.329}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:53.601}
+
+    [circulant_tensors_patches.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [circulant_tensors_patches.size]
+    args = {hwratio = 0.6180339887498948, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[fill]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 7.9}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:43.842}
+
+    [fill.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [fill.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[filtering_matrix]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 0.0773}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:54.418}
+
+    [filtering_matrix.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [filtering_matrix.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[filtering_matrix_column]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 1.03}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:56.853}
+
+    [filtering_matrix_column.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [filtering_matrix_column.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[filtering_matrix_small]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 1.13}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:55.724}
+
+    [filtering_matrix_small.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [filtering_matrix_small.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[reflected_arrays]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 0.228}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:20:57.091}
+
+    [reflected_arrays.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [reflected_arrays.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[sampled_arrays]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 4.39}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:21:01.530}
+
+    [sampled_arrays.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [sampled_arrays.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[synthetic_data_beads]
+backends = {Pdf = "CairoMakie", Svg = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
+exportduration = {Pdf = 0.604, Svg = 1.32, total = 1.92}
+formats = ["Svg", "Pdf"]
+modified = {date = 2026-10-15, time = 13:21:05.396}
+
+    [synthetic_data_beads.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [synthetic_data_beads.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[tapered_arrays_hann]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 0.185}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:21:02.172}
+
+    [tapered_arrays_hann.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [tapered_arrays_hann.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
+
+[tapered_arrays_mosaic]
+backends = {Png = "CairoMakie"}
+cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
+exportduration = {Png = 0.249}
+formats = ["Png"]
+modified = {date = 2026-10-15, time = 13:21:01.972}
+
+    [tapered_arrays_mosaic.figure]
+    kwargs = {}
+    nargs = 0
+    nkwargs = 0
+
+    [tapered_arrays_mosaic.size]
+    args = {default_hwratio = true, default_width = true, width = "25 cm"}
+    final = "w×h: 25.0 cm × 15.45 cm [h/w: 2/(√5 + 1)]"
