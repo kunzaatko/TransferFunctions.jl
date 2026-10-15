@@ -31,6 +31,8 @@ conv!(out::AbstractArray, A::AbstractArray, K::AbstractArray, args...) = corr!(o
     corr([T], A, K, [border])
 Discrete correlation of `A` with `K`.
 
+For complex inputs, the kernel is conjugated.
+
 `A` is extended by the [`border`](@ref "Border Types"). If `T` is given, the output will have the eltype `T`. If the
 border is not specified, no border is added, which results in the same output as if a `:periodic` border was used.
 
@@ -70,10 +72,17 @@ function corr!(out::AbstractArray{S,N}, A::AbstractArray{T,N}, K::AbstractArray)
     out
 end
 
-function corrfft(A::AbstractArray{ST}, K::AbstractArray{KT}) where {ST<:Union{Real,Complex},KT<:Union{Real,Complex}}
+function corrfft(A::AbstractArray{ST}, K::AbstractArray{KT}) where {ST<:Real,KT<:Real}
     B = FFT.fft(A)
     C = conj!(FFT.fft(K))
     FFT.ifft(B .* C)
+end
+
+function corrfft(A::AbstractArray{ST}, K::AbstractArray{KT}) where {ST<:Union{Real,Complex},KT<:Union{Real,Complex}}
+    # Use full spectra when either operand is complex to avoid mixed FFT wrapper inference.
+    B = FFTW.fft(A)
+    C = conj!(FFTW.fft(K))
+    FFTW.ifft(B .* C)
 end
 
 corr_outputtype(A::AbstractArray{S}, K) where {S} = corr_outputtype(S, K)
