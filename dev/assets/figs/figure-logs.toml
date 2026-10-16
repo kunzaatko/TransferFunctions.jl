@@ -1,9 +1,9 @@
 [apodization_blackman]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 14.0}
+exportduration = {Svg = 13.4}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:31.281}
+modified = {date = 2026-10-16, time = 11:04:56.719}
 
     [apodization_blackman.figure]
     kwargs = {}
@@ -17,9 +17,9 @@ modified = {date = 2026-10-16, time = 10:31:31.281}
 [apodization_connes]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.236}
+exportduration = {Svg = 0.222}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:32.146}
+modified = {date = 2026-10-16, time = 11:04:57.552}
 
     [apodization_connes.figure]
     kwargs = {}
@@ -33,9 +33,9 @@ modified = {date = 2026-10-16, time = 10:31:32.146}
 [apodization_cosine]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.224}
+exportduration = {Svg = 0.21}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:32.411}
+modified = {date = 2026-10-16, time = 11:04:57.800}
 
     [apodization_cosine.figure]
     kwargs = {}
@@ -49,9 +49,9 @@ modified = {date = 2026-10-16, time = 10:31:32.411}
 [apodization_flat_top]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.244}
+exportduration = {Svg = 0.235}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:34.079}
+modified = {date = 2026-10-16, time = 11:04:59.390}
 
     [apodization_flat_top.figure]
     kwargs = {}
@@ -65,9 +65,9 @@ modified = {date = 2026-10-16, time = 10:31:34.079}
 [apodization_gaussian]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.219}
+exportduration = {Svg = 0.21}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:32.642}
+modified = {date = 2026-10-16, time = 11:04:58.020}
 
     [apodization_gaussian.figure]
     kwargs = {}
@@ -81,9 +81,9 @@ modified = {date = 2026-10-16, time = 10:31:32.642}
 [apodization_hamming]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.251}
+exportduration = {Svg = 0.241}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:32.933}
+modified = {date = 2026-10-16, time = 11:04:58.299}
 
     [apodization_hamming.figure]
     kwargs = {}
@@ -97,9 +97,9 @@ modified = {date = 2026-10-16, time = 10:31:32.933}
 [apodization_hann]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.217}
+exportduration = {Svg = 0.209}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:34.301}
+modified = {date = 2026-10-16, time = 11:04:59.604}
 
     [apodization_hann.figure]
     kwargs = {}
@@ -113,9 +113,9 @@ modified = {date = 2026-10-16, time = 10:31:34.301}
 [apodization_nuttall]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.221}
+exportduration = {Svg = 0.21}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:33.796}
+modified = {date = 2026-10-16, time = 11:04:59.119}
 
     [apodization_nuttall.figure]
     kwargs = {}
@@ -129,9 +129,9 @@ modified = {date = 2026-10-16, time = 10:31:33.796}
 [apodization_triangular]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.288}
+exportduration = {Svg = 0.21}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:33.475}
+modified = {date = 2026-10-16, time = 11:04:58.874}
 
     [apodization_triangular.figure]
     kwargs = {}
@@ -145,9 +145,9 @@ modified = {date = 2026-10-16, time = 10:31:33.475}
 [apodization_welch]
 backends = {Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Svg = 0.223}
+exportduration = {Svg = 0.277}
 formats = ["Svg"]
-modified = {date = 2026-10-16, time = 10:31:33.160}
+modified = {date = 2026-10-16, time = 11:04:58.581}
 
     [apodization_welch.figure]
     kwargs = {}
@@ -161,9 +161,9 @@ modified = {date = 2026-10-16, time = 10:31:33.160}
 [border_arrays_mosaic]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 1.26}
+exportduration = {Png = 1.24}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:31:50.795}
+modified = {date = 2026-10-16, time = 11:05:15.308}
 
     [border_arrays_mosaic.figure]
     kwargs = {}
@@ -177,9 +177,9 @@ modified = {date = 2026-10-16, time = 10:31:50.795}
 [circulant_tensors]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 1.75}
+exportduration = {Png = 1.65}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:01.376}
+modified = {date = 2026-10-16, time = 11:05:25.616}
 
     [circulant_tensors.figure]
     kwargs = {}
@@ -193,9 +193,9 @@ modified = {date = 2026-10-16, time = 10:32:01.376}
 [circulant_tensors_patches]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 0.472}
+exportduration = {Png = 0.504}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:02.012}
+modified = {date = 2026-10-16, time = 11:05:26.302}
 
     [circulant_tensors_patches.figure]
     kwargs = {}
@@ -209,9 +209,9 @@ modified = {date = 2026-10-16, time = 10:32:02.012}
 [fill]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 11.0}
+exportduration = {Png = 10.5}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:31:49.189}
+modified = {date = 2026-10-16, time = 11:05:13.751}
 
     [fill.figure]
     kwargs = {}
@@ -225,9 +225,9 @@ modified = {date = 2026-10-16, time = 10:31:49.189}
 [filtering_matrix]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 0.109}
+exportduration = {Png = 0.112}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:03.044}
+modified = {date = 2026-10-16, time = 11:05:27.394}
 
     [filtering_matrix.figure]
     kwargs = {}
@@ -241,9 +241,9 @@ modified = {date = 2026-10-16, time = 10:32:03.044}
 [filtering_matrix_column]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 1.38}
+exportduration = {Png = 1.34}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:06.300}
+modified = {date = 2026-10-16, time = 11:05:30.567}
 
     [filtering_matrix_column.figure]
     kwargs = {}
@@ -257,9 +257,9 @@ modified = {date = 2026-10-16, time = 10:32:06.300}
 [filtering_matrix_small]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 1.51}
+exportduration = {Png = 1.49}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:04.784}
+modified = {date = 2026-10-16, time = 11:05:29.107}
 
     [filtering_matrix_small.figure]
     kwargs = {}
@@ -273,9 +273,9 @@ modified = {date = 2026-10-16, time = 10:32:04.784}
 [reflected_arrays]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 0.302}
+exportduration = {Png = 0.272}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:06.616}
+modified = {date = 2026-10-16, time = 11:05:30.852}
 
     [reflected_arrays.figure]
     kwargs = {}
@@ -289,9 +289,9 @@ modified = {date = 2026-10-16, time = 10:32:06.616}
 [sampled_arrays]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 5.81}
+exportduration = {Png = 5.53}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:12.482}
+modified = {date = 2026-10-16, time = 11:05:36.437}
 
     [sampled_arrays.figure]
     kwargs = {}
@@ -305,9 +305,9 @@ modified = {date = 2026-10-16, time = 10:32:12.482}
 [synthetic_data_beads]
 backends = {Pdf = "CairoMakie", Svg = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages"
-exportduration = {Pdf = 0.822, Svg = 1.76, total = 2.58}
+exportduration = {Pdf = 0.756, Svg = 1.72, total = 2.48}
 formats = ["Svg", "Pdf"]
-modified = {date = 2026-10-16, time = 10:32:17.586}
+modified = {date = 2026-10-16, time = 11:05:41.380}
 
     [synthetic_data_beads.figure]
     kwargs = {}
@@ -321,9 +321,9 @@ modified = {date = 2026-10-16, time = 10:32:17.586}
 [tapered_arrays_hann]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 0.254}
+exportduration = {Png = 0.244}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:13.340}
+modified = {date = 2026-10-16, time = 11:05:37.257}
 
     [tapered_arrays_hann.figure]
     kwargs = {}
@@ -337,9 +337,9 @@ modified = {date = 2026-10-16, time = 10:32:13.340}
 [tapered_arrays_mosaic]
 backends = {Png = "CairoMakie"}
 cwd = "/home/runner/work/TransferFunctions.jl/TransferFunctions.jl/docs/build/pages/arrays"
-exportduration = {Png = 0.339}
+exportduration = {Png = 0.333}
 formats = ["Png"]
-modified = {date = 2026-10-16, time = 10:32:13.070}
+modified = {date = 2026-10-16, time = 11:05:36.997}
 
     [tapered_arrays_mosaic.figure]
     kwargs = {}
