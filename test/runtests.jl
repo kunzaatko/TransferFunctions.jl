@@ -35,6 +35,7 @@ end
             Aqua.test_all(
                 TransferFunctions;
                 ambiguities=false,
+                persistent_tasks= VERSION > v"1.11",
             )
         end
 

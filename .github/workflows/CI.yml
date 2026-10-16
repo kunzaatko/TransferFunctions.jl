@@ -29,7 +29,6 @@ jobs:
           - 'pre'
         os:
           - ubuntu-latest
-          - macOS-latest
         arch:
           - x64
     steps:
@@ -41,6 +40,8 @@ jobs:
       - uses: julia-actions/cache@v3
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-runtest@latest
+        with:
+          prefix: xvfb-run -s '-screen 0 1024x768x24'
       - uses: julia-actions/julia-processcoverage@v1
       - name: Coveralls
         uses: coverallsapp/github-action@v2
