@@ -5,19 +5,8 @@ on:
       - "v*.*.*"
 
 jobs:
-  generate-diagram:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-      - name: Update diagram
-        uses: githubocto/repo-visualizer@main
-        with:
-          excluded_paths: "ignore,.github"
-          output_file: "docs/src/assets/codediagram.svg"
   generate-changelog:
     name: Generate Changelog
-    needs: generate-diagram
     runs-on: ubuntu-latest
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
@@ -26,8 +15,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Add diagram
-        run: echo '<img src="docs/src/assets/codediagram.svg">\n'
       - name: Generate a changelog
         uses: orhun/git-cliff-action@main
         id: git-cliff
