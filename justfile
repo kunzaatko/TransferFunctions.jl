@@ -136,7 +136,7 @@ register semantic-bump="patch": _gh-authenticated
     echo "{{ progress }} Committing and tagging $tag_version..."
     git add Project.toml CHANGELOG.md
     git commit -m "chore(release): prepare for $tag_version"
-    git tag -a $tag_version -m "Release $tag_version"
+    git tag --sign -a $tag_version -m "Release $tag_version"
     git push origin $branch --follow-tags
     echo "{{ ok }} Pushed commit and tag $tag_version to $branch."
 
