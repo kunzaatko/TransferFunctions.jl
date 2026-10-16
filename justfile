@@ -120,12 +120,12 @@ register semantic-bump="patch": _gh-authenticated
     end
 
     set tag_version (git-cliff --bumped-version --bump {{ semantic-bump }})
-    set version (string replace -r '^v' '' -- $tag_version)
+    set pkg_version (string replace -r '^v' '' -- $tag_version)
     set branch (git branch --show-current)
 
     echo "{{ progress }} Bumping Project.toml version to $version ($tag_version)..."
-    sed -i -E "s/^version = \".*\"/version = \"$version\"/" Project.toml
-    echo "{{ ok }} Project.toml updated to $version."
+    sed -i -E "s/^version = \".*\"/version = \"$pkg_version\"/" Project.toml
+    echo "{{ ok }} Project.toml updated to $pkg_version."
 
     echo "{{ progress }} Generating CHANGELOG.md..."
     git-cliff --bump {{ semantic-bump }} -o CHANGELOG.md
