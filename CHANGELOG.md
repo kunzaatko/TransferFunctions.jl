@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.8.0] - 2026-10-15
+## [0.8.0] - 2026-10-16
 
 ### 🚀 Features
 
@@ -122,7 +122,7 @@
 
 - *(psf)* Add Wiener-filter deconvolution by @kunzaatko
 
-- *(release)* Automate changelog and package registration
+- *(release)* Automate changelog and package registration by @kunzaatko
 
 
 ### 🐛 Bug Fixes
@@ -254,6 +254,8 @@
 - *(build)* Quote success messages in package recipes by @kunzaatko
 
 - *(filter)* Handle mixed real and complex correlation by @kunzaatko
+
+- *(release)* Use package version in release recipe by @kunzaatko
 
 
 ### 💼 Other
@@ -400,7 +402,7 @@
 
 - *(psf)* Remove inaccurate imfilter argument note by @kunzaatko
 
-- *(changelog)* Add historical release notes
+- *(changelog)* Add historical release notes by @kunzaatko
 
 
 ### ⚡ Performance
