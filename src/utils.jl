@@ -251,7 +251,7 @@ julia> TF.OriginAt(3, 3)
 TransferFunctions.OriginAt{2}(CartesianIndex(3, 3))
 
 julia> TF.OriginAt(4)
-TransferFunctions.OriginAt{1}(CartesianIndex(4,))
+TransferFunctions.OriginAt{1}(CartesianIndex(4))
 
 julia> TF.OriginAt(CartesianIndex(-1, 1, 5))
 TransferFunctions.OriginAt{3}(CartesianIndex(-1, 1, 5))

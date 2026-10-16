@@ -21,6 +21,13 @@ root-dir := justfile_directory()
 test:
     julia --project -e "using Pkg; Pkg.test()"
 
+[doc("Fix the doctests that are failing")]
+[group("test")]
+[script("fish")]
+[working-directory(root-dir)]
+doctest-fix:
+    julia --project=test test/doctests_fix.jl
+
 [doc("Launch the Julia project REPL")]
 [group("dev")]
 [script("fish")]

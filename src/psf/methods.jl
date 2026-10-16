@@ -72,7 +72,7 @@ Find the HWHM of the PSF `psf` in all the axes directions.
 
 See also [`FWHM`](@ref)
 
-```jldoctest
+```jldoctest; filter = r"(\\d*)\\.(\\d{4})\\d+" => s"\\1.\\2***"
 julia> tf = AiryDisc(λ=488u"nm", NA=1.4);
 
 julia> TransferFunctions.HWHM(tf)

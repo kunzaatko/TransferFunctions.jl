@@ -62,8 +62,7 @@ end
                 # FIX: I cannot get the doctest filtering to work  <17-09-25> 
                 Logging.disable_logging(Logging.Warn)
             ); recursive=true)
-        !haskey(ENV, "FIX_DOCTESTS") && @info "You can fix doctests by setting `ENV[\"FIX_DOCTESTS\"] = true`."
-        doctest(TransferFunctions; fix=ifelse(haskey(ENV, "FIX_DOCTESTS"), true, false))
+        doctest(TransferFunctions)
     end
 
     @cond_testset "utils" begin

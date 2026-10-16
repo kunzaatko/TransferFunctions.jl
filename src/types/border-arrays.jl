@@ -167,7 +167,7 @@ A border that wraps the values around the edges of the parent array
 
 ```jldoctest
 julia> TransferFunctions.BorderArray(reshape(1:16, (4,4)), TransferFunctions.Periodic, 2)
-8×8 border_array(reshape(::UnitRange{Int64}, 4, 4), :Circular) with eltype Int64 with indices -1:6×-1:6:
+8×8 border_array(reshape(::UnitRange{Int64}, 4, 4), :Periodic) with eltype Int64 with indices -1:6×-1:6:
  11  15  3  7  11  15  3  7
  12  16  4  8  12  16  4  8
   9  13  1  5   9  13  1  5
@@ -277,7 +277,7 @@ Construct a [`BorderArray`](@ref) of `A` with the border `border` and padding `p
 See also [`padtoaxes`](@ref)
 ```jldoctest
 julia> border_array(reshape(1:9, (3,3)), :periodic, 2)
-7×7 border_array(reshape(::UnitRange{Int64}, 3, 3), :Circular) with eltype Int64 with indices -1:5×-1:5:
+7×7 border_array(reshape(::UnitRange{Int64}, 3, 3), :Periodic) with eltype Int64 with indices -1:5×-1:5:
  5  8  2  5  8  2  5
  6  9  3  6  9  3  6
  4  7  1  4  7  1  4
@@ -321,14 +321,14 @@ julia> padtoaxes(OAs.OffsetArray(reshape(1:100^2, 100, 100), -30:69, -20:79), :f
 
 ```jldoctest
 julia> padtoaxes(reshape(1:121, 11, 11), :periodic, (-1:2, -1:2))
-4×4 border_array(view(reshape(::UnitRange{Int64}, 11, 11), Base.IdentityUnitRange(1:2), Base.IdentityUnitRange(1:2)), :Circular) with eltype Int64 with indices -1:2×-1:2:
+4×4 border_array(view(reshape(::UnitRange{Int64}, 11, 11), Base.IdentityUnitRange(1:2), Base.IdentityUnitRange(1:2)), :Periodic) with eltype Int64 with indices -1:2×-1:2:
  1  12  1  12
  2  13  2  13
  1  12  1  12
  2  13  2  13
 
 julia> padtoaxes(reshape(1:121, 11, 11), :periodic, (-1:2, -1:2); outerpadding=true)
-4×4 view(border_array(reshape(::UnitRange{Int64}, 11, 11), :Circular), Base.IdentityUnitRange(-1:2), Base.IdentityUnitRange(-1:2)) with eltype Int64 with indices -1:2×-1:2:
+4×4 view(border_array(reshape(::UnitRange{Int64}, 11, 11), :Periodic), Base.IdentityUnitRange(-1:2), Base.IdentityUnitRange(-1:2)) with eltype Int64 with indices -1:2×-1:2:
  109  120  10  21
  110  121  11  22
  100  111   1  12
