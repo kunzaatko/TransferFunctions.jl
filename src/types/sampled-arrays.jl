@@ -1,6 +1,6 @@
 using Base.Broadcast
 using Base.Broadcast: ArrayStyle, Broadcasted
-using Base: CartesianIndices, @propagate_inbounds, OneTo
+using Base: @propagate_inbounds, CartesianIndices, OneTo
 using DomainSets: ×
 
 # TODO: Update the type signature <03-09-25> 

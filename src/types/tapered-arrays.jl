@@ -1,6 +1,6 @@
 using InterfaceFunctions
 using TransferFunctions.Apodization: ApodizationFunction, apodization
-using Base: Indices, tail, @propagate_inbounds
+using Base: @propagate_inbounds, Indices, tail
 # FIX: Cannot be used with RGB arrays since we need to have the apodization with output type of
 # `typeof(one(eltype(parent)))` instead of `eltype(parent)` in order to be able to multiply <08-08-25> 
 

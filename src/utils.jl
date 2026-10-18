@@ -1,5 +1,5 @@
-using TransferFunctions: Length, PixelSize, Coordinate
-using Base: OneTo, Indices
+using TransferFunctions: Coordinate, Length, PixelSize
+using Base: Indices, OneTo
 using OffsetArrays, Unitful
 
 """

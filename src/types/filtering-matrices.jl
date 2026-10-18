@@ -1,4 +1,4 @@
-using Base: DimsInteger, Indices, tail, OneTo
+using Base: DimsInteger, Indices, OneTo, tail
 using Base: @propagate_inbounds
 
 # PERF: Could hold a fast multiplicative inverse for better performance since we are using the same division every time

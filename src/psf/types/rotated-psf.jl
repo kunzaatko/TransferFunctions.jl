@@ -1,4 +1,4 @@
-using Rotations, ComponentArrays, StaticArraysCore
+using ComponentArrays, Rotations, StaticArraysCore
 
 """
     RotatedPSF{N,T,P} <: PointSpreadFunction{N}

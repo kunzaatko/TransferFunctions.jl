@@ -1,5 +1,5 @@
 using Base: Indices
-using Roots, InterfaceFunctions
+using InterfaceFunctions, Roots
 using FFTViews
 using ComponentArrays
 using TransferFunctions: Apodization, FFT

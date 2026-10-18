@@ -1,4 +1,4 @@
-using Base: Indices, @propagate_inbounds, split_rest, showarg
+using Base: @propagate_inbounds, Indices, showarg, split_rest
 
 # TODO: Update the type parameter documentation <19-05-25> 
 

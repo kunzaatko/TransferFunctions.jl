@@ -1,9 +1,9 @@
 using Distributions
-using TransferFunctions: Size, PixelSize, fillsize
+using TransferFunctions: PixelSize, Size, fillsize
 using TransferFunctions
 using Unitful: Length, Quantity, 𝐋
 using OffsetArrays: OffsetMatrix, OffsetArray
-using Statistics, LinearAlgebra
+using LinearAlgebra, Statistics
 
 const PerLength = Quantity{<:Any,inv(𝐋)}
 

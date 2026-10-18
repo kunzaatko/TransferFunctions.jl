@@ -1,4 +1,4 @@
-using Roots, SpecialFunctions, ComponentArrays
+using ComponentArrays, Roots, SpecialFunctions
 
 @doc raw"""
     const C_AiryDisc_lateral

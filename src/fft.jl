@@ -69,7 +69,8 @@ These two types play together nicely though. Broadcasting works on the full arra
 """
 module FFT
 using Base: @propagate_inbounds
-using Base.Broadcast: Broadcasted, ArrayStyle, AbstractArrayStyle, DefaultArrayStyle, BroadcastStyle
+using Base.Broadcast: AbstractArrayStyle, ArrayStyle, BroadcastStyle, Broadcasted,
+    DefaultArrayStyle
 import Base.Broadcast
 using FFTW: FFTW
 

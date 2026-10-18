@@ -2,7 +2,8 @@ module Estimation
 using Base: Indices
 using InterfaceFunctions
 using TransferFunctions
-using TransferFunctions: Size, aroundorigin, PSFModel, TransferFunction, PSFArray, sampling, inner_axes, PSFArray
+using TransferFunctions: PSFArray, PSFArray, PSFModel, Size, TransferFunction, aroundorigin,
+    inner_axes, sampling
 using OffsetArrays: no_offset_view
 
 abstract type EstimationAlgorithm{H<:TransferFunction} end
